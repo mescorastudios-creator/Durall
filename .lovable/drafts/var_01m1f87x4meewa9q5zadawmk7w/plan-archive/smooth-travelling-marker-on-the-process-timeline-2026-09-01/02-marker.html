@@ -1,0 +1,44 @@
+<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" style="font-family: var(--font-sans);">
+  <style>
+    .lbl { font-size: 12px; fill: hsl(var(--muted-foreground)); }
+    .box { font-size: 14px; font-weight: 480; fill: hsl(var(--foreground)); }
+    .mono { font-family: var(--font-mono); font-size: 11px; fill: hsl(var(--muted-foreground)); }
+  </style>
+
+  <!-- left: today -->
+  <text class="lbl" x="20" y="24">today — state hops between five dots</text>
+  <line x1="40" y1="48" x2="40" y2="248" stroke="hsl(var(--border))" stroke-width="1"/>
+  <circle cx="40" cy="60" r="5" fill="hsl(var(--foreground))"/>
+  <circle cx="40" cy="107" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="40" cy="154" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="40" cy="201" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="40" cy="248" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <path d="M56 62 L56 100" stroke="hsl(var(--muted-foreground))" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#chev)"/>
+  <text class="lbl" x="64" y="88">jump</text>
+
+  <!-- right: proposed -->
+  <text class="lbl" x="300" y="24">proposed — one marker rides the rail</text>
+  <line x1="320" y1="48" x2="320" y2="248" stroke="hsl(var(--border))" stroke-width="1"/>
+  <line x1="320" y1="48" x2="320" y2="130" stroke="hsl(var(--accent-foreground))" stroke-width="2"/>
+  <circle cx="320" cy="60" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="320" cy="107" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="320" cy="154" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="320" cy="201" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="320" cy="248" r="5" fill="none" stroke="hsl(var(--muted-foreground))"/>
+  <circle cx="320" cy="130" r="6" fill="hsl(var(--accent-foreground))"/>
+  <text class="lbl" x="336" y="134">continuous position = scroll progress</text>
+
+  <text class="box" x="336" y="60">01 Discover</text>
+  <text class="box" x="336" y="107">02 Design</text>
+  <text class="box" x="336" y="176">03 Engineer</text>
+  <text class="box" x="336" y="205">04 Fabricate</text>
+  <text class="box" x="336" y="252">05 Install</text>
+
+  <text class="mono" x="300" y="284">pinned scroll: 1.7 vh/stage → 1.15 vh/stage</text>
+
+  <defs>
+    <marker id="chev" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L6 4 L1 7" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1"/>
+    </marker>
+  </defs>
+</svg>

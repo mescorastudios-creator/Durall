@@ -1,0 +1,46 @@
+<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" style="font-family: var(--font-sans)">
+  <style>
+    text { fill: hsl(var(--foreground)); font-size: 14px; font-weight: 480; }
+    .n { fill: hsl(var(--muted-foreground)); font-size: 12px; font-weight: 400; }
+    .b { fill: none; stroke: hsl(var(--muted-foreground)); stroke-width: 1; }
+    .z { fill: none; stroke: hsl(var(--border)); stroke-width: 1; stroke-dasharray: 4 3; }
+    .w { stroke: hsl(var(--muted-foreground)); stroke-width: 1; fill: none; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="z" x="12" y="12" width="290" height="120" rx="8"/>
+  <text class="n" x="24" y="32">navbar</text>
+  <rect x="24" y="44" width="266" height="30" rx="8" fill="hsl(var(--accent))" stroke="hsl(var(--accent-foreground))" stroke-width="1"/>
+  <text x="36" y="63" style="font-size:12px">home — white bar, navy links</text>
+  <rect class="b" x="24" y="86" width="266" height="30" rx="8"/>
+  <text x="36" y="105" style="font-size:12px">about — navy bar, white links (unchanged)</text>
+
+  <rect class="z" x="336" y="12" width="292" height="120" rx="8"/>
+  <text class="n" x="348" y="32">one shared header component</text>
+  <rect class="b" x="348" y="52" width="120" height="34" rx="8"/>
+  <text x="360" y="74" style="font-size:12px">SiteHeader</text>
+  <path class="w" d="M472 69 H 540" marker-end="url(#a)"/>
+  <text class="n" x="490" y="63" style="paint-order:stroke; stroke:hsl(var(--background)); stroke-width:3px">variant</text>
+  <rect class="b" x="544" y="52" width="72" height="34" rx="8"/>
+  <text x="556" y="74" style="font-size:12px">per route</text>
+
+  <text x="12" y="176">hero image timeline — home and about, same fix</text>
+  <line x1="12" y1="196" x2="628" y2="196" stroke="hsl(var(--border))" stroke-width="1"/>
+
+  <rect class="b" x="12" y="210" width="180" height="40" rx="8"/>
+  <text x="24" y="235" style="font-size:12px">load: slow zoom out</text>
+  <path class="w" d="M196 230 H 244" marker-end="url(#a)"/>
+  <rect x="248" y="210" width="190" height="40" rx="8" fill="none" stroke="hsl(var(--accent-foreground))" stroke-width="1"/>
+  <text x="260" y="235" style="font-size:12px">settles, position captured</text>
+  <path class="w" d="M442 230 H 490" marker-end="url(#a)"/>
+  <rect class="b" x="494" y="210" width="134" height="40" rx="8"/>
+  <text x="506" y="235" style="font-size:12px">scroll drift</text>
+
+  <circle cx="256" cy="272" r="9" fill="hsl(var(--accent))"/>
+  <text x="252.5" y="276" style="font-size:11px; fill:hsl(var(--accent-foreground))">1</text>
+  <text class="n" x="272" y="276">parallax starts from the settled position — no snap on first scroll</text>
+</svg>

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Read(//Users/dewangwagh/.nvm/versions/**)",
+      "Bash(/opt/homebrew/bin/node -v)",
+      "Read(//opt/homebrew/opt/**)",
+      "Read(//opt/homebrew/lib/node_modules/npm/bin/**)",
+      "Bash(/opt/homebrew/bin/node -e \"console.log\\(process.arch, process.version\\)\")",
+      "Bash(PATH=/opt/homebrew/bin:__TRACKED_VAR__ npm install --no-audit --no-fund)",
+      "Bash(python3 /private/tmp/claude-501/-Users-dewangwagh-Downloads-66bdd6bd-ffe2-4a0a-b4bd-342c1e0c8eb8/987b3194-f3ee-4674-8e2f-007fa77a58d8/scratchpad/make_placeholders.py)",
+      "Bash(python3 -c ' *)",
+      "Bash(PATH=/opt/homebrew/bin:__TRACKED_VAR__ npm run build)"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+<!doctype html><html><body><svg viewBox="0 0 640 300" role="img" aria-label="Resize and zoom recalculation flow" style="font-family:var(--font-sans);width:100%;height:auto">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="hsl(var(--muted-foreground))"/></marker></defs>
+<rect x="20" y="108" width="132" height="64" rx="8" fill="hsl(var(--card))" stroke="hsl(var(--muted-foreground))"/><text x="86" y="135" text-anchor="middle" fill="hsl(var(--card-foreground))" font-size="14" font-weight="480">Zoom / resize</text><text x="86" y="155" text-anchor="middle" fill="hsl(var(--muted-foreground))" font-size="12">window + visual viewport</text>
+<path d="M152 140H210" stroke="hsl(var(--muted-foreground))" marker-end="url(#a)"/>
+<rect x="218" y="108" width="132" height="64" rx="32" fill="hsl(var(--accent))" stroke="hsl(var(--accent-foreground))"/><text x="284" y="136" text-anchor="middle" fill="hsl(var(--accent-foreground))" font-size="14" font-weight="480">Debounce</text><text x="284" y="155" text-anchor="middle" fill="hsl(var(--accent-foreground))" font-size="12">~175 ms</text>
+<path d="M350 140H408" stroke="hsl(var(--muted-foreground))" marker-end="url(#a)"/>
+<rect x="416" y="55" width="188" height="58" rx="8" fill="hsl(var(--card))" stroke="hsl(var(--muted-foreground))"/><text x="510" y="82" text-anchor="middle" fill="hsl(var(--card-foreground))" font-size="14" font-weight="480">Re-measure Lenis</text><text x="510" y="100" text-anchor="middle" fill="hsl(var(--muted-foreground))" font-size="12">updated scroll dimensions</text>
+<path d="M408 140L388 140L388 84L416 84" stroke="hsl(var(--muted-foreground))" fill="none" marker-end="url(#a)"/>
+<rect x="416" y="167" width="188" height="66" rx="8" fill="hsl(var(--card))" stroke="hsl(var(--muted-foreground))"/><text x="510" y="195" text-anchor="middle" fill="hsl(var(--card-foreground))" font-size="14" font-weight="480">Refresh ScrollTrigger</text><text x="510" y="214" text-anchor="middle" fill="hsl(var(--muted-foreground))" font-size="12">pin spacer + start/end points</text>
+<path d="M388 140L388 200L416 200" stroke="hsl(var(--muted-foreground))" fill="none" marker-end="url(#a)"/>
+<text x="20" y="274" fill="hsl(var(--muted-foreground))" font-size="12">One coordinated refresh prevents each section from measuring a different viewport state.</text>
+</svg></body></html>

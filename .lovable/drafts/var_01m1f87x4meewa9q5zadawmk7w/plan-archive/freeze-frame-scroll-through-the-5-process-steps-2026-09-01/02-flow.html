@@ -1,0 +1,65 @@
+<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scroll pins the section while five steps expand one by one">
+<style>
+text { font-family: var(--font-sans); fill: hsl(var(--muted-foreground)); font-size: 12px; }
+.lbl { fill: hsl(var(--foreground)); font-size: 14px; font-weight: 480; }
+.box { fill: none; stroke: hsl(var(--muted-foreground)); stroke-width: 1; }
+.rail { stroke: hsl(var(--border)); stroke-width: 1; }
+.wire { stroke: hsl(var(--muted-foreground)); stroke-width: 1; fill: none; }
+.acc { fill: hsl(var(--accent)); }
+.accink { fill: hsl(var(--accent-foreground)); font-size: 11px; }
+.quiet { fill: hsl(var(--muted)); }
+</style>
+<defs>
+<marker id="ch" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+<path d="M0 0 L6 3.5 L0 7" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1"/>
+</marker>
+</defs>
+
+<text class="lbl" x="24" y="28">scroll timeline</text>
+<line class="rail" x1="24" y1="46" x2="616" y2="46"/>
+<path class="wire" d="M24 60 H600" marker-end="url(#ch)"/>
+<text x="24" y="80">enter section</text>
+<text x="500" y="80">release, page continues</text>
+
+<rect class="quiet" x="120" y="38" width="400" height="16" rx="8"/>
+<text x="130" y="50" style="font-size:11px">pinned — section frozen in place</text>
+
+<g>
+<rect class="box" x="24" y="110" width="104" height="52" rx="8"/>
+<text class="lbl" x="40" y="134">01 Discover</text>
+<text x="40" y="152">expanded</text>
+
+<rect class="box" x="144" y="110" width="104" height="52" rx="8"/>
+<text class="lbl" x="160" y="134">02 Design</text>
+<text x="160" y="152">expanded</text>
+
+<rect class="box" x="264" y="110" width="104" height="52" rx="8"/>
+<text class="lbl" x="280" y="134">03 Engineer</text>
+<text x="280" y="152">expanded</text>
+
+<rect class="box" x="384" y="110" width="104" height="52" rx="8"/>
+<text class="lbl" x="400" y="134">04 Fabricate</text>
+<text x="400" y="152">expanded</text>
+
+<rect class="box" x="504" y="110" width="104" height="52" rx="8"/>
+<text class="lbl" x="520" y="134">05 Install</text>
+<text x="520" y="152">expanded</text>
+</g>
+
+<path class="wire" d="M128 136 H140" marker-end="url(#ch)"/>
+<path class="wire" d="M248 136 H260" marker-end="url(#ch)"/>
+<path class="wire" d="M368 136 H380" marker-end="url(#ch)"/>
+<path class="wire" d="M488 136 H500" marker-end="url(#ch)"/>
+
+<circle class="acc" cx="34" cy="200" r="9"/>
+<text class="accink" x="30.5" y="204">1</text>
+<text x="52" y="204">each step needs about one viewport of slow scrolling</text>
+
+<circle class="acc" cx="34" cy="228" r="9"/>
+<text class="accink" x="30.5" y="232">2</text>
+<text x="52" y="232">earlier steps stay open — the list builds up, it does not swap</text>
+
+<circle class="acc" cx="34" cy="256" r="9"/>
+<text class="accink" x="30.5" y="260">3</text>
+<text x="52" y="260">stage image and "current stage" card cross-fade with the active step</text>
+</svg>

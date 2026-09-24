@@ -1,0 +1,330 @@
+@import "tailwindcss" source(none);
+
+/* Scan only the code the site actually renders.
+ *
+ * `@source "../src"` also swept src/components/ui — 46 shadcn components that
+ * nothing on the site imported — and emitted utilities for every one of them.
+ * Those files are gone now; keeping the scan explicit stops the stylesheet
+ * regrowing if a component is added back and left unused. Measured on the
+ * production build: 111.10 kB -> 58.95 kB raw (19.01 -> 11.22 kB gzip) on a
+ * render-blocking resource.
+ *
+ * tw-animate-css was imported here too; no animate-* utility is used anywhere
+ * in the site, so it has been dropped along with the package. */
+@source "../src/routes";
+@source "../src/components";
+@source "../src/lib";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+/* ── Figma design tokens (Durall / Frame 9) ───────────────────────────── */
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-body: "Inter", ui-sans-serif, sans-serif;
+  --font-serif: "EB Garamond", ui-serif, Georgia, serif;
+
+  --color-navy: #050834;
+  --color-navy-72: rgb(5 8 52 / 0.72);
+  --color-navy-14: rgb(5 8 52 / 0.14);
+  --color-slate: #5c6972;
+  --color-mist: #f4f4f4;
+  --color-paper: #f7f7f6;
+  --color-glass: #eef0f1;
+  --color-accent-blue: #1e539c;
+
+  --text-hero: 8rem;
+  --text-hero--line-height: 0.94;
+  --text-section: 4rem;
+  --text-section--line-height: 1.17;
+  --text-section-lg: 4.25rem;
+  --text-section-lg--line-height: 1;
+  --text-lede: 1.125rem;
+  --text-lede--line-height: 1.6;
+
+  --tracking-hero: -0.16rem;
+  --tracking-section: -0.06375rem;
+  --tracking-eyebrow: 0.075rem;
+  --tracking-button: 0.08125rem;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Height of the absolutely-positioned site header. The heroes sit underneath
+ * it and have to reserve the space themselves; hard-coding a number went
+ * wrong as soon as the nav wrapped to a second row. These defaults match the
+ * server-rendered layout closely enough that nothing jumps, and SiteHeader
+ * overwrites the variable with the measured height once it mounts. */
+:root {
+  --header-h: 9.5rem;
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+/* ── Pre-paint animation state ────────────────────────────────────────────
+ * `anim-pending` is added to <html> by a synchronous inline script in
+ * __root.tsx, and only when JavaScript runs and motion is allowed. Anything
+ * an entrance animation will hide is hidden here instead of in a component
+ * class, so:
+ *   - with JS off, or under prefers-reduced-motion, the content is simply
+ *     visible in the server-rendered HTML (it used to be `opacity-0` in the
+ *     markup, which left the <h1> invisible forever if GSAP failed to load);
+ *   - with JS on, it is hidden before first paint rather than painting once
+ *     and then being snapped away when GSAP's `from` tweens initialise.
+ * The same script drops the class after a timeout, so a blocked or failed
+ * GSAP import can never leave the page blank.
+ */
+.anim-pending [data-anim-hide],
+.anim-pending [data-hero-fade] {
+  opacity: 0;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --header-h: 4rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    overflow-x: clip;
+  }
+
+  /* Removes the ~300ms double-tap-to-zoom delay without disabling pinch. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgb(5 8 52 / 0.08);
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  img {
+    height: auto;
+  }
+}
+
+/* ── Card hover/press ─────────────────────────────────────────────────────
+ * Backs the `Interactive` wrapper (see components/durall/ui.tsx). Transform
+ * and opacity only, both compositor properties, with the travel supplied
+ * per instance as custom properties. Under reduced motion the movement is
+ * replaced by a plain opacity change rather than being removed outright, so
+ * the element still acknowledges the pointer.
+ */
+/* `translate` and `scale` are used as independent properties rather than as
+ * functions inside `transform`, and that is load-bearing: several of these
+ * cards are also the targets of the scrubbed GSAP reveal, which writes an
+ * inline `transform` matrix. A `transform` here would be overridden by it;
+ * independent properties compose with it instead, so the reveal and the
+ * hover can hold the same element at the same time. */
+.interactive {
+  translate: 0 0;
+  scale: 1;
+  transition:
+    translate 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease;
+}
+
+@media (hover: hover) {
+  .interactive:hover {
+    translate: 0 var(--lift, -3px);
+    scale: var(--scale, 1.02);
+  }
+}
+
+.interactive:active {
+  translate: 0 var(--lift, -3px);
+  scale: 0.995;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive {
+    transition: opacity 120ms ease;
+  }
+
+  .interactive:hover,
+  .interactive:active {
+    translate: 0 0;
+    scale: 1;
+    opacity: 0.85;
+  }
+}
+
+/* ── Responsive shells ────────────────────────────────────────────────────
+ * Fluid page gutters replacing the fixed Figma pixel insets so the layout
+ * scales with viewport width and browser zoom instead of overflowing.
+ */
+@utility shell {
+  width: 100%;
+  max-width: 120rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 3.75vw, 4.5rem);
+}
+
+/* Projects / Insights: 287px inset at 1920px.
+ *
+ * The inset is a Figma value authored at 1920. Expressed as plain `14.95vw`
+ * it stayed proportionally huge all the way down — 191px gutters at 1280 and
+ * 56px at 375, against `shell`'s 48px and 20px — so these sections never
+ * lined up with the rest of the page. The track below matches `shell` exactly
+ * up to 1600px, then ramps to the full 287px inset by 1920px, so the two
+ * containers only ever diverge where the design intends them to.
+ *
+ *   ≤1600px : 3.75vw          (identical to `shell`)
+ *   1600px  : 60px            (both tracks meet)
+ *   1920px  : 287px           (Figma inset)
+ */
+@utility shell-narrow {
+  width: 100%;
+  max-width: 120rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, max(3.75vw, 70.94vw - 67.18rem), 17.9375rem);
+}
+
