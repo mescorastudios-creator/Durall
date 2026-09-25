@@ -29,7 +29,10 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div className="relative bg-white font-body text-navy">
-      <SiteHeader variant="light" />
+      {/* Transparent over the photographic hero, solid once scrolled past it.
+          /about and /partners open the same way; the pages that open on a
+          white band pass variant="light" so the bar is never white on white. */}
+      <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
         <Hero />
         <Philosophy />

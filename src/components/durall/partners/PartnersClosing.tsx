@@ -3,13 +3,13 @@ import { CtaButton } from "../ui";
 
 export function PartnersClosing() {
   const headingRef = useSplitLines<HTMLHeadingElement>();
-  const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 26 });
+  const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
 
   return (
     <section id="demands" className="bg-white pb-[clamp(3.5rem,8vw,7.5rem)]">
       <div
         ref={ref}
-        className="shell-narrow grid grid-cols-1 items-center gap-[clamp(2rem,4vw,3.5rem)] lg:grid-cols-2"
+        className="shell-about grid grid-cols-1 items-center gap-[clamp(2rem,4vw,3.5rem)] lg:grid-cols-2"
       >
         <div className="min-w-0">
           <p
@@ -32,7 +32,7 @@ export function PartnersClosing() {
             and execution together.
           </p>
           <div data-reveal className="mt-[clamp(1.5rem,3vw,2.25rem)]">
-            <CtaButton href="/contact" variant="solid">
+            <CtaButton to="/contact" variant="solid">
               Talk to our team
             </CtaButton>
           </div>

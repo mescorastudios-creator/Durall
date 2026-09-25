@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { Link } from "@tanstack/react-router";
 import { useReveal, useClipReveal } from "@/lib/anim";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { ArrowRight } from "../ui";
 import { FEATURED, FEATURED_GALLERY } from "./data";
+import { PARIKRAMA_SLUG } from "../project/data";
+import { transition } from "@/lib/motion-tokens";
 
 const INTERVAL = 5000;
 
@@ -17,7 +20,7 @@ function AwardIcon() {
 
 export function FeaturedProject() {
   const reduced = useReducedMotion();
-  const panelRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 28, stagger: 0.09 });
+  const panelRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32, stagger: 0.08 });
   const mediaRef = useClipReveal<HTMLDivElement>();
 
   const [active, setActive] = useState(0);
@@ -119,16 +122,20 @@ export function FeaturedProject() {
             </div>
           </div>
 
-          <motion.a
-            data-reveal
-            href="#portfolio"
-            className="relative mt-[clamp(1.75rem,2.6vw,2.5rem)] inline-flex items-center gap-3 border-b border-accent-blue pb-1.5 font-display text-[clamp(0.75rem,0.9vw,1rem)] font-bold tracking-button text-accent-blue uppercase after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
-            whileHover={reduced ? { opacity: 0.75 } : { x: 3 }}
-            transition={{ type: "spring", stiffness: 300, damping: 22 }}
-          >
-            Explore Project
-            <ArrowRight className="h-4 w-4" />
-          </motion.a>
+          {/* The case study is a page of its own now; this used to point at
+           * the grid below it. */}
+          <div data-reveal className="mt-[clamp(1.75rem,2.6vw,2.5rem)]">
+            <Link
+              to="/projects/$slug"
+              params={{ slug: PARIKRAMA_SLUG }}
+              className="group relative inline-flex items-center gap-3 border-b border-accent-blue pb-1.5 font-display text-[clamp(0.75rem,0.9vw,1rem)] font-bold tracking-button text-accent-blue uppercase after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
+            >
+              Explore Project
+              <span className="hover-arrow inline-flex">
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </div>
         </div>
 
         <div
@@ -139,7 +146,10 @@ export function FeaturedProject() {
           onFocus={() => setPaused(true)}
           onBlur={() => setPaused(false)}
         >
-          <div className="relative aspect-[1153/721] w-full xl:h-full xl:aspect-auto">
+          <div
+            data-clip-inner
+            className="relative aspect-[1153/721] w-full xl:h-full xl:aspect-auto"
+          >
             <AnimatePresence initial={false} mode="sync">
               <motion.img
                 key={current.image.src}
@@ -150,7 +160,7 @@ export function FeaturedProject() {
                 initial={reduced ? { opacity: 1 } : { opacity: 0, scale: 1.04 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={reduced ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: reduced ? 0 : 1.1, ease: [0.16, 1, 0.3, 1] }}
+                transition={transition("cinematic", reduced)}
               />
             </AnimatePresence>
           </div>
@@ -163,7 +173,7 @@ export function FeaturedProject() {
               <motion.div
                 className="h-0.5 bg-white"
                 animate={{ width: `${((active + 1) / total) * 100}%` }}
-                transition={{ duration: reduced ? 0 : 0.6, ease: "easeOut" }}
+                transition={transition("medium", reduced)}
               />
             </div>
             {/* Pause used to be wired only to onMouseEnter/onFocus on the

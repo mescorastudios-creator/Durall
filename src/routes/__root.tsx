@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { SiteIntro } from "@/components/SiteIntro";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
 import appCss from "../styles.css?url";
@@ -37,7 +38,16 @@ const CRITICAL_FONTS = [
   "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
 ];
 
-/* Runs synchronously in <head>, before first paint. Marks the document as
+/* Runs synchronously in <head>, before first paint.
+ *
+ * On the first page load of a browser session it also adds `intro-pending`,
+ * which shows the SiteIntro curtain from the very first paint. Its own
+ * timeout is the safety net for a bundle that never arrives: the curtain is
+ * dropped at 4.5s regardless. SiteIntro clears that timer when it mounts and
+ * takes over. Once seen, sessionStorage keeps it from playing again until
+ * the reader opens the site afresh.
+ *
+ * Marks the document as
  * "entrance animations are about to run" so the CSS in styles.css can hide
  * the elements GSAP is going to animate in — but only when JavaScript is
  * actually running and the reader has not asked for reduced motion. The
@@ -47,7 +57,9 @@ const CRITICAL_FONTS = [
 const ANIM_BOOTSTRAP = `(function(){try{
 if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
 var d=document.documentElement;d.classList.add("anim-pending");
-setTimeout(function(){d.classList.remove("anim-pending")},2500);
+var intro=false;try{intro=sessionStorage.getItem("durall:intro")!=="seen"}catch(e){}
+if(intro){d.classList.add("intro-pending");window.__introSafety=setTimeout(function(){d.classList.remove("intro-pending")},4500)}
+setTimeout(function(){d.classList.remove("anim-pending")},intro?5000:2500);
 }catch(e){}})();`;
 
 function NotFoundComponent() {
@@ -183,6 +195,7 @@ function RootComponent() {
         Skip to Content
       </a>
       <SmoothScroll />
+      <SiteIntro />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>

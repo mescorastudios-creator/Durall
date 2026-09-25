@@ -1,4 +1,20 @@
-import type { PartnerMark, PracticeMark } from "./data";
+import type { Logo, PartnerMark, PracticeMark } from "./data";
+
+/** A company's own logo file, at its tuned height. */
+function OfficialLogo({ logo, name }: { logo: Logo; name: string }) {
+  return (
+    <img
+      src={logo.src}
+      width={logo.width}
+      height={logo.height}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      style={{ height: `${logo.rem}rem` }}
+      className="w-auto max-w-[11.5rem] object-contain"
+    />
+  );
+}
 
 function PlusGlyph({ className = "h-2 w-2" }: { className?: string }) {
   return (
@@ -9,7 +25,16 @@ function PlusGlyph({ className = "h-2 w-2" }: { className?: string }) {
 }
 
 /** Typographic partner wordmarks, drawn with the site's own type and palette. */
-export function PartnerLogo({ mark, name }: { mark: PartnerMark; name: string }) {
+export function PartnerLogo({
+  mark,
+  name,
+  logo,
+}: {
+  mark: PartnerMark;
+  name: string;
+  logo?: Logo | undefined;
+}) {
+  if (logo) return <OfficialLogo logo={logo} name={name} />;
   switch (mark) {
     case "jofebar":
       return (
@@ -111,7 +136,28 @@ export function PartnerLogo({ mark, name }: { mark: PartnerMark; name: string })
 }
 
 /** Typographic practice wordmarks. */
-export function PracticeLogo({ mark, name }: { mark: PracticeMark; name: string }) {
+export function PracticeLogo({
+  mark,
+  name,
+  logo,
+}: {
+  mark: PracticeMark;
+  name: string;
+  logo?: Logo | undefined;
+}) {
+  // Nomadic Resorts publishes its emblem without the name, so the name is set
+  // beside it rather than leaving an unlabelled circle in the grid.
+  if (logo && mark === "diamond") {
+    return (
+      <span className="inline-flex items-center gap-2.5">
+        <OfficialLogo logo={logo} name="" />
+        <span className="font-display text-[0.8125rem] font-bold tracking-[0.06em] text-navy uppercase">
+          {name}
+        </span>
+      </span>
+    );
+  }
+  if (logo) return <OfficialLogo logo={logo} name={name} />;
   switch (mark) {
     case "wow":
       return (

@@ -64,6 +64,24 @@
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 700;
+
+  /* ── Motion ───────────────────────────────────────────────────────────
+   * Two curves for the whole site, and they are deliberately the CSS twins
+   * of the two GSAP eases in src/lib/anim.ts, so a hover and the entrance
+   * it follows are the same gesture:
+   *
+   *   --ease-entrance  ==  gsap "power4.out"   (quint-out)
+   *   --ease-micro     ==  gsap "power3.out"   (cubic-out)
+   *
+   * Scrubbed motion uses neither — scroll position is its clock, so those
+   * tweens are linear and the shaping comes from the stagger instead.
+   *
+   * Before this there were ten curves on the landing page alone (power3.out,
+   * expo.out, power4.out, two hand-written cubic-beziers, `ease-out`, the
+   * browser default, motion's "easeOut" and a spring), which is why sections
+   * read as separate pieces of work rather than one system. */
+  --ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-micro: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 @theme inline {
@@ -117,6 +135,14 @@
 :root {
   --header-h: 9.5rem;
   --radius: 0.625rem;
+
+  /* Four durations, used by both CSS and GSAP (see DUR in src/lib/anim.ts).
+   * The page previously mixed 120/200/220/300/900ms in CSS against
+   * 0.5/0.9/1.1/1.15/2.2/2.6s in GSAP, with no relationship between them. */
+  --dur-micro: 180ms;
+  --dur-short: 320ms;
+  --dur-medium: 560ms;
+  --dur-long: 900ms;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -250,26 +276,26 @@
   }
 }
 
-/* ── Card hover/press ─────────────────────────────────────────────────────
- * Backs the `Interactive` wrapper (see components/durall/ui.tsx). Transform
- * and opacity only, both compositor properties, with the travel supplied
- * per instance as custom properties. Under reduced motion the movement is
- * replaced by a plain opacity change rather than being removed outright, so
- * the element still acknowledges the pointer.
- */
-/* `translate` and `scale` are used as independent properties rather than as
+/* ── Micro-interaction layer ──────────────────────────────────────────────
+ * Every hover, press and focus movement on the site resolves to the two
+ * tokens above. All of it is `translate` / `scale` / `opacity` — compositor
+ * properties — and every transition lists its properties explicitly, per
+ * docs/web-interface-guidelines.md.
+ *
+ * `translate` and `scale` are used as independent properties rather than as
  * functions inside `transform`, and that is load-bearing: several of these
- * cards are also the targets of the scrubbed GSAP reveal, which writes an
+ * elements are also targets of the scrubbed GSAP reveal, which writes an
  * inline `transform` matrix. A `transform` here would be overridden by it;
  * independent properties compose with it instead, so the reveal and the
- * hover can hold the same element at the same time. */
+ * hover can hold the same element at the same time.
+ */
 .interactive {
   translate: 0 0;
   scale: 1;
   transition:
-    translate 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    scale 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 220ms ease;
+    translate var(--dur-short) var(--ease-micro),
+    scale var(--dur-short) var(--ease-micro),
+    opacity var(--dur-short) var(--ease-micro);
 }
 
 @media (hover: hover) {
@@ -280,20 +306,249 @@
 }
 
 .interactive:active {
-  translate: 0 var(--lift, -3px);
+  translate: 0 calc(var(--lift, -3px) * 0.4);
   scale: 0.995;
+  transition-duration: var(--dur-micro);
 }
 
+/* The photograph inside a card, drifting in as the card lifts. Slower than
+ * the lift so the two read as one gesture with depth rather than as two
+ * things starting together — 900ms/ease-out before, which was long enough
+ * to still be moving after the pointer had left. */
+.media-zoom {
+  scale: 1;
+  transition: scale var(--dur-long) var(--ease-micro);
+}
+
+@media (hover: hover) {
+  .group:hover .media-zoom {
+    scale: var(--zoom, 1.04);
+  }
+}
+
+/* Links whose arrow travels rather than the whole label. */
+.hover-arrow {
+  translate: 0 0;
+  transition: translate var(--dur-short) var(--ease-micro);
+}
+
+@media (hover: hover) {
+  .group:hover .hover-arrow {
+    translate: var(--arrow-x, 0.25rem) 0;
+  }
+}
+
+/* Anything that lifts on hover and settles on press: buttons, nav items,
+ * footer links. `--lift-y` and `--lift-x` pick the axis per instance. */
+.hover-lift {
+  translate: 0 0;
+  transition:
+    translate var(--dur-short) var(--ease-micro),
+    color var(--dur-short) var(--ease-micro),
+    background-color var(--dur-short) var(--ease-micro),
+    border-color var(--dur-short) var(--ease-micro),
+    opacity var(--dur-short) var(--ease-micro);
+}
+
+@media (hover: hover) {
+  .hover-lift:hover {
+    translate: var(--lift-x, 0) var(--lift-y, -2px);
+  }
+}
+
+.hover-lift:active {
+  translate: 0 0;
+  transition-duration: var(--dur-micro);
+}
+
+/* Under reduced motion nothing travels, but every control still has to
+ * acknowledge the pointer — so the movement is replaced by an opacity
+ * change rather than removed outright. */
 @media (prefers-reduced-motion: reduce) {
-  .interactive {
-    transition: opacity 120ms ease;
+  .interactive,
+  .media-zoom,
+  .hover-arrow,
+  .hover-lift {
+    transition:
+      opacity var(--dur-micro) ease,
+      color var(--dur-micro) ease,
+      background-color var(--dur-micro) ease,
+      border-color var(--dur-micro) ease;
+  }
+
+  .interactive:hover,
+  .interactive:active,
+  .hover-lift:hover,
+  .hover-lift:active,
+  .group:hover .hover-arrow,
+  .group:hover .media-zoom {
+    translate: 0 0;
+    scale: 1;
   }
 
   .interactive:hover,
   .interactive:active {
-    translate: 0 0;
-    scale: 1;
     opacity: 0.85;
+  }
+}
+
+/* ── Site intro ───────────────────────────────────────────────────────────
+ * The loading half of the first-visit opening, in CSS so it starts on the
+ * first paint rather than when the JavaScript bundle arrives. SiteIntro.tsx
+ * runs the exit. `intro-pending` is set by the pre-paint script in
+ * __root.tsx, once per session and never under reduced motion.
+ *
+ * `stroke-dashoffset` is a paint property, against the transform-and-opacity
+ * rule — accepted here because it is one 24-unit SVG drawn once, on a screen
+ * with nothing else on it.
+ */
+.site-intro {
+  display: none;
+}
+
+html.intro-pending {
+  overflow: hidden;
+}
+
+html.intro-pending .site-intro {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+/* The bar arrives with the page, not before it. */
+html.intro-pending [data-site-header] {
+  opacity: 0;
+}
+
+.intro-mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: intro-draw 900ms var(--ease-entrance) 120ms forwards;
+}
+
+.intro-word {
+  display: inline-flex;
+  overflow: hidden;
+  /* Room for descending tracking so the last glyph is not clipped. */
+  padding-inline-end: 0.3125rem;
+}
+
+.intro-char {
+  display: inline-block;
+  translate: 0 110%;
+  animation: intro-rise 900ms var(--ease-entrance) forwards;
+  animation-delay: calc(320ms + var(--i, 0) * 32ms);
+}
+
+.intro-bar {
+  transform-origin: left center;
+  scale: 0 1;
+  animation: intro-fill 1300ms var(--ease-micro) 480ms forwards;
+}
+
+/* The meeting stiles of the two panels: they draw in as the doors are about
+ * to part, then travel outward with them. */
+.intro-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(255 255 255 / 0.22);
+  scale: 1 0;
+}
+
+@keyframes intro-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-rise {
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes intro-fill {
+  to {
+    scale: 0.92 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.intro-pending .site-intro {
+    display: none;
+  }
+
+  html.intro-pending {
+    overflow: auto;
+  }
+}
+
+/* ── Site header and menu ─────────────────────────────────────────────────
+ * The bar is fixed and direction-aware: it slides out of the way on the way
+ * down and returns the moment the reader scrolls up. Transform only, so the
+ * slide never touches layout, and the colour change is a separate, shorter
+ * transition so the background settles before the movement finishes.
+ */
+[data-site-header] {
+  translate: 0 0;
+  transition:
+    opacity var(--dur-long) var(--ease-entrance),
+    translate var(--dur-medium) var(--ease-entrance),
+    background-color var(--dur-short) var(--ease-micro),
+    border-color var(--dur-short) var(--ease-micro),
+    backdrop-filter var(--dur-short) var(--ease-micro);
+}
+
+[data-site-header][data-hidden="true"] {
+  translate: 0 -100%;
+}
+
+/* Items cascade in behind the panel rather than arriving with it. The delay
+ * is per item, computed from its index, and the whole run is over in well
+ * under half a second — long enough to read as deliberate, short enough that
+ * the second tap is never waiting on it. */
+[data-site-menu][data-open="true"] [data-menu-item] {
+  animation: menu-item-in var(--dur-medium) var(--ease-entrance) both;
+  animation-delay: calc(var(--menu-index, 0) * 40ms + 60ms);
+}
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* A fixed header covers whatever a hash link lands on unless the target
+ * reserves room for it. `--header-h` is measured and republished by
+ * SiteHeader, so this stays correct however the bar resolves. */
+:where(section[id], [id][data-anchor]) {
+  scroll-margin-top: calc(var(--header-h) + 1rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The bar keeps its colour change and stops moving: a header that slides
+   * away is motion, and it is also the only navigation on the page. */
+  [data-site-header] {
+    transition:
+      background-color var(--dur-micro) ease,
+      border-color var(--dur-micro) ease;
+  }
+
+  [data-site-header][data-hidden="true"] {
+    translate: 0 0;
+  }
+
+  [data-site-menu][data-open="true"] [data-menu-item] {
+    animation: none;
   }
 }
 
@@ -321,6 +576,16 @@
  *   1600px  : 60px            (both tracks meet)
  *   1920px  : 287px           (Figma inset)
  */
+/* The About page's column, as in its design: 192px in from each side at
+ * 1440, the same 287px as shell-narrow from 1920 up, and never tighter
+ * than the standard shell on small screens. */
+@utility shell-about {
+  width: 100%;
+  max-width: 120rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, max(3.75vw, 26.6vw - 11.95rem), 17.9375rem);
+}
+
 @utility shell-narrow {
   width: 100%;
   max-width: 120rem;
@@ -328,3 +593,343 @@
   padding-inline: clamp(1.25rem, max(3.75vw, 70.94vw - 67.18rem), 17.9375rem);
 }
 
+/* ── Project detail page ──────────────────────────────────────────────────
+ * Motion taken from the reference case study (see project/motion.ts). Every
+ * transition here rides its landing curve, `cubic-bezier(0.17, 0.84, 0.44, 1)`.
+ */
+:root {
+  --ease-glide: cubic-bezier(0.17, 0.84, 0.44, 1);
+}
+
+/* Held under the pre-paint class like the rest of the site's entrances, so
+ * a photograph never shows before its shutter is in place. */
+.anim-pending [data-plate-cover] {
+  transform: scaleY(1) !important;
+}
+
+/* A line's mask is its own box, so at a tight leading it clips descenders
+ * (and accents) while the line is rising — "journey" reads "iourneu" for a
+ * second. The mask is padded past the glyphs and the padding is taken back
+ * with a negative margin, so the reveal clears them and the layout doesn't
+ * move. The reference pads its masks the same way. */
+/* Every line mask leaves room for ascents and descenders: `split-line` is
+ * useSplitLines', which clipped "help you build" on the home contact. */
+.reveal-line,
+.project-hero-line,
+.split-line {
+  padding-block: 0.1em 0.16em;
+  margin-block: -0.1em -0.16em;
+}
+
+/* Gallery: one list, three arrangements. The same elements are laid out
+ * differently per mode, which is what lets each photograph fly from its old
+ * place to its new one. */
+[data-gallery] {
+  --gallery-gap: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+[data-gallery-list] {
+  position: relative;
+}
+
+[data-gallery-list] > [data-plate] {
+  display: block;
+}
+
+[data-gallery-list][data-mode="detail"] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gallery-gap);
+}
+
+[data-gallery-list][data-mode="detail"] > [data-plate] {
+  grid-column: var(--phone-span);
+  aspect-ratio: var(--phone-ar);
+}
+
+@media (min-width: 48rem) {
+  /* Rows track the width, capped where the shell stops growing, so the
+   * scatter keeps its proportions from a tablet to an ultrawide. */
+  [data-gallery-list][data-mode="detail"] {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: clamp(2rem, 4.4vw, 5.3rem);
+  }
+
+  [data-gallery-list][data-mode="detail"] > [data-plate] {
+    grid-column: var(--col);
+    grid-row: var(--row);
+    aspect-ratio: auto;
+  }
+}
+
+[data-gallery-list][data-mode="masonry"] {
+  columns: 2;
+  column-gap: var(--gallery-gap);
+}
+
+@media (min-width: 64rem) {
+  [data-gallery-list][data-mode="masonry"] {
+    columns: 3;
+  }
+}
+
+[data-gallery-list][data-mode="masonry"] > [data-plate] {
+  break-inside: avoid;
+  margin-bottom: var(--gallery-gap);
+  aspect-ratio: var(--ar);
+}
+
+[data-gallery-list][data-mode="slider"] {
+  display: flex;
+  gap: var(--gallery-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+[data-gallery-list][data-mode="slider"]::-webkit-scrollbar {
+  display: none;
+}
+
+[data-gallery-list][data-mode="slider"] > [data-plate] {
+  flex: none;
+  height: clamp(16rem, 62svh, 36rem);
+  aspect-ratio: var(--ar);
+}
+
+[data-gallery-list][data-mode="slider"] [data-plate-frame] {
+  cursor: grab;
+}
+
+[data-gallery-list][data-dragging] [data-plate-frame] {
+  cursor: grabbing;
+}
+
+/* In flight, nothing may clip a photograph on its way somewhere else. */
+[data-gallery-list][data-flipping],
+[data-viewer-rail][data-flying] {
+  overflow: visible;
+}
+
+/* While the viewer is open its copies stand in for the plates. */
+[data-gallery-list][data-viewing] [data-plate-frame] {
+  visibility: hidden;
+}
+
+/* The layout pill slides up from below the fold while the gallery is on
+ * screen and back down when it isn't. */
+.gallery-pill {
+  translate: 0 calc(100% + 2.5rem);
+  transition: translate 0.6s var(--ease-glide);
+}
+
+.gallery-pill[data-show="true"] {
+  translate: 0 0;
+}
+
+/* Viewer: the stage frame is the largest box of the photograph's own
+ * proportions that fits the stage, done with container units so it needs
+ * no measuring and follows every resize. */
+.viewer-frame {
+  width: min(100cqw, calc(100cqh * var(--ar)));
+  aspect-ratio: var(--ar);
+}
+
+/* 3.5rem tall on phones keeps even the portrait thumbnails 44px wide. */
+.viewer-thumb {
+  height: 3.5rem;
+  aspect-ratio: var(--ar);
+  opacity: 0.45;
+}
+
+.viewer-thumb[aria-current="true"] {
+  opacity: 1;
+  outline: 1px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+@media (min-width: 48rem) {
+  .viewer-thumb {
+    width: 3.5rem;
+    height: auto;
+  }
+}
+
+/* A thumbnail in flight is a photograph on its way to or from the page: it
+ * travels at full strength and without the rail's outlines, which the
+ * flight's scale would otherwise blow up into thick frames. It dims to its
+ * rail state only once it has landed. */
+[data-viewer-rail][data-flying] .viewer-thumb {
+  opacity: 1;
+  outline: none;
+}
+
+/* Next project: on hover each line of the title slides up out of its mask
+ * as an identical copy rises in behind it. */
+.roll-line {
+  translate: 0 0;
+  transition: translate 0.8s var(--ease-glide);
+  transition-delay: var(--roll-delay, 0ms);
+}
+
+.roll-line--copy {
+  translate: 0 105%;
+}
+
+@media (hover: hover) {
+  .group:hover .roll-line {
+    translate: 0 -105%;
+  }
+
+  .group:hover .roll-line--copy {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-pill,
+  .roll-line {
+    transition: none;
+  }
+
+  .group:hover .roll-line {
+    translate: 0 0;
+  }
+
+  .group:hover .roll-line--copy {
+    translate: 0 105%;
+  }
+}
+
+/* ── Contact: office map ──────────────────────────────────────────────────
+ * The frame shows a faint drafting grid until the map has loaded (and for
+ * good, if it never can), so there is never an empty grey box. */
+.map-grid {
+  background-image:
+    linear-gradient(to right, rgb(5 8 52 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(5 8 52 / 0.05) 1px, transparent 1px);
+  background-size: 2.5rem 2.5rem;
+}
+
+/* The pin. MapLibre positions the marker element with `transform` and sets
+ * its opacity, so the drop-in animates an inner element instead. */
+.office-pin {
+  pointer-events: none;
+}
+
+.office-pin__inner {
+  display: grid;
+  justify-items: center;
+  opacity: 0;
+  translate: 0 -1.5rem;
+  transition:
+    opacity 0.5s var(--ease-micro),
+    translate 0.9s var(--ease-glide);
+}
+
+.office-pin[data-landed="true"] .office-pin__inner {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.office-pin__chip {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+  border-radius: 999px;
+  background: var(--color-navy);
+  color: #fff;
+  box-shadow: 0 12px 30px rgb(5 8 52 / 0.3);
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.office-pin__mark {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-navy);
+}
+
+.office-pin__mark svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.office-pin__stem {
+  width: 1px;
+  height: 1.6rem;
+  background: var(--color-navy);
+}
+
+.office-pin__dot {
+  position: relative;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--color-navy);
+  box-shadow: 0 0 0 3px #fff;
+}
+
+.office-pin__pulse {
+  position: absolute;
+  inset: -0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-accent-blue);
+  opacity: 0;
+}
+
+.office-pin[data-landed="true"] .office-pin__pulse {
+  animation: office-pulse 2.6s var(--ease-micro) 0.4s infinite;
+}
+
+@keyframes office-pulse {
+  from {
+    opacity: 0.8;
+    scale: 0.35;
+  }
+  to {
+    opacity: 0;
+    scale: 1.6;
+  }
+}
+
+/* MapLibre's own chrome, brought into the site's type and colour. Scoped
+ * under the frame so it outranks the library stylesheet, which loads later. */
+[data-office-map] .maplibregl-cooperative-gesture-screen {
+  background: rgb(5 8 52 / 0.55);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 1.5rem;
+}
+
+[data-office-map] .maplibregl-ctrl-attrib {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  background: rgb(255 255 255 / 0.85);
+}
+
+[data-office-map] .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+  margin: 0 0 0.75rem 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .office-pin__inner {
+    transition: none;
+  }
+
+  .office-pin[data-landed="true"] .office-pin__pulse {
+    animation: none;
+  }
+}

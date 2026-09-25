@@ -39,16 +39,16 @@ import projectBanyan from "./project-banyan.webp";
 import projectFeatured640 from "./project-featured-640w.webp";
 import projectFeatured from "./project-featured.webp";
 
-import thumbParikrama480 from "./thumb-parikrama-480w.webp";
-import thumbParikrama from "./thumb-parikrama.webp";
-import thumbPatina480 from "./thumb-patina-480w.webp";
-import thumbPatina from "./thumb-patina.webp";
-import thumbChiltron480 from "./thumb-chiltron-480w.webp";
-import thumbChiltron from "./thumb-chiltron.webp";
-import thumbJuhu480 from "./thumb-juhu-480w.webp";
-import thumbJuhu from "./thumb-juhu.webp";
-import thumbRitz480 from "./thumb-ritz-480w.webp";
-import thumbRitz from "./thumb-ritz.webp";
+import cardParikrama480 from "./card-parikrama-480w.webp";
+import cardParikrama from "./card-parikrama.webp";
+import cardPatina480 from "./card-patina-480w.webp";
+import cardPatina from "./card-patina.webp";
+import cardChiltron480 from "./card-chiltron-480w.webp";
+import cardChiltron from "./card-chiltron.webp";
+import cardJuhu480 from "./card-juhu-480w.webp";
+import cardJuhu from "./card-juhu.webp";
+import cardRitz480 from "./card-ritz-480w.webp";
+import cardRitz from "./card-ritz.webp";
 
 import stageDiscover from "./stage-discover.webp";
 import stageEngineer from "./stage-engineer.webp";
@@ -66,7 +66,35 @@ import aboutDurallMark from "./about-durall-mark.webp";
 
 import partnersVilla from "./partners-villa.webp";
 import partnersWorldMap from "./partners-world-map.webp";
-import contactFrame from "./contact-frame-2.webp";
+import contactGlass1280 from "./contact-glass-1280w.webp";
+import contactGlass from "./contact-glass.webp";
+
+import parikramaPalms960 from "./parikrama/palms-960w.webp";
+import parikramaPalms1440 from "./parikrama/palms-1440w.webp";
+import parikramaPalms from "./parikrama/palms-1674w.webp";
+import parikramaPavilion800 from "./parikrama/pavilion-800w.webp";
+import parikramaPavilion from "./parikrama/pavilion-1674w.webp";
+import parikramaVeranda560 from "./parikrama/veranda-560w.webp";
+import parikramaVeranda from "./parikrama/veranda-789w.webp";
+import parikramaGarden640 from "./parikrama/garden-640w.webp";
+import parikramaGarden from "./parikrama/garden-1010w.webp";
+import parikramaGrove800 from "./parikrama/grove-800w.webp";
+import parikramaGrove from "./parikrama/grove-1232w.webp";
+import parikramaBedroom800 from "./parikrama/bedroom-800w.webp";
+import parikramaBedroom from "./parikrama/bedroom-1336w.webp";
+import parikramaSteps560 from "./parikrama/steps-560w.webp";
+import parikramaSteps from "./parikrama/steps-886w.webp";
+import parikramaDining640 from "./parikrama/dining-640w.webp";
+import parikramaDining from "./parikrama/dining-1010w.webp";
+import parikramaVerandaOpen640 from "./parikrama/veranda-open-640w.webp";
+import parikramaVerandaOpen from "./parikrama/veranda-open-992w.webp";
+import parikramaPavilionOpen640 from "./parikrama/pavilion-open-640w.webp";
+import parikramaPavilionOpen from "./parikrama/pavilion-open-1136w.webp";
+import parikramaBedroomEvening640 from "./parikrama/bedroom-evening-640w.webp";
+import parikramaBedroomEvening from "./parikrama/bedroom-evening-1208w.webp";
+import sentosaLibrary480 from "./parikrama/sentosa-library-480w.webp";
+import sentosaLibrary from "./parikrama/sentosa-library-768w.webp";
+import projectRitz from "./project-ritz.webp";
 
 export type ImageAsset = {
   src: string;
@@ -159,40 +187,43 @@ export const IMAGES = {
     721,
   ),
 
-  thumbParikrama: set(
+  /* The project and article photographs, cut from the thumb-*.webp exports
+   * to the photograph alone: the exports carry a drop shadow baked into
+   * their edges. */
+  cardParikrama: set(
     [
-      [thumbParikrama480, 480],
-      [thumbParikrama, 910],
+      [cardParikrama480, 480],
+      [cardParikrama, 780],
     ],
-    910,
+    780,
   ),
-  thumbPatina: set(
+  cardPatina: set(
     [
-      [thumbPatina480, 480],
-      [thumbPatina, 910],
+      [cardPatina480, 480],
+      [cardPatina, 780],
     ],
-    910,
+    780,
   ),
-  thumbChiltron: set(
+  cardChiltron: set(
     [
-      [thumbChiltron480, 480],
-      [thumbChiltron, 934],
+      [cardChiltron480, 480],
+      [cardChiltron, 804],
     ],
-    910,
+    780,
   ),
-  thumbJuhu: set(
+  cardJuhu: set(
     [
-      [thumbJuhu480, 480],
-      [thumbJuhu, 910],
+      [cardJuhu480, 480],
+      [cardJuhu, 780],
     ],
-    910,
+    780,
   ),
-  thumbRitz: set(
+  cardRitz: set(
     [
-      [thumbRitz480, 480],
-      [thumbRitz, 922],
+      [cardRitz480, 480],
+      [cardRitz, 792],
     ],
-    910,
+    780,
   ),
 
   stageDiscover: one(stageDiscover, 760, 967),
@@ -211,5 +242,106 @@ export const IMAGES = {
 
   partnersVilla: one(partnersVilla, 1365, 648),
   partnersWorldMap: one(partnersWorldMap, 1400, 474),
-  contactFrame: one(contactFrame, 1920, 826),
+  /* contact-frame-2.png with the blurred copy of the form that was painted
+   * into its glass taken out. */
+  contactGlass: set(
+    [
+      [contactGlass1280, 1280],
+      [contactGlass, 1920],
+    ],
+    826,
+  ),
+
+  /* Parikrama — Murud House, the first project detail page. Brought over from
+   * its own Lovable project: the originals were 1px-feathered PNG exports (one
+   * with a 183px transparent band across the top), so each was cropped to its
+   * opaque area before encoding. */
+  parikramaPalms: set(
+    [
+      [parikramaPalms960, 960],
+      [parikramaPalms1440, 1440],
+      [parikramaPalms, 1674],
+    ],
+    942,
+  ),
+  parikramaPavilion: set(
+    [
+      [parikramaPavilion800, 800],
+      [parikramaPavilion, 1674],
+    ],
+    1116,
+  ),
+  parikramaVeranda: set(
+    [
+      [parikramaVeranda560, 560],
+      [parikramaVeranda, 789],
+    ],
+    986,
+  ),
+  parikramaGarden: set(
+    [
+      [parikramaGarden640, 640],
+      [parikramaGarden, 1010],
+    ],
+    1263,
+  ),
+  parikramaGrove: set(
+    [
+      [parikramaGrove800, 800],
+      [parikramaGrove, 1232],
+    ],
+    821,
+  ),
+  parikramaBedroom: set(
+    [
+      [parikramaBedroom800, 800],
+      [parikramaBedroom, 1336],
+    ],
+    836,
+  ),
+  parikramaSteps: set(
+    [
+      [parikramaSteps560, 560],
+      [parikramaSteps, 886],
+    ],
+    886,
+  ),
+  parikramaDining: set(
+    [
+      [parikramaDining640, 640],
+      [parikramaDining, 1010],
+    ],
+    1010,
+  ),
+  parikramaVerandaOpen: set(
+    [
+      [parikramaVerandaOpen640, 640],
+      [parikramaVerandaOpen, 992],
+    ],
+    1057,
+  ),
+  parikramaPavilionOpen: set(
+    [
+      [parikramaPavilionOpen640, 640],
+      [parikramaPavilionOpen, 1136],
+    ],
+    852,
+  ),
+  parikramaBedroomEvening: set(
+    [
+      [parikramaBedroomEvening640, 640],
+      [parikramaBedroomEvening, 1208],
+    ],
+    824,
+  ),
+  /* Cut from inside thumb-ritz's feathered border (the thumbnail is a
+   * rounded, faded export); the only photograph of the project on file. */
+  projectRitz: one(projectRitz, 794, 782),
+  sentosaLibrary: set(
+    [
+      [sentosaLibrary480, 480],
+      [sentosaLibrary, 768],
+    ],
+    473,
+  ),
 } as const satisfies Record<string, ImageAsset>;

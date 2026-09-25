@@ -2,19 +2,19 @@ import { IMAGES } from "@/assets/images";
 import { useClipReveal, useParallax, useReveal, useSplitLines } from "@/lib/anim";
 
 export function MeetsEngineering() {
-  const copyRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 28 });
-  const frameRef = useReveal<HTMLDivElement>({ y: 48, duration: 1.1 });
+  const copyRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
+  const frameRef = useReveal<HTMLDivElement>({ y: 56, duration: 0.9 });
   const headingRef = useSplitLines<HTMLHeadingElement>();
   const clipRef = useClipReveal<HTMLDivElement>();
   const imageRef = useParallax<HTMLImageElement>(8);
 
   return (
-    <section className="bg-white py-[clamp(4rem,8vw,9rem)]">
-      <div className="shell grid grid-cols-1 items-center gap-[clamp(2.5rem,4vw,3rem)] xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)]">
+    <section className="bg-white pt-[clamp(4rem,8vw,9rem)] pb-[clamp(3rem,6vw,5.5rem)]">
+      <div className="shell-about grid grid-cols-1 items-center gap-[clamp(2.5rem,4vw,3rem)] lg:grid-cols-[minmax(0,0.63fr)_minmax(0,1fr)]">
         <div ref={copyRef} className="min-w-0">
           <h2
             ref={headingRef}
-            className="font-display text-[clamp(2rem,3.5vw,3.5rem)] leading-[1.11] font-medium tracking-tight text-balance text-navy"
+            className="font-display text-[clamp(2rem,3vw,3.5rem)] leading-[1.11] font-medium tracking-tight text-balance text-navy"
           >
             Where architecture meets engineering.
           </h2>
@@ -44,17 +44,19 @@ export function MeetsEngineering() {
         <div ref={frameRef} className="min-w-0">
           <div
             ref={clipRef}
-            className="relative aspect-[820/480] w-full overflow-hidden rounded-3xl"
+            className="relative aspect-[820/480] w-full overflow-hidden"
           >
-            <img
-              ref={imageRef}
-              {...IMAGES.aboutLake}
-              alt="An infinity terrace framed by Durall sliding systems above the water"
-              sizes="(min-width: 80rem) 58vw, 100vw"
-              loading="lazy"
-              decoding="async"
-              className="h-[110%] w-full object-cover"
-            />
+            <div data-clip-inner className="h-full w-full">
+              <img
+                ref={imageRef}
+                {...IMAGES.aboutLake}
+                alt="An infinity terrace framed by Durall sliding systems above the water"
+                sizes="(min-width: 64rem) 45vw, 100vw"
+                loading="lazy"
+                decoding="async"
+                className="h-[110%] w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>

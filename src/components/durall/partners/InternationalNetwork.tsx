@@ -6,16 +6,16 @@ import { PartnerLogo } from "./marks";
 
 export function InternationalNetwork() {
   const headingRef = useSplitLines<HTMLHeadingElement>();
-  const introRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 24 });
-  const gridRef = useReveal<HTMLUListElement>({ selector: "[data-cell]", y: 28, stagger: 0.06 });
-  const quoteRef = useReveal<HTMLDivElement>({ y: 24 });
+  const introRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 16 });
+  const gridRef = useReveal<HTMLUListElement>({ selector: "[data-cell]", y: 32, stagger: 0.08 });
+  const quoteRef = useReveal<HTMLDivElement>({ y: 16 });
 
   return (
     <section
       id="international-systems"
       className="relative overflow-hidden bg-white py-[clamp(3.5rem,8vw,7.5rem)]"
     >
-      <div ref={introRef} className="shell-narrow">
+      <div ref={introRef} className="shell-about">
         <p
           data-reveal
           className="flex items-center gap-3 font-display text-[clamp(0.625rem,0.72vw,0.6875rem)] font-bold tracking-eyebrow text-accent-blue uppercase"
@@ -52,7 +52,7 @@ export function InternationalNetwork() {
         />
         <ul
           ref={gridRef}
-          className="shell-narrow relative grid grid-cols-1 gap-y-[clamp(2rem,4vw,3rem)] sm:grid-cols-2 lg:grid-cols-4"
+          className="shell-about relative grid grid-cols-1 gap-y-[clamp(2rem,4vw,3rem)] sm:grid-cols-2 lg:grid-cols-4"
         >
           {PARTNERS.map((partner) => (
             <li key={partner.name} data-cell className="min-w-0">
@@ -62,7 +62,7 @@ export function InternationalNetwork() {
                 className="flex min-w-0 flex-col items-center px-[clamp(0.75rem,1.5vw,2rem)] text-center"
               >
                 <span className="flex min-h-[clamp(2.75rem,4vw,3.5rem)] items-center justify-center">
-                  <PartnerLogo mark={partner.mark} name={partner.name} />
+                  <PartnerLogo mark={partner.mark} name={partner.name} logo={partner.logo} />
                 </span>
                 <span className="mt-[clamp(1rem,2vw,1.75rem)] font-body text-xs font-medium text-slate">
                   {partner.country}
@@ -80,7 +80,7 @@ export function InternationalNetwork() {
         </ul>
       </div>
 
-      <div ref={quoteRef} className="shell-narrow relative mt-[clamp(2.5rem,5vw,4.5rem)]">
+      <div ref={quoteRef} className="shell-about relative mt-[clamp(2.5rem,5vw,4.5rem)]">
         <div className="flex items-stretch gap-[clamp(1rem,2vw,1.75rem)]">
           <svg
             viewBox="0 0 33 112"

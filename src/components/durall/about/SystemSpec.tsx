@@ -9,25 +9,27 @@ const METRICS = [
 ];
 
 export function SystemSpec() {
-  const wrapRef = useReveal<HTMLDivElement>({ y: 36, duration: 1 });
+  const wrapRef = useReveal<HTMLDivElement>({ y: 32, duration: 0.9 });
 
   return (
     <section className="bg-white pt-[clamp(2.5rem,5vw,4.5rem)]">
-      <div ref={wrapRef} className="shell">
+      <div ref={wrapRef} className="shell-about">
         <figure className="m-0">
-          <div className="grid grid-cols-1 items-center gap-6 overflow-hidden rounded-3xl border border-navy-14 p-6 md:grid-cols-2 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,1.1fr)]">
-            <div className="relative min-w-0">
+          {/* The profile photograph runs to the card's edge; the other three
+              cells carry their own padding. */}
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-navy-14 md:grid-cols-2 xl:grid-cols-[minmax(0,0.2fr)_minmax(0,0.16fr)_minmax(0,0.265fr)_minmax(0,0.375fr)]">
+            <div className="relative min-w-0 bg-paper">
               <img
                 {...IMAGES.aboutProfile}
                 alt="Cutaway of a Durall aluminium profile"
                 loading="lazy"
                 decoding="async"
-                className="w-full object-contain"
+                className="h-full w-full object-cover"
               />
             </div>
 
-            <div className="min-w-0">
-              <p className="flex items-baseline gap-1.5 font-display text-[clamp(2.25rem,3.4vw,3rem)] leading-none font-medium text-navy">
+            <div className="flex min-w-0 flex-col justify-center p-6 xl:px-[clamp(1rem,1.3vw,1.5rem)]">
+              <p className="flex items-baseline gap-1.5 font-display text-[clamp(2.25rem,3vw,3rem)] leading-none font-medium text-navy">
                 16
                 <span className="font-display text-sm font-bold text-navy">MM</span>
               </p>
@@ -39,7 +41,7 @@ export function SystemSpec() {
               </p>
             </div>
 
-            <div className="min-w-0">
+            <div className="flex min-w-0 items-center border-navy-14 p-4 xl:border-l xl:p-0">
               <img
                 {...IMAGES.aboutSectionDrawing}
                 alt="Technical section drawing of the glazing system"
@@ -49,7 +51,7 @@ export function SystemSpec() {
               />
             </div>
 
-            <dl className="min-w-0 xl:border-l xl:border-navy-14 xl:pl-8">
+            <dl className="flex min-w-0 flex-col justify-center p-6 xl:my-6 xl:border-l xl:border-navy-14 xl:py-0 xl:pr-[clamp(1.5rem,2.5vw,2.5rem)] xl:pl-[clamp(1.5rem,2vw,2rem)]">
               {METRICS.map(({ icon: Icon, label, value }, index) => (
                 <div
                   key={label}

@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 
 /* Every destination is a router Link with an explicit route.
@@ -6,9 +7,13 @@ import { Link } from "@tanstack/react-router";
  * whatever page you happen to be on — and /partners has no #contact section
  * at all, so Careers, LinkedIn, Instagram and YouTube were dead links there.
  *
- * The three social entries still point at the contact section because the
- * site has no real profile URLs to link to yet; swap them for the accounts
- * when they exist. */
+ * Nine of them also pointed at sections of the home page for content that
+ * now has its own route; those go straight to the page. Careers in
+ * particular pointed at /contact because there was nowhere else for it.
+ *
+ * The three social entries still point at the contact page because the site
+ * has no real profile URLs to link to yet; swap them for the accounts when
+ * they exist. */
 const COLUMNS = [
   {
     title: "Company",
@@ -16,25 +21,25 @@ const COLUMNS = [
       { label: "About Durall", to: "/about" },
       { label: "Our Legacy", to: "/about", hash: "philosophy" },
       { label: "Leadership", to: "/about", hash: "approach" },
-      { label: "Careers", to: "/contact" },
+      { label: "Careers", to: "/careers" },
     ],
   },
   {
     title: "Solutions",
     links: [
-      { label: "Window Systems", to: "/", hash: "projects" },
-      { label: "Door Systems", to: "/", hash: "projects" },
-      { label: "Facade Systems", to: "/", hash: "projects" },
-      { label: "Technical Performance", to: "/", hash: "process" },
+      { label: "Window Systems", to: "/expertise", hash: "systems" },
+      { label: "Door Systems", to: "/expertise", hash: "systems" },
+      { label: "Facade Systems", to: "/expertise", hash: "systems" },
+      { label: "Technical Performance", to: "/expertise", hash: "process" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Technical Library", to: "/", hash: "insights" },
-      { label: "Brochures", to: "/", hash: "insights" },
-      { label: "Case Studies", to: "/", hash: "projects" },
-      { label: "Care & Maintenance", to: "/", hash: "insights" },
+      { label: "Technical Library", to: "/insights" },
+      { label: "Case Studies", to: "/projects" },
+      { label: "International Systems", to: "/partners", hash: "international-systems" },
+      { label: "Care & Maintenance", to: "/insights" },
     ],
   },
   {
@@ -80,7 +85,8 @@ export function DurallFooter() {
                         {...("hash" in link ? { hash: link.hash } : {})}
                         // min-h-11 gives a 44px tap target; -mx-2 px-2 keeps
                         // the label flush with the column heading above it.
-                        className="-mx-2 flex min-h-11 items-center px-2 font-body text-xs tracking-wide text-white/80 transition-colors hover:text-white motion-safe:transition-[color,transform] motion-safe:hover:translate-x-0.5"
+                        className="hover-lift -mx-2 flex min-h-11 items-center px-2 font-body text-xs tracking-wide text-white/80 hover:text-white"
+                        style={{ "--lift-x": "0.125rem", "--lift-y": "0" } as CSSProperties}
                       >
                         {link.label}
                       </Link>

@@ -4,6 +4,7 @@ import { useReducedMotion } from "@/lib/motion-prefs";
 import { ArrowRight } from "../ui";
 import { RESPONSE_NOTE } from "./data";
 import { submitEnquiry, type EnquiryValues } from "./submit";
+import { transition } from "@/lib/motion-tokens";
 
 type FieldName = keyof EnquiryValues;
 
@@ -144,7 +145,7 @@ export function EnquiryForm() {
             initial={{ opacity: 0, y: reduced ? 0 : 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reduced ? 0.2 : 0.4 }}
+            transition={transition("medium", reduced)}
             className="border-t border-navy-14 pt-[clamp(1.5rem,2.4vw,2rem)]"
           >
             <p className="font-serif text-[clamp(1.75rem,3vw,2.5rem)] leading-[1.12] text-balance text-navy">
@@ -172,7 +173,7 @@ export function EnquiryForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reduced ? 0.2 : 0.3 }}
+            transition={transition("short", reduced)}
             onSubmit={handleSubmit}
             className="flex flex-col gap-[clamp(1.5rem,2.4vw,2rem)]"
           >

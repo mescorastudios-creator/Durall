@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useReveal } from "@/lib/anim";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { TRAVEL, useReveal } from "@/lib/anim";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { CATEGORIES, PROJECTS, SORTS, type Category, type SortKey } from "./data";
+import { CURVE, transition } from "@/lib/motion-tokens";
 
 function ArrowUpRight() {
   return (
@@ -15,21 +16,24 @@ function ArrowUpRight() {
 
 export function ProjectGrid() {
   const reduced = useReducedMotion();
-  const barRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 18, stagger: 0.05 });
-  const gridRef = useReveal<HTMLUListElement>({
-    selector: "[data-card]",
-    y: 70,
-    stagger: 0.22,
-    start: "top 92%",
-    end: "bottom 55%",
-    scrub: 1.2,
-  });
+  const barRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 16, stagger: 0.08 });
+  /* No scroll reveal on this grid, deliberately.
+   *
+   * The cards are already animated by AnimatePresence below — they have to
+   * be, because filtering adds and removes them — and a GSAP scrub on the
+   * same elements meant two libraries writing `opacity` on every frame. GSAP
+   * won, and because its window ran to `bottom 55%` of a tall six-card grid,
+   * cards sat half-transparent against white for most of the time they were
+   * on screen: 0.53 / 0.40 / 0.26 / 0.13 with the whole grid in view.
+   *
+   * The entrance belongs to whichever system owns the element's lifecycle,
+   * and here that is AnimatePresence. */
 
   /* Filter and sort read from and write to the URL, so a filtered view is
    * linkable and survives the back button. Defaults are dropped from the
    * query string to keep the canonical /projects URL clean. */
-  const { category = "All", sort = "featured" } = useSearch({ from: "/projects" });
-  const navigate = useNavigate({ from: "/projects" });
+  const { category = "All", sort = "featured" } = useSearch({ from: "/projects/" });
+  const navigate = useNavigate({ from: "/projects/" });
   const [sortOpen, setSortOpen] = useState(false);
 
   const apply = (next: Partial<{ category: Category; sort: SortKey }>) =>
@@ -83,7 +87,7 @@ export function ProjectGrid() {
                     <motion.span
                       layoutId="project-tab"
                       className="absolute -bottom-[13px] left-0 h-px w-full bg-navy"
-                      transition={{ type: "spring", stiffness: 320, damping: 30 }}
+                      transition={transition("short", reduced)}
                     />
                   ) : null}
                 </button>
@@ -101,7 +105,7 @@ export function ProjectGrid() {
               Sort
               <motion.span
                 animate={{ rotate: reduced || !sortOpen ? 0 : 180 }}
-                transition={{ duration: 0.25 }}
+                transition={transition("short", reduced)}
                 className="inline-flex"
               >
                 <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="h-3 w-3">
@@ -115,7 +119,7 @@ export function ProjectGrid() {
                   initial={reduced ? { opacity: 1 } : { opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={transition("micro", reduced, CURVE.micro)}
                   className="absolute right-0 z-10 mt-2 w-40 border border-navy-14 bg-white py-2 shadow-sm"
                 >
                   {SORTS.map((option) => (
@@ -140,25 +144,23 @@ export function ProjectGrid() {
           </div>
         </div>
 
-        <ul
-          ref={gridRef}
-          className="mt-[clamp(2rem,3.4vw,3rem)] grid grid-cols-1 gap-x-[clamp(1.25rem,2.1vw,2.5rem)] gap-y-[clamp(2.25rem,3.6vw,4.25rem)] sm:grid-cols-2"
-        >
+        <ul className="mt-[clamp(2rem,3.4vw,3rem)] grid grid-cols-1 gap-x-[clamp(1.25rem,2.1vw,2.5rem)] gap-y-[clamp(2.25rem,3.6vw,4.25rem)] sm:grid-cols-2">
           <AnimatePresence initial={false} mode="popLayout">
             {visible.map((project) => (
               <motion.li
                 key={project.name}
                 data-card
                 layout={!reduced}
-                initial={reduced ? { opacity: 1 } : { opacity: 0, y: 18 }}
+                initial={reduced ? { opacity: 1 } : { opacity: 0, y: TRAVEL.sm }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduced ? { opacity: 0 } : { opacity: 0, y: -12 }}
-                transition={{ duration: reduced ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
+                transition={transition("medium", reduced)}
                 className="group min-w-0"
               >
                 <motion.article
                   whileHover={reduced ? { opacity: 0.9 } : { y: -6 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                  transition={transition("short", reduced, CURVE.micro)}
+                  className="relative"
                 >
                   <div className="aspect-[848/565] w-full overflow-hidden rounded-sm bg-mist">
                     <img
@@ -179,15 +181,20 @@ export function ProjectGrid() {
                     <h3 className="min-w-0 font-display text-[clamp(1.125rem,1.4vw,1.5rem)] font-medium tracking-tight text-navy">
                       {project.name}
                     </h3>
-                    <motion.a
-                      href="#portfolio"
-                      className="relative mt-1.5 inline-flex shrink-0 items-center gap-2 border-b border-navy pb-0.5 font-display text-xs font-bold tracking-[0.0625rem] text-navy uppercase after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
-                      whileHover={reduced ? { opacity: 0.75 } : { x: 3 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    {/* Every project has a page now; this used to point back
+                     * at the grid. The link's box is stretched over the whole
+                     * card, so the photograph is a way in too. */}
+                    <Link
+                      to="/projects/$slug"
+                      params={{ slug: project.slug }}
+                      className="mt-1.5 inline-flex shrink-0 items-center gap-2 border-b border-navy pb-0.5 font-display text-xs font-bold tracking-[0.0625rem] text-navy uppercase after:absolute after:inset-0 after:content-['']"
                     >
                       View Project
-                      <ArrowUpRight />
-                    </motion.a>
+                      <span className="sr-only">: {project.name}</span>
+                      <span className="hover-arrow inline-flex">
+                        <ArrowUpRight />
+                      </span>
+                    </Link>
                   </div>
 
                   <p className="mt-3 font-body text-sm text-slate">

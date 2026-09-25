@@ -20,6 +20,8 @@ export const SORTS = [
 export type SortKey = (typeof SORTS)[number]["key"];
 
 export type Project = {
+  /** The project's page, /projects/<slug>. */
+  slug: string;
   index: string;
   name: string;
   location: string;
@@ -46,6 +48,7 @@ export const FEATURED = {
 
 export const PROJECTS: Project[] = [
   {
+    slug: "patina",
     index: "02",
     name: "Patina",
     location: "Maldives",
@@ -55,6 +58,7 @@ export const PROJECTS: Project[] = [
     year: 2024,
   },
   {
+    slug: "sentosa-house",
     index: "03",
     name: "Sentosa House",
     location: "Singapore",
@@ -64,6 +68,7 @@ export const PROJECTS: Project[] = [
     year: 2023,
   },
   {
+    slug: "chiltron-house",
     index: "04",
     name: "Chiltron House",
     location: "Singapore",
@@ -73,6 +78,7 @@ export const PROJECTS: Project[] = [
     year: 2022,
   },
   {
+    slug: "juhu-house",
     index: "05",
     name: "Juhu House",
     location: "Mumbai",
@@ -82,6 +88,7 @@ export const PROJECTS: Project[] = [
     year: 2021,
   },
   {
+    slug: "project-bangalore",
     index: "06",
     name: "Project Bangalore",
     location: "Bangalore, Karnataka",
@@ -91,6 +98,7 @@ export const PROJECTS: Project[] = [
     year: 2025,
   },
   {
+    slug: "banyan-villa",
     index: "07",
     name: "Banyan Villa",
     location: "Phuket",

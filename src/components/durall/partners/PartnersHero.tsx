@@ -1,13 +1,22 @@
 import { IMAGES } from "@/assets/images";
-import { useParallax, useReveal, useSplitLines } from "@/lib/anim";
+import { useHeroIntro } from "@/lib/anim";
 
 export function PartnersHero() {
-  const headingRef = useSplitLines<HTMLHeadingElement>({ start: "top 95%" });
-  const copyRef = useReveal<HTMLDivElement>({ selector: "[data-hero-fade]", y: 26, delay: 0.25 });
-  const imageRef = useParallax<HTMLImageElement>(8);
+  /* The same full-screen hero as the home and About pages, on the same
+   * entrance: `useHeroIntro` owns the masked heading, the `[data-hero-fade]`
+   * blocks behind it, the backdrop's settle and parallax, and the copy's
+   * dissolve on the way out. It replaced a shorter section driven by
+   * `useSectionIntro` plus a separate `useParallax`, which arrived on a
+   * different curve from the heroes it sits beside in the navigation. */
+  const { sectionRef, headingRef, imageRef } = useHeroIntro<
+    HTMLElement,
+    HTMLHeadingElement,
+    HTMLImageElement
+  >();
 
   return (
     <section
+      ref={sectionRef}
       id="top"
       className="relative flex min-h-[100svh] items-center overflow-hidden bg-navy pt-[max(calc(var(--header-h)+1.5rem),clamp(6rem,12vw,9rem))] pb-[clamp(6rem,12vw,9rem)]"
     >
@@ -20,27 +29,36 @@ export function PartnersHero() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover"
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-navy/55" />
-      <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-navy/80 to-navy/20" />
+      {/* A light wash, as in the design: the palms and the sky read through
+       * it, and the copy on the left keeps its contrast. */}
+      <div aria-hidden="true" className="absolute inset-0 bg-navy/30" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-linear-to-r from-navy/55 via-navy/25 to-transparent"
+      />
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-[40%] bg-linear-to-b from-navy/60 to-transparent"
       />
 
-      <div
-        ref={copyRef}
-        className="shell relative grid w-full grid-cols-1 items-center gap-[clamp(2.5rem,5vw,4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)]"
-      >
+      <div className="shell relative grid w-full grid-cols-1 items-center gap-[clamp(2.5rem,5vw,4rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)]">
         <div className="min-w-0">
+          <p
+            data-hero-fade
+            className="font-display text-[0.6875rem] font-bold tracking-eyebrow text-white/70 uppercase"
+          >
+            01 — Partners
+          </p>
           <h1
             ref={headingRef}
-            className="max-w-[14ch] font-display text-[clamp(2.25rem,5vw,5rem)] leading-[1.02] font-medium tracking-hero text-white"
+            data-anim-hide
+            className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[14ch] font-display text-[clamp(2.5rem,5.2vw,5.5rem)] leading-[1.02] font-medium tracking-hero text-balance text-white"
           >
             International expertise. Integrated locally.
           </h1>
           <p
             data-hero-fade
-            className="mt-[clamp(1.5rem,2.6vw,2rem)] max-w-[30rem] font-body text-[clamp(0.875rem,1.05vw,0.9375rem)] leading-relaxed text-white/72"
+            className="mt-[clamp(1.5rem,2.6vw,2rem)] max-w-[30rem] font-body text-[clamp(0.875rem,1.05vw,0.9375rem)] leading-relaxed text-pretty text-white/85"
           >
             Durall Systems works with trusted international partners to bring world-class systems
             and specialist technologies to architectural projects in India. Our partnerships are
@@ -48,7 +66,7 @@ export function PartnersHero() {
           </p>
           <p
             data-hero-fade
-            className="mt-[clamp(1.5rem,2.6vw,2rem)] font-display text-[0.625rem] font-bold tracking-eyebrow text-white/45 uppercase"
+            className="mt-[clamp(1.75rem,3vw,2.25rem)] font-display text-[0.625rem] font-bold tracking-eyebrow text-white/45 uppercase"
           >
             D/S — Architectural Datum / 01
           </p>

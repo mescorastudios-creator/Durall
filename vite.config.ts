@@ -16,4 +16,11 @@ export default defineConfig({
   nitro: {
     preset: "netlify",
   },
+  // Lets the local server be shared through an ngrok tunnel (`ngrok http 8080`).
+  // Vite refuses requests for any hostname it doesn't know, and a tunnel's is
+  // new each time; a leading dot allows every subdomain.
+  vite: {
+    server: { allowedHosts: [".ngrok-free.app", ".ngrok-free.dev", ".ngrok.app"] },
+    preview: { allowedHosts: [".ngrok-free.app", ".ngrok-free.dev", ".ngrok.app"] },
+  },
 });

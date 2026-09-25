@@ -54,7 +54,7 @@ export function AboutHero() {
             aluminium systems shaped around the demands of each project.
           </p>
           <div data-hero-fade className="mt-[clamp(1.75rem,3vw,2.25rem)] flex flex-wrap gap-3.5">
-            <CtaButton href="/#projects">Explore Our Work</CtaButton>
+            <CtaButton to="/projects">Explore Our Work</CtaButton>
           </div>
           <p
             data-hero-fade

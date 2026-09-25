@@ -1,4 +1,4 @@
-import { useReveal, useSplitLines } from "@/lib/anim";
+import { REVEAL_WINDOW, useReveal, useSplitLines } from "@/lib/anim";
 
 /**
  * Page opening, built to the same shape as ProjectsIntro: a quiet white band
@@ -7,8 +7,8 @@ import { useReveal, useSplitLines } from "@/lib/anim";
  * reachable, and this is the pattern the site already has for that.
  */
 export function ContactIntro() {
-  const headingRef = useSplitLines<HTMLHeadingElement>({ start: "top 95%", delay: 0.15 });
-  const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 26, delay: 0.1 });
+  const headingRef = useSplitLines<HTMLHeadingElement>({ start: REVEAL_WINDOW.start });
+  const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
 
   return (
     <section className="relative bg-white pt-[max(calc(var(--header-h)+2rem),clamp(5.5rem,9vw,9.5rem))] pb-[clamp(2rem,3.5vw,3.5rem)]">

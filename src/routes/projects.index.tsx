@@ -18,7 +18,7 @@ const DESCRIPTION =
  * back to the default instead of erroring the route. */
 type ProjectsSearch = { category?: Category; sort?: SortKey };
 
-export const Route = createFileRoute("/projects")({
+export const Route = createFileRoute("/projects/")({
   // Both keys are optional and defaults are simply absent, so the unfiltered
   // view keeps a bare /projects URL rather than ?category=All&sort=featured.
   validateSearch: (search: Record<string, unknown>): ProjectsSearch => {

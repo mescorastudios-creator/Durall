@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import { loadGsap } from "@/lib/anim";
 import { prefersReducedMotion, REDUCED_QUERY } from "@/lib/motion-prefs";
+import { registerScroller } from "@/lib/scroll-lock";
 
 /**
  * Site-wide Lenis smooth scroll, driven by the GSAP ticker so ScrollTrigger
@@ -12,8 +13,10 @@ import { prefersReducedMotion, REDUCED_QUERY } from "@/lib/motion-prefs";
  * two instances at once while the routes swapped.
  */
 export function SmoothScroll() {
+  const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const settleRef = useRef<(() => void) | null>(null);
+  const lenisRef = useRef<{ stop: () => void; start: () => void; resize: () => void } | null>(null);
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
@@ -27,14 +30,50 @@ export function SmoothScroll() {
       ]);
       if (cancelled) return;
 
+      /* Continuous lerp smoothing rather than a fixed-duration ease.
+       *
+       * The previous `duration: 1.6` restarted a 1.6s curve on every wheel
+       * event, so each notch dragged a long tail behind it: one notch took
+       * 839ms to cover 90% of its travel. Calibrated against the reference
+       * site the brief pointed at, measured the same way in a real browser
+       * (575ms), this lands within a frame or two of it while keeping the
+       * weight that makes the pinned scenes feel deliberate. */
       const lenis = new Lenis({
-        duration: 1.6,
+        lerp: 0.075,
         smoothWheel: true,
-        wheelMultiplier: 0.85,
-        easing: (t: number) => 1 - Math.pow(1 - t, 3.2),
+        wheelMultiplier: 0.9,
       });
       const update = () => ScrollTrigger.update();
       lenis.on("scroll", update);
+      lenisRef.current = lenis;
+      // Lets the mobile navigation pause the page behind it.
+      registerScroller(lenis);
+
+      /* Same-page hash links used to be native jumps on a site that smooth
+       * scrolls everything else — the hero's own "Discover Durall" button
+       * among them. Delegated here rather than in each component so any
+       * anchor added later inherits it, and so the landing accounts for the
+       * fixed header's height. */
+      const onAnchorClick = (event: MouseEvent) => {
+        if (event.defaultPrevented || event.button !== 0) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const anchor = (event.target as Element | null)?.closest?.("a[href^='#']");
+        if (!(anchor instanceof HTMLAnchorElement)) return;
+        const id = anchor.getAttribute("href")?.slice(1);
+        if (!id) return;
+        const target = document.getElementById(id);
+        if (!target) return;
+        event.preventDefault();
+        const headerH = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
+        );
+        lenis.scrollTo(target, { offset: -(Number.isFinite(headerH) ? headerH : 0) - 16 });
+        // Scrolling is not navigating: move focus too, or a keyboard reader
+        // is left where they were.
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+      };
+      document.addEventListener("click", onAnchorClick);
 
       const raf = (time: number) => lenis.raf(time * 1000);
       gsap.ticker.add(raf);
@@ -80,6 +119,8 @@ export function SmoothScroll() {
 
       dispose = () => {
         if (resizeTimer) clearTimeout(resizeTimer);
+        document.removeEventListener("click", onAnchorClick);
+        registerScroller(null);
         motionQuery.removeEventListener("change", onMotionChange);
         window.removeEventListener("resize", refreshLayout);
         window.visualViewport?.removeEventListener("resize", refreshLayout);
@@ -87,6 +128,7 @@ export function SmoothScroll() {
         gsap.ticker.lagSmoothing(500, 33);
         lenis.off("scroll", update);
         lenis.destroy();
+        lenisRef.current = null;
         settleRef.current = null;
       };
     })();
@@ -96,6 +138,39 @@ export function SmoothScroll() {
       dispose();
     };
   }, []);
+
+  /* A route change has to land at the top of the new page (or wherever the
+   * router restores it to on back/forward) — and Lenis was overriding that.
+   *
+   * While Lenis is still gliding out a previous wheel gesture it writes its
+   * own position to the window on every frame, so the router's reset to 0
+   * was overwritten the next frame: clicking a nav link 5,000px down the
+   * home page opened /about 4,984px down. It went unnoticed while the header
+   * only existed at the top of each page; the fixed header made nav links
+   * reachable from anywhere.
+   *
+   * `stop()` also cancels the glide and syncs Lenis to the real position, so
+   * nothing is written while the router places the new page; Lenis resumes a
+   * frame after the router has rendered and restored scroll. Search-only
+   * changes (the projects filter) are left alone — they keep their place. */
+  useEffect(() => {
+    const offBefore = router.subscribe("onBeforeNavigate", (event) => {
+      if (event.pathChanged) lenisRef.current?.stop();
+    });
+    const offRendered = router.subscribe("onRendered", (event) => {
+      if (!event.pathChanged) return;
+      requestAnimationFrame(() => {
+        const lenis = lenisRef.current;
+        if (!lenis) return;
+        lenis.resize();
+        lenis.start();
+      });
+    });
+    return () => {
+      offBefore();
+      offRendered();
+    };
+  }, [router]);
 
   useEffect(() => {
     // Two frames: one for the incoming route to commit, one for its own

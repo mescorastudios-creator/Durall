@@ -44,7 +44,7 @@ export function Hero() {
             engineered with the architects who design tomorrow&rsquo;s landmarks.
           </p>
           <div data-hero-fade className="flex flex-wrap gap-3.5">
-            <CtaButton href="#projects">Explore Projects</CtaButton>
+            <CtaButton to="/projects">Explore Projects</CtaButton>
             <CtaButton href="#philosophy" variant="solid">
               Discover Durall
             </CtaButton>
