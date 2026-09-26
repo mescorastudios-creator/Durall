@@ -1,7 +1,8 @@
-import { IMAGES } from "@/assets/images";
 import { useClipReveal, useParallax, useReveal, useSplitLines } from "@/lib/anim";
+import { imageOf } from "@/content/render";
+import type { AboutPage } from "@/content/types";
 
-export function MeetsEngineering() {
+export function MeetsEngineering({ content }: { content: AboutPage["meets"] }) {
   const copyRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
   const frameRef = useReveal<HTMLDivElement>({ y: 56, duration: 0.9 });
   const headingRef = useSplitLines<HTMLHeadingElement>();
@@ -16,7 +17,7 @@ export function MeetsEngineering() {
             ref={headingRef}
             className="font-display text-[clamp(2rem,3vw,3.5rem)] leading-[1.11] font-medium tracking-tight text-balance text-navy"
           >
-            Where architecture meets engineering.
+            {content.heading}
           </h2>
           <span
             aria-hidden="true"
@@ -26,31 +27,34 @@ export function MeetsEngineering() {
             <span className="block h-px w-[7.5rem] bg-accent-blue" />
             <span className="block h-1.5 w-1.5 bg-accent-blue" />
           </span>
-          <p
-            data-reveal
-            className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.875rem)] leading-relaxed text-slate"
-          >
-            Durall operates at the intersection of architectural intent and technical execution.
-          </p>
-          <p
-            data-reveal
-            className="mt-5 max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.875rem)] leading-[1.57] text-slate"
-          >
-            We coordinate systems, materials and specialist partners to deliver solutions that
-            perform as designed — beautifully, efficiently and for the long term.
-          </p>
+          {content.paragraphs.map((paragraph, index) =>
+            index === 0 ? (
+              <p
+                key={index}
+                data-reveal
+                className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.875rem)] leading-relaxed text-slate"
+              >
+                {paragraph}
+              </p>
+            ) : (
+              <p
+                key={index}
+                data-reveal
+                className="mt-5 max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.875rem)] leading-[1.57] text-slate"
+              >
+                {paragraph}
+              </p>
+            ),
+          )}
         </div>
 
         <div ref={frameRef} className="min-w-0">
-          <div
-            ref={clipRef}
-            className="relative aspect-[820/480] w-full overflow-hidden"
-          >
+          <div ref={clipRef} className="relative aspect-[820/480] w-full overflow-hidden">
             <div data-clip-inner className="h-full w-full">
               <img
                 ref={imageRef}
-                {...IMAGES.aboutLake}
-                alt="An infinity terrace framed by Durall sliding systems above the water"
+                {...imageOf(content.photo.image)}
+                alt={content.photo.alt}
                 sizes="(min-width: 64rem) 45vw, 100vw"
                 loading="lazy"
                 decoding="async"

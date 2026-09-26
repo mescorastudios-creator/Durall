@@ -44,12 +44,35 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/* Public pages and content responses mark themselves cacheable at the CDN
+ * (server/cache.ts). The admin panel, errors and anything that sets a
+ * cookie never may: those are rewritten here, at the one place every
+ * response passes through, so no route can opt them in by accident. */
+function privateWhereNeeded(request: Request, response: Response): Response {
+  const path = new URL(request.url).pathname;
+  const cacheable =
+    request.method === "GET" &&
+    response.status === 200 &&
+    !path.startsWith("/admin") &&
+    !response.headers.has("set-cookie");
+  if (cacheable || !response.headers.has("netlify-cdn-cache-control")) return response;
+  const headers = new Headers(response.headers);
+  headers.delete("netlify-cdn-cache-control");
+  headers.delete("netlify-cache-tag");
+  headers.set("cache-control", "private, no-store");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return privateWhereNeeded(request, await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

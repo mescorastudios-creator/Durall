@@ -1,27 +1,10 @@
-import { Crosshair, Layers, ShieldCheck } from "lucide-react";
-import { IMAGES } from "@/assets/images";
 import { useClipReveal, useParallax, useReveal, useSplitLines } from "@/lib/anim";
+import { iconOf } from "@/content/icons";
+import { destination, imageOf } from "@/content/render";
+import type { AboutPage } from "@/content/types";
 import { UnderlineLink } from "../ui";
 
-const FEATURES = [
-  {
-    icon: Crosshair,
-    title: "Precision",
-    body: "Engineered tolerances ensure seamless performance.",
-  },
-  {
-    icon: Layers,
-    title: "Materiality",
-    body: "Curated aluminium systems for strength, longevity and beauty.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Integrity",
-    body: "Every connection is designed to last in real conditions.",
-  },
-];
-
-export function AboutPhilosophy() {
+export function AboutPhilosophy({ content }: { content: AboutPage["philosophy"] }) {
   const copyRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
   const listRef = useReveal<HTMLUListElement>({ selector: "li", y: 16 });
   const frameRef = useReveal<HTMLDivElement>({ y: 56, duration: 0.9 });
@@ -37,57 +20,55 @@ export function AboutPhilosophy() {
             ref={headingRef}
             className="font-display text-[clamp(2rem,2.7vw,3rem)] leading-[1.1] font-medium tracking-tight text-pretty text-navy"
           >
-            Luxury is never applied. It is engineered.
+            {content.heading}
           </h2>
           <p
             data-reveal
             className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[30rem] font-body text-[clamp(0.8125rem,0.95vw,0.875rem)] leading-[1.75] text-slate"
           >
-            Durall works alongside architects and developers long before a building becomes visible.
-            Design intent, engineering tolerance and material performance are resolved together,
-            before the first extrusion is cut.
+            {content.body}
           </p>
           <p
             data-reveal
             className="mt-5 max-w-[30rem] font-body text-[clamp(0.8125rem,0.95vw,0.875rem)] leading-[1.75] font-bold text-navy"
           >
-            The visible result is only the final expression of decisions made long before.
+            {content.emphasis}
           </p>
           <div data-reveal className="mt-[clamp(2rem,3vw,2.5rem)]">
-            <UnderlineLink href="#approach">Our Approach</UnderlineLink>
+            <UnderlineLink {...destination(content.link.href)}>{content.link.label}</UnderlineLink>
           </div>
         </div>
 
         <div aria-hidden="true" className="hidden w-px bg-navy-14 lg:block" />
 
         <ul ref={listRef} className="min-w-0 space-y-[clamp(1.75rem,2.6vw,2.25rem)] lg:pt-2">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <li key={title} className="flex min-w-0 items-start gap-4">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-navy-14 bg-paper">
-                <Icon aria-hidden="true" className="h-3.5 w-3.5 text-navy" strokeWidth={1.5} />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display text-[0.6875rem] font-bold tracking-eyebrow text-navy uppercase">
-                  {title}
+          {content.features.map(({ icon, title, body }) => {
+            const Icon = iconOf(icon);
+            return (
+              <li key={title} className="flex min-w-0 items-start gap-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-navy-14 bg-paper">
+                  <Icon aria-hidden="true" className="h-3.5 w-3.5 text-navy" strokeWidth={1.5} />
                 </span>
-                <span className="mt-1 block font-body text-[0.75rem] leading-snug text-slate">
-                  {body}
+                <span className="min-w-0">
+                  <span className="block font-display text-[0.6875rem] font-bold tracking-eyebrow text-navy uppercase">
+                    {title}
+                  </span>
+                  <span className="mt-1 block font-body text-[0.75rem] leading-snug text-slate">
+                    {body}
+                  </span>
                 </span>
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
 
         <div ref={frameRef} className="min-w-0">
-          <div
-            ref={clipRef}
-            className="relative aspect-[1023/840] w-full overflow-hidden"
-          >
+          <div ref={clipRef} className="relative aspect-[1023/840] w-full overflow-hidden">
             <div data-clip-inner className="h-full w-full">
               <img
                 ref={imageRef}
-                {...IMAGES.aboutVilla}
-                alt="A contemporary villa wrapped in full-height Durall glazing"
+                {...imageOf(content.photo.image)}
+                alt={content.photo.alt}
                 sizes="(min-width: 64rem) 34vw, 100vw"
                 loading="lazy"
                 decoding="async"

@@ -1,4 +1,5 @@
 @import "tailwindcss" source(none);
+@import "./theme.css";
 
 /* Scan only the code the site actually renders.
  *
@@ -30,59 +31,6 @@
  * 1. Add the variable to :root (light value) and .dark (dark value)
  * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
-
-/* ── Figma design tokens (Durall / Frame 9) ───────────────────────────── */
-@theme {
-  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
-  --font-body: "Inter", ui-sans-serif, sans-serif;
-  --font-serif: "EB Garamond", ui-serif, Georgia, serif;
-
-  --color-navy: #050834;
-  --color-navy-72: rgb(5 8 52 / 0.72);
-  --color-navy-14: rgb(5 8 52 / 0.14);
-  --color-slate: #5c6972;
-  --color-mist: #f4f4f4;
-  --color-paper: #f7f7f6;
-  --color-glass: #eef0f1;
-  --color-accent-blue: #1e539c;
-
-  --text-hero: 8rem;
-  --text-hero--line-height: 0.94;
-  --text-section: 4rem;
-  --text-section--line-height: 1.17;
-  --text-section-lg: 4.25rem;
-  --text-section-lg--line-height: 1;
-  --text-lede: 1.125rem;
-  --text-lede--line-height: 1.6;
-
-  --tracking-hero: -0.16rem;
-  --tracking-section: -0.06375rem;
-  --tracking-eyebrow: 0.075rem;
-  --tracking-button: 0.08125rem;
-
-  --font-weight-light: 300;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
-
-  /* ── Motion ───────────────────────────────────────────────────────────
-   * Two curves for the whole site, and they are deliberately the CSS twins
-   * of the two GSAP eases in src/lib/anim.ts, so a hover and the entrance
-   * it follows are the same gesture:
-   *
-   *   --ease-entrance  ==  gsap "power4.out"   (quint-out)
-   *   --ease-micro     ==  gsap "power3.out"   (cubic-out)
-   *
-   * Scrubbed motion uses neither — scroll position is its clock, so those
-   * tweens are linear and the shaping comes from the stagger instead.
-   *
-   * Before this there were ten curves on the landing page alone (power3.out,
-   * expo.out, power4.out, two hand-written cubic-beziers, `ease-out`, the
-   * browser default, motion's "easeOut" and a spring), which is why sections
-   * read as separate pieces of work rather than one system. */
-  --ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-micro: cubic-bezier(0.33, 1, 0.68, 1);
-}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -143,6 +91,10 @@
   --dur-short: 320ms;
   --dur-medium: 560ms;
   --dur-long: 900ms;
+  /* The page change (lib/page-transition.ts): starts gently from the click,
+   * sweeps across the screen, and settles as it reaches the corners. */
+  --dur-reveal: 900ms;
+  --ease-reveal: cubic-bezier(0.65, 0, 0.35, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -484,6 +436,40 @@ html.intro-pending [data-site-header] {
 
   html.intro-pending {
     overflow: auto;
+  }
+}
+
+/* ── Page transition: circle reveal ──────────────────────────────────────
+ * The incoming page appears inside a circle that opens from the point the
+ * reader clicked (--reveal-x/--reveal-y, set by PageTransition.tsx) and grows
+ * to --reveal-r, the distance to the farthest corner, so it ends exactly as
+ * the screen is covered. The router starts the view transition and names its
+ * type (lib/page-transition.ts); these rules only animate its snapshots.
+ *
+ * The outgoing page holds still underneath rather than cross-fading, and the
+ * snapshots blend `normal` instead of the default `plus-lighter`, so the
+ * edge of the circle is crisp. A clip-path, not a transform: the reveal *is*
+ * the shape of the new page, which no transform can draw. It runs on the
+ * view transition's own snapshot layer, not on the live page.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html:active-view-transition-type(circle-reveal)::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  html:active-view-transition-type(circle-reveal)::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation: circle-reveal var(--dur-reveal) var(--ease-reveal) both;
+  }
+}
+
+@keyframes circle-reveal {
+  from {
+    clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 50%));
+  }
+  to {
+    clip-path: circle(var(--reveal-r, 150vmax) at var(--reveal-x, 50%) var(--reveal-y, 50%));
   }
 }
 

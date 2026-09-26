@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useLineReveal } from "./motion";
 import { Eyebrow } from "./parts";
+import type { ProjectsPage } from "@/content/types";
 import type { ProjectDetail } from "./data";
 
 /**
@@ -13,7 +14,13 @@ import type { ProjectDetail } from "./data";
  * Every project has a page, so the chain runs through all of them and wraps
  * round from the last to the first (see `nextProject`).
  */
-export function NextProject({ next }: { next: ProjectDetail }) {
+export function NextProject({
+  next,
+  labels,
+}: {
+  next: ProjectDetail;
+  labels: ProjectsPage["detail"];
+}) {
   const ref = useLineReveal<HTMLDivElement>();
   const photo = next.card ?? next.hero;
 
@@ -21,7 +28,7 @@ export function NextProject({ next }: { next: ProjectDetail }) {
     <section className="shell pb-[clamp(5rem,9vw,8rem)]">
       <div ref={ref}>
         <span data-rule aria-hidden="true" className="block h-px w-full bg-navy-14" />
-        <Eyebrow className="mt-5">Next project</Eyebrow>
+        <Eyebrow className="mt-5">{labels.next}</Eyebrow>
         <Link
           to="/projects/$slug"
           params={{ slug: next.slug }}

@@ -1,6 +1,7 @@
 import { REVEAL_WINDOW, useReveal, useSplitLines } from "@/lib/anim";
+import type { Intro } from "@/content/types";
 
-export function ProjectsIntro() {
+export function ProjectsIntro({ content }: { content: Intro }) {
   const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
   const headingRef = useSplitLines<HTMLHeadingElement>({ start: REVEAL_WINDOW.start });
 
@@ -11,14 +12,14 @@ export function ProjectsIntro() {
           ref={headingRef}
           className="max-w-[60rem] font-display text-[clamp(2.25rem,4.6vw,4.25rem)] leading-[1.06] font-medium tracking-section text-balance text-navy"
         >
-          What we&rsquo;ve built together.
+          {content.title}
         </h1>
         <div ref={ref}>
           <p
             data-reveal
             className="mt-[clamp(1.5rem,2.4vw,2.75rem)] max-w-[27.5rem] font-body text-[clamp(0.9375rem,1.1vw,1rem)] leading-relaxed text-slate"
           >
-            A collection of spaces shaped through architecture, engineering and collaboration.
+            {content.lede}
           </p>
         </div>
       </div>

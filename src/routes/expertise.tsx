@@ -1,26 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/durall/SiteHeader";
 import { PageIntro } from "@/components/durall/PageIntro";
-import { PageCta } from "@/components/durall/PageCta";
+import { PageCtaBand } from "@/components/durall/PageCta";
 import { Systems } from "@/components/durall/expertise/Systems";
 import { Process } from "@/components/durall/Process";
 import { DurallFooter } from "@/components/durall/DurallFooter";
-
-const TITLE = "Expertise — Durall Systems";
-const DESCRIPTION =
-  "Window, door and façade systems designed, engineered, fabricated and installed as one continuous discipline — and the five-stage process that gets them built.";
+import { seoHead } from "@/content/head";
+import { fetchPage } from "@/content/api";
 
 export const Route = createFileRoute("/expertise")({
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: () => fetchPage("expertise"),
+  head: ({ loaderData }) => seoHead(loaderData?.page.seo),
   component: ExpertisePage,
 });
 
@@ -31,21 +21,15 @@ export const Route = createFileRoute("/expertise")({
  * site, so this page opens around it rather than duplicating it.
  */
 function ExpertisePage() {
+  const { page } = Route.useLoaderData();
   return (
     <div className="relative bg-white font-body text-navy">
-      <SiteHeader variant="light" />
+      <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <PageIntro
-          eyebrow="03 — Expertise"
-          title="Engineered before it is drawn."
-          lede="Durall designs, engineers, fabricates and installs the envelope as one continuous discipline — so the detail an architect draws is the detail that reaches site."
-        />
-        <Systems />
+        <PageIntro title={page.intro.title} lede={page.intro.lede} />
+        <Systems content={page.systems} />
         <Process />
-        <PageCta
-          heading="Bring us in early."
-          body="The cost of a change is lowest while it is still a line on a drawing. Talk to the engineer who will answer for the detail, not to a sales desk."
-        />
+        <PageCtaBand band={page.cta} />
       </main>
       <DurallFooter />
     </div>

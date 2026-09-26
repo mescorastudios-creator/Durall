@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { revealTypes, supportsReveal } from "./lib/page-transition";
 
 export const getRouter = () => {
   const queryClient = new QueryClient();
@@ -10,6 +11,9 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // The circle reveal between pages (lib/page-transition.ts). `false` on
+    // the server and in browsers without view transition types.
+    defaultViewTransition: supportsReveal() ? { types: revealTypes } : false,
   });
 
   return router;

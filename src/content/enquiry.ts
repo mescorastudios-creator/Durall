@@ -1,0 +1,95 @@
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestIP } from "@tanstack/react-start/server";
+import { z } from "zod";
+import { serviceClient, supabaseConfig } from "@/server/supabase";
+
+/**
+ * The site's two enquiry forms post here. The message is checked, then
+ * stored with the server's service key — the database accepts no enquiry
+ * from the public key directly, so it cannot be flooded around this check.
+ *
+ * Returns the same `{ ok }` / `{ ok: false, message }` shape the forms
+ * already handle.
+ */
+
+const enquiry = z.object({
+  source: z.enum(["contact", "home", "about"]),
+  name: z.string().trim().min(2).max(200),
+  email: z.string().trim().email().max(320),
+  studio: z.string().trim().max(200).default(""),
+  projectType: z.string().trim().max(200).default(""),
+  subject: z.string().trim().max(300).default(""),
+  message: z.string().trim().max(10_000).default(""),
+  /** A field people never see; only a bot fills it. */
+  website: z.string().max(500).default(""),
+});
+
+export type EnquiryInput = z.input<typeof enquiry>;
+
+/* A few messages a minute from one address is plenty for a person. Kept per
+ * warm function instance — a speed bump for scripts, not a guarantee. */
+const recent = new Map<string, number[]>();
+const WINDOW_MS = 10 * 60_000;
+const LIMIT = 5;
+
+function tooMany(ip: string): boolean {
+  const now = Date.now();
+  const times = (recent.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  times.push(now);
+  recent.set(ip, times);
+  if (recent.size > 5000) recent.clear();
+  return times.length > LIMIT;
+}
+
+export const sendEnquiry = createServerFn({ method: "POST" })
+  .inputValidator((value: unknown) => {
+    const result = enquiry.safeParse(value);
+    if (!result.success) throw new Error("Check the highlighted fields and try again.");
+    return result.data;
+  })
+  .handler(async ({ data }): Promise<{ ok: true } | { ok: false; message: string }> => {
+    // Bots fill every field; pretend it worked and store nothing.
+    if (data.website) return { ok: true };
+    const ip = (() => {
+      try {
+        return getRequestIP({ xForwardedFor: true }) ?? "unknown";
+      } catch {
+        return "unknown";
+      }
+    })();
+    if (tooMany(ip)) {
+      return {
+        ok: false,
+        message:
+          "That didn’t send — too many messages in a short time. Try again in a few minutes.",
+      };
+    }
+    const { url, serviceKey } = supabaseConfig();
+    if (!url || !serviceKey) {
+      // Before the database is connected there is nowhere to put it: say so
+      // rather than pretend, and point at the direct lines.
+      return {
+        ok: false,
+        message:
+          "That didn’t send — our enquiry service is not connected yet. Please email us directly using the address on this page.",
+      };
+    }
+    const { error } = await serviceClient().from("enquiries").insert({
+      source: data.source,
+      name: data.name,
+      email: data.email,
+      studio: data.studio,
+      project_type: data.projectType,
+      subject: data.subject,
+      message: data.message,
+    });
+    if (error) {
+      console.error("[enquiry] could not store", error);
+      return {
+        ok: false,
+        message:
+          "That didn’t send — our enquiry service is not responding. Try again in a moment, or email us directly.",
+      };
+    }
+    return { ok: true };
+  });

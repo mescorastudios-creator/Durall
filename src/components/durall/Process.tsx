@@ -1,52 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
-import { IMAGES } from "@/assets/images";
 import { useSectionIntro } from "@/lib/anim";
+import { destination, imageOf, TwoToneText } from "@/content/render";
+import { useSite } from "@/content/site";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { ramp, sceneScrollY, smooth, useSceneProgress } from "@/lib/scene";
 import { scrollToY } from "@/lib/scroll-lock";
 
 import { ArrowLeft, ArrowRight, UnderlineLink } from "./ui";
-
-const STAGES = [
-  {
-    num: "01",
-    title: "Discover",
-    body: "Site visit, brief, and intent — we read the architect's drawings before we read the BoQ.",
-    image: IMAGES.stageDiscover,
-    alt: "Glass-walled terrace overlooking a lake at sunset",
-  },
-  {
-    num: "02",
-    title: "Design",
-    body: "System selection, material strategy, and elevation studies. We draw alternates, not just options.",
-    image: IMAGES.philosophyPavilion,
-    alt: "Dining pavilion framed by full-height sliding systems",
-  },
-  {
-    num: "03",
-    title: "Engineer",
-    body: "Structural, thermal, acoustic, and weather performance — every detail load-tested before the workshop sees it.",
-    image: IMAGES.stageEngineer,
-    alt: "Interior with slatted ceiling and precise square light cutouts",
-  },
-  {
-    num: "04",
-    title: "Fabricate",
-    body: "In-house workshop discipline. Custom extrusions, jigged assemblies, and a single QC chain.",
-    image: IMAGES.stageFabricate,
-    alt: "Interior with wooden slat ceiling overlooking a pool at dusk",
-  },
-  {
-    num: "05",
-    title: "Install",
-    body: "Site supervision, sequencing, and handover — backed by a maintenance schedule we publish in writing.",
-    image: IMAGES.stageInstall,
-    alt: "White modern balcony with glass railings",
-  },
-];
-
-const LAST = STAGES.length - 1;
 
 /* Scene pacing, as fractions of the section's scroll.
  *
@@ -56,10 +17,11 @@ const LAST = STAGES.length - 1;
 const LEAD_IN = 0.05;
 const LEAD_OUT = 0.1;
 
-/** Scroll progress (0–1) → continuous stage position (0–4). */
-const stageAt = (progress: number) => ramp(progress, LEAD_IN, 1 - LEAD_OUT) * LAST;
+/** Scroll progress (0–1) → continuous stage position (0 to the last stage). */
+const stageAt = (progress: number, last: number) => ramp(progress, LEAD_IN, 1 - LEAD_OUT) * last;
 /** Stage position → the scroll progress at which it sits exactly. */
-const progressAt = (stage: number) => LEAD_IN + (stage / LAST) * (1 - LEAD_IN - LEAD_OUT);
+const progressAt = (stage: number, last: number) =>
+  LEAD_IN + (stage / Math.max(1, last)) * (1 - LEAD_IN - LEAD_OUT);
 
 /**
  * 04 — How we work.
@@ -81,6 +43,17 @@ const progressAt = (stage: number) => LEAD_IN + (stage / LAST) * (1 - LEAD_IN - 
  * but every change is an instant switch: nothing moves.
  */
 export function Process() {
+  const content = useSite().shared.process;
+  // The scene is paced for the five stages it was designed around; the
+  // admin panel edits them in place rather than adding or removing any.
+  const STAGES = content.stages.map((stage, index) => ({
+    num: String(index + 1).padStart(2, "0"),
+    title: stage.title,
+    body: stage.body,
+    image: imageOf(stage.photo.image),
+    alt: stage.photo.alt,
+  }));
+  const LAST = STAGES.length - 1;
   const reduced = useReducedMotion();
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
@@ -151,7 +124,7 @@ export function Process() {
   useSceneProgress(
     sectionRef,
     (progress) => {
-      const f = stageAt(progress);
+      const f = stageAt(progress, LAST);
       const current = Math.round(f);
       select(current);
       applyFraction(f);
@@ -224,7 +197,7 @@ export function Process() {
     const section = sectionRef.current;
     if (!section) return;
     const target = Math.max(0, Math.min(LAST, index));
-    scrollToY(sceneScrollY(section, progressAt(target)));
+    scrollToY(sceneScrollY(section, progressAt(target, LAST)));
   };
 
   const stage = STAGES[active]!;
@@ -236,7 +209,7 @@ export function Process() {
       aria-labelledby="process-heading"
       // Five stages: one viewport of frame plus roughly seventy percent of a
       // viewport of scroll per stage change and the two holds.
-      className="relative bg-paper py-[clamp(3.5rem,8vw,5rem)] lg:h-[460svh] lg:py-0"
+      className="relative bg-silver py-[clamp(3.5rem,8vw,5rem)] lg:h-[460svh] lg:py-0"
     >
       <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-clip">
         <div className="grid w-full grid-cols-1 gap-[clamp(2rem,5vw,3rem)] lg:h-full lg:grid-cols-2 lg:gap-0">
@@ -248,14 +221,13 @@ export function Process() {
                 data-anim="lines"
                 className="font-display text-[clamp(1.75rem,min(3.4vw,5.6vh),3.75rem)] leading-[1.14] font-medium tracking-tight text-balance text-navy"
               >
-                Concept to commissioning, <span className="text-slate">under one roof.</span>
+                <TwoToneText value={content.heading} />
               </h2>
               <p
                 data-anim
-                className="mt-[clamp(0.75rem,1.8vh,1.5rem)] max-w-[32rem] font-body text-[clamp(1rem,1.25vw,1.125rem)] leading-[1.7] text-slate lg:[@media(max-height:45rem)]:hidden"
+                className="mt-[clamp(0.75rem,1.8vh,1.5rem)] max-w-[32rem] font-body text-[clamp(1rem,1.25vw,1.125rem)] leading-[1.7] text-slate-deep lg:[@media(max-height:45rem)]:hidden"
               >
-                An integrated process that brings precision, accountability, and performance to
-                every project.
+                {content.lede}
               </p>
             </div>
 
@@ -295,7 +267,7 @@ export function Process() {
                     <span
                       data-dot
                       aria-hidden="true"
-                      className="absolute top-1/2 left-0 h-2.5 w-2.5 -translate-y-1/2 rounded-full border border-navy/35 bg-paper"
+                      className="absolute top-1/2 left-0 h-2.5 w-2.5 -translate-y-1/2 rounded-full border border-navy/35 bg-silver"
                     />
                     <button
                       type="button"
@@ -331,7 +303,7 @@ export function Process() {
                     bodyRefs.current[index] = el;
                   }}
                   style={{ opacity: index === 0 ? 1 : 0 }}
-                  className="col-start-1 row-start-1 font-body text-[clamp(0.9375rem,min(1.2vw,2.3vh),1.0625rem)] leading-[1.7] text-slate"
+                  className="col-start-1 row-start-1 font-body text-[clamp(0.9375rem,min(1.2vw,2.3vh),1.0625rem)] leading-[1.7] text-slate-deep"
                 >
                   <p className="font-display text-[0.9375rem] font-bold tracking-eyebrow text-navy uppercase">
                     {item.num} — {item.title}
@@ -356,15 +328,17 @@ export function Process() {
                     <h3 className="font-display text-base font-bold tracking-button text-navy uppercase">
                       {item.title}
                     </h3>
-                    <p className="mt-2 font-body text-[1.0625rem] leading-[1.7] text-slate">{item.body}</p>
+                    <p className="mt-2 font-body text-[1.0625rem] leading-[1.7] text-slate-deep">
+                      {item.body}
+                    </p>
                   </div>
                 </li>
               ))}
             </ol>
 
             <div className="mt-[clamp(1rem,2.6vh,2.5rem)]">
-              <UnderlineLink to="/about" hash="approach">
-                Explore our approach
+              <UnderlineLink {...destination(content.link.href)}>
+                {content.link.label}
               </UnderlineLink>
             </div>
           </div>
@@ -373,7 +347,7 @@ export function Process() {
           <div className="relative order-first aspect-[4/3] w-full min-w-0 overflow-hidden bg-navy sm:aspect-[16/10] lg:order-none lg:aspect-auto lg:h-full">
             {STAGES.map((s, i) => (
               <img
-                key={s.image.src}
+                key={i}
                 ref={(el) => {
                   imageRefs.current[i] = el;
                 }}

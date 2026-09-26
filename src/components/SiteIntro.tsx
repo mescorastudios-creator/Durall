@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { INTRO_SEEN_KEY, isIntroPending, releaseIntro } from "@/lib/intro";
+import { isIntroPending, releaseIntro } from "@/lib/intro";
 import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 const WORDMARK = "DURALL SYSTEMS";
@@ -21,7 +21,7 @@ const DOORS_MS = 1000;
 const DOORS_DELAY_MS = 320;
 
 /**
- * First-visit opening: the Durall mark draws itself, the wordmark rises, a
+ * Page-load opening: the Durall mark draws itself, the wordmark rises, a
  * hairline fills as the page gets ready — then the screen parts down the
  * middle like one of Durall's own sliding doors, onto the page's entrance.
  *
@@ -29,7 +29,7 @@ const DOORS_DELAY_MS = 320;
  * the very first paint instead of waiting for the JavaScript bundle. Script
  * only decides when to leave, runs the exit, and hands off to the page.
  *
- * Once per browser session, never on a client-side navigation, never under
+ * On every full page load, never on a client-side navigation, never under
  * reduced motion, and any wheel, key or tap skips straight to the exit.
  */
 export function SiteIntro() {
@@ -51,12 +51,6 @@ export function SiteIntro() {
 
     lockScroll();
     window.scrollTo(0, 0);
-    try {
-      sessionStorage.setItem(INTRO_SEEN_KEY, "seen");
-    } catch {
-      // Private mode or blocked storage: the intro simply plays again next
-      // time, which is the right way to fail.
-    }
 
     let exiting = false;
     let cancelled = false;

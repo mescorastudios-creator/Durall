@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
-import { introGate } from "./intro";
+import { entranceGate } from "./intro";
 import { prefersReducedMotion } from "./motion-prefs";
 
 type GsapModule = (typeof import("gsap"))["gsap"];
@@ -123,12 +123,13 @@ export async function splitToLines(el: HTMLElement, lineClass: string): Promise<
 }
 
 /**
- * Plays an on-load entrance once the first-visit opening lets go of the page
- * — immediately, when there is no opening this time. The animation is built
- * paused beforehand so its start state is already holding the element.
+ * Plays an on-load entrance once whatever is covering the page lets go of
+ * it — the opening sequence on a full load, the circle reveal on a page change
+ * — and immediately when nothing is. The animation is built paused
+ * beforehand so its start state is already holding the element.
  */
 export function playAfterIntro(animation: { play: () => unknown }, isCancelled: () => boolean) {
-  void introGate.then(() => {
+  void entranceGate().then(() => {
     if (!isCancelled()) animation.play();
   });
 }

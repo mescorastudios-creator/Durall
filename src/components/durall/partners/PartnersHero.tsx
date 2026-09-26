@@ -1,7 +1,9 @@
-import { IMAGES } from "@/assets/images";
 import { useHeroIntro } from "@/lib/anim";
+import { destination, imageOf } from "@/content/render";
+import type { PlateHero } from "@/content/types";
+import { CtaButton } from "../ui";
 
-export function PartnersHero() {
+export function PartnersHero({ content }: { content: PlateHero }) {
   /* The same full-screen hero as the home and About pages, on the same
    * entrance: `useHeroIntro` owns the masked heading, the `[data-hero-fade]`
    * blocks behind it, the backdrop's settle and parallax, and the copy's
@@ -22,8 +24,8 @@ export function PartnersHero() {
     >
       <img
         ref={imageRef}
-        {...IMAGES.heroParikrama}
-        alt="Palm-framed Durall residence at dusk"
+        {...imageOf(content.photo.image)}
+        alt={content.photo.alt}
         sizes="100vw"
         fetchPriority="high"
         decoding="async"
@@ -47,45 +49,45 @@ export function PartnersHero() {
             data-hero-fade
             className="font-display text-[0.6875rem] font-bold tracking-eyebrow text-white/70 uppercase"
           >
-            01 — Partners
+            {content.eyebrow}
           </p>
           <h1
             ref={headingRef}
             data-anim-hide
             className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[14ch] font-display text-[clamp(2.5rem,5.2vw,5.5rem)] leading-[1.02] font-medium tracking-hero text-balance text-white"
           >
-            International expertise. Integrated locally.
+            {content.heading}
           </h1>
           <p
             data-hero-fade
             className="mt-[clamp(1.5rem,2.6vw,2rem)] max-w-[30rem] font-body text-[clamp(0.875rem,1.05vw,0.9375rem)] leading-relaxed text-pretty text-white/85"
           >
-            Durall Systems works with trusted international partners to bring world-class systems
-            and specialist technologies to architectural projects in India. Our partnerships are
-            built around precision, capability and the demands of each project.
+            {content.body}
           </p>
+          {content.cta.label ? (
+            <div data-hero-fade className="mt-[clamp(1.75rem,3vw,2.25rem)] flex flex-wrap gap-3.5">
+              <CtaButton {...destination(content.cta.href)}>{content.cta.label}</CtaButton>
+            </div>
+          ) : null}
           <p
             data-hero-fade
             className="mt-[clamp(1.75rem,3vw,2.25rem)] font-display text-[0.625rem] font-bold tracking-eyebrow text-white/45 uppercase"
           >
-            D/S — Architectural Datum / 01
+            {content.caption}
           </p>
         </div>
 
         <div data-hero-fade className="relative min-w-0">
           <div className="relative grid grid-cols-2 overflow-hidden rounded-3xl shadow-2xl shadow-navy/40">
-            <img
-              {...IMAGES.aboutPlateLeft}
-              alt="Facade detail of a Durall-glazed residence"
-              decoding="async"
-              className="h-full w-full object-cover"
-            />
-            <img
-              {...IMAGES.aboutPlateRight}
-              alt="Aerial view of the same residence within its palm canopy"
-              decoding="async"
-              className="h-full w-full object-cover"
-            />
+            {content.plates.map((plate, index) => (
+              <img
+                key={index}
+                {...imageOf(plate.image)}
+                alt={plate.alt}
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
+            ))}
             <p className="absolute bottom-[6%] left-[4%] flex items-center gap-2 rounded-md bg-navy/75 px-3 py-2 font-display text-[0.625rem] font-bold tracking-eyebrow text-white uppercase backdrop-blur-sm">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="h-3 w-3">
                 <path
@@ -95,7 +97,7 @@ export function PartnersHero() {
                 />
                 <path d="M1.5 9.2 8 12.6l6.5-3.4" stroke="currentColor" strokeWidth="1.2" />
               </svg>
-              System Detail / 01
+              {content.badge}
             </p>
           </div>
         </div>

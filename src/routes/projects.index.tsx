@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CATEGORIES, SORTS, type Category, type SortKey } from "@/components/durall/projects/data";
+import { CATEGORIES, SORTS, type Category, type SortKey } from "@/content/categories";
 import { SiteHeader } from "@/components/durall/SiteHeader";
 import { ProjectsIntro } from "@/components/durall/projects/ProjectsIntro";
 import { FeaturedProject } from "@/components/durall/projects/FeaturedProject";
 import { ProjectGrid } from "@/components/durall/projects/ProjectGrid";
-import { ProjectsCta } from "@/components/durall/projects/ProjectsCta";
+import { PageCtaBand } from "@/components/durall/PageCta";
 import { DurallFooter } from "@/components/durall/DurallFooter";
-
-const TITLE = "Projects — Durall Systems Portfolio of Built Work";
-const DESCRIPTION =
-  "Residences, resorts and landmarks where Durall’s aluminium systems became the architecture's most exacting details — from Parikrama in Murud to Patina in the Maldives.";
+import { fetchProjects } from "@/content/api";
+import { seoHead } from "@/content/head";
 
 /* Filter and sort live in the URL so a filtered view can be linked, opened in
  * a new tab and restored by the back button — it used to be component state
@@ -33,28 +31,27 @@ export const Route = createFileRoute("/projects/")({
       ...(validSort ? { sort: sort as SortKey } : {}),
     };
   },
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: () => fetchProjects(),
+  head: ({ loaderData }) => seoHead(loaderData?.page.seo),
   component: ProjectsPage,
 });
 
 function ProjectsPage() {
+  const { page, featured, portfolio } = Route.useLoaderData();
   return (
     <div className="relative bg-white font-body text-navy">
-      <SiteHeader variant="light" />
+      <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <ProjectsIntro />
-        <FeaturedProject />
-        <ProjectGrid />
-        <ProjectsCta />
+        <ProjectsIntro content={page.intro} />
+        {featured ? (
+          <FeaturedProject
+            slug={featured.slug}
+            feature={featured.feature}
+            exploreLabel={page.featured.exploreLabel}
+          />
+        ) : null}
+        <ProjectGrid projects={portfolio} labels={page.grid} />
+        <PageCtaBand band={page.cta} />
       </main>
       <DurallFooter />
     </div>

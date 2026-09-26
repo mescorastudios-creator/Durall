@@ -1,11 +1,20 @@
 import { useReveal, useSectionIntro } from "@/lib/anim";
+import type { CareersPage, RoleDoc } from "@/content/types";
 import { ArrowRight } from "../ui";
-import { APPLY_EMAIL, ROLES } from "./data";
 
 const EMAIL_LINK =
   "text-navy underline decoration-navy-14 underline-offset-4 transition-colors duration-[var(--dur-short)] hover:decoration-navy";
 
-export function Openings() {
+export function Openings({
+  content,
+  roles: ROLES,
+  email: APPLY_EMAIL,
+}: {
+  content: CareersPage["openings"];
+  roles: readonly RoleDoc[];
+  email: string;
+}) {
+  const [emptyBefore = "", emptyAfter = ""] = content.empty.split("{email}");
   const headRef = useSectionIntro<HTMLDivElement>();
   const listRef = useReveal<HTMLUListElement>({ selector: "li", y: 24, stagger: 0.1 });
 
@@ -23,25 +32,24 @@ export function Openings() {
               data-anim="lines"
               className="font-display text-[clamp(2rem,3vw,3.5rem)] leading-[1.11] font-medium tracking-tight text-navy"
             >
-              Open roles
+              {content.heading}
             </h2>
           </div>
 
           {ROLES.length === 0 ? (
-            /* Reachable state, not a fallback nobody wrote: set ROLES to []
-               and this is what the page shows. */
+            /* Reachable state, not a fallback nobody wrote: close every
+               role in the admin panel and this is what the page shows. */
             <p className="mt-[clamp(1.75rem,3vw,2.5rem)] max-w-[34rem] border-t border-navy-14 pt-[clamp(1.25rem,2vw,1.75rem)] font-body text-[clamp(0.9375rem,1.1vw,1rem)] leading-relaxed text-pretty text-slate">
-              Nothing is open right now. We still read everything that comes in, so send your work
-              to{" "}
+              {emptyBefore}
               <a href={`mailto:${APPLY_EMAIL}`} className={EMAIL_LINK}>
                 {APPLY_EMAIL}
-              </a>{" "}
-              and we will come back to you when a seat opens.
+              </a>
+              {emptyAfter}
             </p>
           ) : (
             <ul ref={listRef} className="mt-[clamp(1.75rem,3vw,2.5rem)] border-b border-navy-14">
               {ROLES.map((role) => (
-                <li key={role.title} className="min-w-0">
+                <li key={role.id} className="min-w-0">
                   <a
                     href={`mailto:${APPLY_EMAIL}?subject=${encodeURIComponent(role.title)}`}
                     className="group relative grid min-w-0 gap-x-8 gap-y-4 border-t border-navy-14 py-[clamp(1.5rem,2.4vw,2.25rem)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent-blue md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
@@ -68,7 +76,7 @@ export function Openings() {
                       </span>
                     </span>
                     <span className="inline-flex min-h-11 items-center gap-2.5 font-display text-xs font-bold tracking-button text-navy uppercase">
-                      Apply
+                      {content.applyLabel}
                       <ArrowRight className="hover-arrow h-3.5 w-3.5" />
                     </span>
                   </a>
@@ -86,11 +94,10 @@ export function Openings() {
             id="apply-heading"
             className="font-display text-[clamp(1.125rem,1.4vw,1.25rem)] leading-[1.25] font-medium text-navy"
           >
-            How to apply
+            {content.howHeading}
           </h3>
           <p className="mt-3 font-body text-[0.9375rem] leading-[1.7] text-pretty text-slate">
-            Send the work, not a cover letter. A drawing set, a detail you are proud of or a problem
-            you solved on site tells us more than a page of adjectives.
+            {content.howBody}
           </p>
           <p className="mt-4 font-body text-[0.9375rem] leading-relaxed">
             <a href={`mailto:${APPLY_EMAIL}`} className={EMAIL_LINK}>

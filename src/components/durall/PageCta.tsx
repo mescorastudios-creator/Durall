@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useSectionIntro } from "@/lib/anim";
+import { linkTo } from "@/content/render";
+import type { CtaBand } from "@/content/types";
 
 /**
  * The navy closing plate. Extracted from ProjectsCta so /expertise,
@@ -17,6 +19,7 @@ export function PageCta({
   body,
   action = "Talk to our team",
   to = "/contact",
+  hash,
   href,
 }: {
   eyebrow?: string;
@@ -24,6 +27,7 @@ export function PageCta({
   body: ReactNode;
   action?: string;
   to?: string;
+  hash?: string | undefined;
   /** A non-route destination such as a mailto: link. Takes precedence over `to`. */
   href?: string | undefined;
 }) {
@@ -66,12 +70,26 @@ export function PageCta({
               {actionInner}
             </a>
           ) : (
-            <Link to={to} className={actionClass}>
+            <Link to={to} {...(hash ? { hash } : {})} className={actionClass}>
               {actionInner}
             </Link>
           )}
         </div>
       </div>
     </section>
+  );
+}
+
+/** The closing band from stored content. */
+export function PageCtaBand({ band }: { band: CtaBand }) {
+  const target = linkTo(band.action.href);
+  return (
+    <PageCta
+      eyebrow={band.eyebrow}
+      heading={band.heading}
+      body={band.body}
+      action={band.action.label}
+      {...("to" in target ? { to: target.to, hash: target.hash } : { href: target.href })}
+    />
   );
 }

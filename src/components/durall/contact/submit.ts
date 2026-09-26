@@ -1,3 +1,5 @@
+import { sendEnquiry } from "@/content/enquiry";
+
 export type EnquiryValues = {
   name: string;
   email: string;
@@ -8,21 +10,13 @@ export type EnquiryValues = {
 export type SubmitResult = { ok: true } | { ok: false; message: string };
 
 /**
- * The single point to swap for a real submission.
- *
- * There is no backend, so this stands in for one: it takes a realistic amount
- * of time, and it can genuinely fail, which is what makes the form's loading
- * and error states reachable rather than decorative. Replace the body with a
- * `fetch` to whatever endpoint the enquiries should reach — the form only
- * cares about the `SubmitResult` shape.
+ * Sends the /contact form to the enquiries inbox (content/enquiry.ts).
  *
  * Two ways to reach the failure path deliberately:
  *   - go offline; the check below is real, not simulated
  *   - append `?simulateError` to the URL, for demoing the error state
  */
-export async function submitEnquiry(_values: EnquiryValues): Promise<SubmitResult> {
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-
+export async function submitEnquiry(values: EnquiryValues, honeypot = ""): Promise<SubmitResult> {
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return {
       ok: false,
@@ -32,6 +26,7 @@ export async function submitEnquiry(_values: EnquiryValues): Promise<SubmitResul
   }
 
   if (typeof window !== "undefined" && window.location.search.includes("simulateError")) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
     return {
       ok: false,
       message:
@@ -39,5 +34,13 @@ export async function submitEnquiry(_values: EnquiryValues): Promise<SubmitResul
     };
   }
 
-  return { ok: true };
+  try {
+    return await sendEnquiry({ data: { source: "contact", ...values, website: honeypot } });
+  } catch {
+    return {
+      ok: false,
+      message:
+        "That didn’t send — our enquiry service is not responding. Try again in a moment, or email us directly using the address alongside this form.",
+    };
+  }
 }

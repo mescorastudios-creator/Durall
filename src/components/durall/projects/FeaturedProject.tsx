@@ -4,8 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { useReveal, useClipReveal } from "@/lib/anim";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { ArrowRight } from "../ui";
-import { FEATURED, FEATURED_GALLERY } from "./data";
-import { PARIKRAMA_SLUG } from "../project/data";
+import { imageOf, Lines } from "@/content/render";
+import type { ProjectFeature } from "@/content/types";
 import { transition } from "@/lib/motion-tokens";
 
 const INTERVAL = 5000;
@@ -18,7 +18,19 @@ function AwardIcon() {
   );
 }
 
-export function FeaturedProject() {
+export function FeaturedProject({
+  slug,
+  feature: FEATURED,
+  exploreLabel,
+}: {
+  slug: string;
+  feature: ProjectFeature;
+  exploreLabel: string;
+}) {
+  const FEATURED_GALLERY = FEATURED.gallery.map((photo) => ({
+    image: imageOf(photo.image),
+    alt: photo.alt,
+  }));
   const reduced = useReducedMotion();
   const panelRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32, stagger: 0.08 });
   const mediaRef = useClipReveal<HTMLDivElement>();
@@ -72,9 +84,7 @@ export function FeaturedProject() {
             data-reveal
             className="mt-3 font-display text-[clamp(1.75rem,2.6vw,2.75rem)] leading-[1.1] font-medium tracking-[-0.0625rem] text-navy"
           >
-            {FEATURED.title[0]}
-            <br />
-            {FEATURED.title[1]}
+            <Lines text={FEATURED.title.join("\n")} />
           </h2>
           <p data-reveal className="mt-5 font-body text-sm font-medium text-slate">
             {FEATURED.architect}
@@ -107,30 +117,32 @@ export function FeaturedProject() {
             ))}
           </dl>
 
-          <div
-            data-reveal
-            className="mt-[clamp(1.75rem,2.6vw,2.5rem)] border-t border-navy-14 pt-6"
-          >
-            <div className="flex items-start gap-4 text-navy">
-              <span className="mt-0.5 text-navy/70">
-                <AwardIcon />
-              </span>
-              <div>
-                <p className="font-body text-xs font-bold text-navy">{FEATURED.award.name}</p>
-                <p className="mt-1 font-body text-xs text-slate">{FEATURED.award.year}</p>
+          {FEATURED.award ? (
+            <div
+              data-reveal
+              className="mt-[clamp(1.75rem,2.6vw,2.5rem)] border-t border-navy-14 pt-6"
+            >
+              <div className="flex items-start gap-4 text-navy">
+                <span className="mt-0.5 text-navy/70">
+                  <AwardIcon />
+                </span>
+                <div>
+                  <p className="font-body text-xs font-bold text-navy">{FEATURED.award.name}</p>
+                  <p className="mt-1 font-body text-xs text-slate">{FEATURED.award.year}</p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : null}
 
           {/* The case study is a page of its own now; this used to point at
            * the grid below it. */}
           <div data-reveal className="mt-[clamp(1.75rem,2.6vw,2.5rem)]">
             <Link
               to="/projects/$slug"
-              params={{ slug: PARIKRAMA_SLUG }}
+              params={{ slug }}
               className="group relative inline-flex items-center gap-3 border-b border-accent-blue pb-1.5 font-display text-[clamp(0.75rem,0.9vw,1rem)] font-bold tracking-button text-accent-blue uppercase after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
             >
-              Explore Project
+              {exploreLabel}
               <span className="hover-arrow inline-flex">
                 <ArrowRight className="h-4 w-4" />
               </span>

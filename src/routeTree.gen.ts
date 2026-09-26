@@ -11,14 +11,34 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ExpertiseRouteImport } from './routes/expertise'
 import { Route as PartnersRouteImport } from './routes/partners'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAccountRouteImport } from './routes/admin.account'
+import { Route as AdminActivityRouteImport } from './routes/admin.activity'
+import { Route as AdminCareersRouteImport } from './routes/admin.careers'
+import { Route as AdminCompanyRouteImport } from './routes/admin.company'
+import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
+import { Route as AdminMediaRouteImport } from './routes/admin.media'
+import { Route as AdminNavigationRouteImport } from './routes/admin.navigation'
+import { Route as AdminPartnersRouteImport } from './routes/admin.partners'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminTeamRouteImport } from './routes/admin.team'
+import { Route as AdminLoginRouteImport } from './routes/admin_.login'
+import { Route as AdminSetPasswordRouteImport } from './routes/admin_.set-password'
 import { Route as InsightsIndexRouteImport } from './routes/insights.index'
 import { Route as InsightsSlugRouteImport } from './routes/insights.$slug'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
+import { Route as AdminInsightsIndexRouteImport } from './routes/admin.insights.index'
+import { Route as AdminInsightsIdRouteImport } from './routes/admin.insights.$id'
+import { Route as AdminPagesIndexRouteImport } from './routes/admin.pages.index'
+import { Route as AdminPagesPageRouteImport } from './routes/admin.pages.$page'
+import { Route as AdminProjectsIndexRouteImport } from './routes/admin.projects.index'
+import { Route as AdminProjectsIdRouteImport } from './routes/admin.projects.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,6 +48,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -50,6 +75,71 @@ const PartnersRoute = PartnersRouteImport.update({
   path: '/partners',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAccountRoute = AdminAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCareersRoute = AdminCareersRouteImport.update({
+  id: '/careers',
+  path: '/careers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCompanyRoute = AdminCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
+  id: '/enquiries',
+  path: '/enquiries',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNavigationRoute = AdminNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPartnersRoute = AdminPartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTeamRoute = AdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin_/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSetPasswordRoute = AdminSetPasswordRouteImport.update({
+  id: '/admin_/set-password',
+  path: '/admin/set-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
   id: '/insights/',
   path: '/insights/',
@@ -70,18 +160,68 @@ const ProjectsSlugRoute = ProjectsSlugRouteImport.update({
   path: '/projects/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminInsightsIndexRoute = AdminInsightsIndexRouteImport.update({
+  id: '/insights/',
+  path: '/insights/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInsightsIdRoute = AdminInsightsIdRouteImport.update({
+  id: '/insights/$id',
+  path: '/insights/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPagesIndexRoute = AdminPagesIndexRouteImport.update({
+  id: '/pages/',
+  path: '/pages/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPagesPageRoute = AdminPagesPageRouteImport.update({
+  id: '/pages/$page',
+  path: '/pages/$page',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProjectsIndexRoute = AdminProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProjectsIdRoute = AdminProjectsIdRouteImport.update({
+  id: '/projects/$id',
+  path: '/projects/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/expertise': typeof ExpertiseRoute
   '/partners': typeof PartnersRoute
+  '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
+  '/admin/careers': typeof AdminCareersRoute
+  '/admin/company': typeof AdminCompanyRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/set-password': typeof AdminSetPasswordRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/admin/insights/$id': typeof AdminInsightsIdRoute
+  '/admin/pages/$page': typeof AdminPagesPageRoute
+  '/admin/projects/$id': typeof AdminProjectsIdRoute
+  '/admin/insights/': typeof AdminInsightsIndexRoute
+  '/admin/pages/': typeof AdminPagesIndexRoute
+  '/admin/projects/': typeof AdminProjectsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,37 +230,96 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/expertise': typeof ExpertiseRoute
   '/partners': typeof PartnersRoute
+  '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
+  '/admin/careers': typeof AdminCareersRoute
+  '/admin/company': typeof AdminCompanyRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/set-password': typeof AdminSetPasswordRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/insights': typeof InsightsIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/admin/insights/$id': typeof AdminInsightsIdRoute
+  '/admin/pages/$page': typeof AdminPagesPageRoute
+  '/admin/projects/$id': typeof AdminProjectsIdRoute
+  '/admin/insights': typeof AdminInsightsIndexRoute
+  '/admin/pages': typeof AdminPagesIndexRoute
+  '/admin/projects': typeof AdminProjectsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/expertise': typeof ExpertiseRoute
   '/partners': typeof PartnersRoute
+  '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
+  '/admin/careers': typeof AdminCareersRoute
+  '/admin/company': typeof AdminCompanyRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
+  '/admin_/login': typeof AdminLoginRoute
+  '/admin_/set-password': typeof AdminSetPasswordRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/admin/insights/$id': typeof AdminInsightsIdRoute
+  '/admin/pages/$page': typeof AdminPagesPageRoute
+  '/admin/projects/$id': typeof AdminProjectsIdRoute
+  '/admin/insights/': typeof AdminInsightsIndexRoute
+  '/admin/pages/': typeof AdminPagesIndexRoute
+  '/admin/projects/': typeof AdminProjectsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/careers'
     | '/contact'
     | '/expertise'
     | '/partners'
+    | '/admin/account'
+    | '/admin/activity'
+    | '/admin/careers'
+    | '/admin/company'
+    | '/admin/enquiries'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/partners'
+    | '/admin/settings'
+    | '/admin/team'
+    | '/admin/login'
+    | '/admin/set-password'
     | '/insights/$slug'
     | '/projects/$slug'
+    | '/admin/'
     | '/insights/'
     | '/projects/'
+    | '/admin/insights/$id'
+    | '/admin/pages/$page'
+    | '/admin/projects/$id'
+    | '/admin/insights/'
+    | '/admin/pages/'
+    | '/admin/projects/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,31 +328,73 @@ export interface FileRouteTypes {
     | '/contact'
     | '/expertise'
     | '/partners'
+    | '/admin/account'
+    | '/admin/activity'
+    | '/admin/careers'
+    | '/admin/company'
+    | '/admin/enquiries'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/partners'
+    | '/admin/settings'
+    | '/admin/team'
+    | '/admin/login'
+    | '/admin/set-password'
     | '/insights/$slug'
     | '/projects/$slug'
+    | '/admin'
     | '/insights'
     | '/projects'
+    | '/admin/insights/$id'
+    | '/admin/pages/$page'
+    | '/admin/projects/$id'
+    | '/admin/insights'
+    | '/admin/pages'
+    | '/admin/projects'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
     | '/careers'
     | '/contact'
     | '/expertise'
     | '/partners'
+    | '/admin/account'
+    | '/admin/activity'
+    | '/admin/careers'
+    | '/admin/company'
+    | '/admin/enquiries'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/partners'
+    | '/admin/settings'
+    | '/admin/team'
+    | '/admin_/login'
+    | '/admin_/set-password'
     | '/insights/$slug'
     | '/projects/$slug'
+    | '/admin/'
     | '/insights/'
     | '/projects/'
+    | '/admin/insights/$id'
+    | '/admin/pages/$page'
+    | '/admin/projects/$id'
+    | '/admin/insights/'
+    | '/admin/pages/'
+    | '/admin/projects/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CareersRoute: typeof CareersRoute
   ContactRoute: typeof ContactRoute
   ExpertiseRoute: typeof ExpertiseRoute
   PartnersRoute: typeof PartnersRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminSetPasswordRoute: typeof AdminSetPasswordRoute
   InsightsSlugRoute: typeof InsightsSlugRoute
   ProjectsSlugRoute: typeof ProjectsSlugRoute
   InsightsIndexRoute: typeof InsightsIndexRoute
@@ -174,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers': {
@@ -204,6 +452,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/account': {
+      id: '/admin/account'
+      path: '/account'
+      fullPath: '/admin/account'
+      preLoaderRoute: typeof AdminAccountRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/careers': {
+      id: '/admin/careers'
+      path: '/careers'
+      fullPath: '/admin/careers'
+      preLoaderRoute: typeof AdminCareersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/company': {
+      id: '/admin/company'
+      path: '/company'
+      fullPath: '/admin/company'
+      preLoaderRoute: typeof AdminCompanyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/enquiries': {
+      id: '/admin/enquiries'
+      path: '/enquiries'
+      fullPath: '/admin/enquiries'
+      preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/navigation': {
+      id: '/admin/navigation'
+      path: '/navigation'
+      fullPath: '/admin/navigation'
+      preLoaderRoute: typeof AdminNavigationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/partners': {
+      id: '/admin/partners'
+      path: '/partners'
+      fullPath: '/admin/partners'
+      preLoaderRoute: typeof AdminPartnersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/team': {
+      id: '/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AdminTeamRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin_/login': {
+      id: '/admin_/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/set-password': {
+      id: '/admin_/set-password'
+      path: '/admin/set-password'
+      fullPath: '/admin/set-password'
+      preLoaderRoute: typeof AdminSetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insights/': {
       id: '/insights/'
       path: '/insights'
@@ -232,16 +571,103 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/insights/': {
+      id: '/admin/insights/'
+      path: '/insights'
+      fullPath: '/admin/insights/'
+      preLoaderRoute: typeof AdminInsightsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/insights/$id': {
+      id: '/admin/insights/$id'
+      path: '/insights/$id'
+      fullPath: '/admin/insights/$id'
+      preLoaderRoute: typeof AdminInsightsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/pages/': {
+      id: '/admin/pages/'
+      path: '/pages'
+      fullPath: '/admin/pages/'
+      preLoaderRoute: typeof AdminPagesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/pages/$page': {
+      id: '/admin/pages/$page'
+      path: '/pages/$page'
+      fullPath: '/admin/pages/$page'
+      preLoaderRoute: typeof AdminPagesPageRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/projects/': {
+      id: '/admin/projects/'
+      path: '/projects'
+      fullPath: '/admin/projects/'
+      preLoaderRoute: typeof AdminProjectsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/projects/$id': {
+      id: '/admin/projects/$id'
+      path: '/projects/$id'
+      fullPath: '/admin/projects/$id'
+      preLoaderRoute: typeof AdminProjectsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminAccountRoute: typeof AdminAccountRoute
+  AdminActivityRoute: typeof AdminActivityRoute
+  AdminCareersRoute: typeof AdminCareersRoute
+  AdminCompanyRoute: typeof AdminCompanyRoute
+  AdminEnquiriesRoute: typeof AdminEnquiriesRoute
+  AdminMediaRoute: typeof AdminMediaRoute
+  AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminPartnersRoute: typeof AdminPartnersRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTeamRoute: typeof AdminTeamRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminInsightsIdRoute: typeof AdminInsightsIdRoute
+  AdminPagesPageRoute: typeof AdminPagesPageRoute
+  AdminProjectsIdRoute: typeof AdminProjectsIdRoute
+  AdminInsightsIndexRoute: typeof AdminInsightsIndexRoute
+  AdminPagesIndexRoute: typeof AdminPagesIndexRoute
+  AdminProjectsIndexRoute: typeof AdminProjectsIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAccountRoute: AdminAccountRoute,
+  AdminActivityRoute: AdminActivityRoute,
+  AdminCareersRoute: AdminCareersRoute,
+  AdminCompanyRoute: AdminCompanyRoute,
+  AdminEnquiriesRoute: AdminEnquiriesRoute,
+  AdminMediaRoute: AdminMediaRoute,
+  AdminNavigationRoute: AdminNavigationRoute,
+  AdminPartnersRoute: AdminPartnersRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminTeamRoute: AdminTeamRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminInsightsIdRoute: AdminInsightsIdRoute,
+  AdminPagesPageRoute: AdminPagesPageRoute,
+  AdminProjectsIdRoute: AdminProjectsIdRoute,
+  AdminInsightsIndexRoute: AdminInsightsIndexRoute,
+  AdminPagesIndexRoute: AdminPagesIndexRoute,
+  AdminProjectsIndexRoute: AdminProjectsIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   CareersRoute: CareersRoute,
   ContactRoute: ContactRoute,
   ExpertiseRoute: ExpertiseRoute,
   PartnersRoute: PartnersRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminSetPasswordRoute: AdminSetPasswordRoute,
   InsightsSlugRoute: InsightsSlugRoute,
   ProjectsSlugRoute: ProjectsSlugRoute,
   InsightsIndexRoute: InsightsIndexRoute,

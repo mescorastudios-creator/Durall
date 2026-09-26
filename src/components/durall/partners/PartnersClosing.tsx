@@ -1,7 +1,9 @@
 import { useReveal, useSplitLines } from "@/lib/anim";
+import { destination } from "@/content/render";
+import type { PartnersPage } from "@/content/types";
 import { CtaButton } from "../ui";
 
-export function PartnersClosing() {
+export function PartnersClosing({ content }: { content: PartnersPage["closing"] }) {
   const headingRef = useSplitLines<HTMLHeadingElement>();
   const ref = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 32 });
 
@@ -16,24 +18,23 @@ export function PartnersClosing() {
             data-reveal
             className="font-display text-[clamp(0.5625rem,0.72vw,0.6875rem)] font-bold tracking-eyebrow text-slate uppercase"
           >
-            06 — Built around the demands
+            {content.eyebrow}
           </p>
           <h2
             ref={headingRef}
             className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[16ch] font-display text-[clamp(1.75rem,3.2vw,3.5rem)] leading-[1.12] font-medium tracking-section text-balance text-navy"
           >
-            Built around the demands of architecture.
+            {content.heading}
           </h2>
           <p
             data-reveal
             className="mt-[clamp(1.25rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.9375rem)] leading-relaxed text-slate"
           >
-            From the first line on paper to the final fix on site, we bring the systems, engineering
-            and execution together.
+            {content.body}
           </p>
           <div data-reveal className="mt-[clamp(1.5rem,3vw,2.25rem)]">
-            <CtaButton to="/contact" variant="solid">
-              Talk to our team
+            <CtaButton {...destination(content.cta.href)} variant="solid">
+              {content.cta.label}
             </CtaButton>
           </div>
         </div>

@@ -1,10 +1,16 @@
-import { IMAGES } from "@/assets/images";
 import { REVEAL_WINDOW, useReveal, useSplitLines } from "@/lib/anim";
+import { imageOf } from "@/content/render";
+import type { PartnerDoc, PartnersPage } from "@/content/types";
 import { Interactive } from "../ui";
-import { PRACTICES } from "./data";
 import { PracticeLogo } from "./marks";
 
-export function LeadingPractices() {
+export function LeadingPractices({
+  content,
+  practices,
+}: {
+  content: PartnersPage["practices"];
+  practices: readonly PartnerDoc[];
+}) {
   const headingRef = useSplitLines<HTMLHeadingElement>();
   const introRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 16 });
   const imageRef = useReveal<HTMLDivElement>({ y: 32, start: REVEAL_WINDOW.start });
@@ -16,53 +22,62 @@ export function LeadingPractices() {
       id="practices"
       className="relative overflow-hidden bg-white pb-[clamp(3.5rem,8vw,7.5rem)]"
     >
-      <div className="shell-about border-t border-navy/10 pt-[clamp(2.5rem,5vw,4.5rem)]" />
-
-      <div className="grid grid-cols-1 items-center gap-[clamp(2rem,4vw,3.5rem)] lg:grid-cols-2">
-        <div ref={introRef} className="shell-about min-w-0 lg:pr-0">
+      {/* The intro, with the house drawn large to its right. From lg up the
+          picture is taken out of flow: it hangs from just under the outline
+          that closes the section above, runs off the right edge of the page,
+          and fades into the white at its foot, as in the design. The row is
+          given the picture's height (69vw at 1365 × 648, less the faded
+          foot) so the logos below start where it has faded out. */}
+      <div className="relative lg:min-h-[31vw]">
+        <div
+          ref={introRef}
+          className="shell-about relative z-[1] min-w-0 pt-[clamp(3rem,6.4vw,6.5rem)]"
+        >
           <p
             data-reveal
-            className="flex items-center gap-3 font-display text-[clamp(0.625rem,0.72vw,0.6875rem)] font-bold tracking-eyebrow text-accent-blue uppercase"
+            className="flex items-center gap-2.5 font-display text-[0.625rem] font-bold tracking-eyebrow text-accent-blue uppercase"
           >
-            Architects &amp; Design Practices
-            <span
-              aria-hidden="true"
-              className="h-0 w-[clamp(1.5rem,3vw,2.5rem)] border-t border-accent-blue/60"
-            />
+            {content.eyebrow}
+            <span aria-hidden="true" className="h-0 w-6 border-t border-accent-blue/60" />
           </p>
+          {/* 1.105, not the design's 1.2: split into lines for the reveal, each
+              line carries 0.1em of padding whose negative margins only
+              partly collapse, which puts that back between the lines. */}
           <h2
             ref={headingRef}
-            className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[18ch] font-display text-[clamp(1.75rem,3.2vw,3.5rem)] leading-[1.12] font-medium tracking-section text-balance text-navy"
+            className="mt-[clamp(1rem,1.7vw,1.75rem)] max-w-[14ch] font-display text-[clamp(1.75rem,2.59vw,2.75rem)] leading-[1.105] font-normal tracking-section text-balance text-navy"
           >
-            Trusted alongside leading practices.
+            {content.heading}
           </h2>
           <span
             aria-hidden="true"
-            className="mt-[clamp(1rem,2vw,1.5rem)] block h-0 w-[clamp(2rem,3vw,2.5rem)] border-t-2 border-accent-blue"
+            className="mt-[clamp(0.5rem,1vw,1rem)] block h-0 w-[2.3rem] border-t-2 border-accent-blue"
           />
           <p
             data-reveal
-            className="mt-[clamp(1.25rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.9375rem)] leading-relaxed text-slate"
+            className="mt-[clamp(1rem,1.6vw,1.625rem)] max-w-[28rem] font-display text-[clamp(0.75rem,0.754vw,0.875rem)] leading-[1.56] text-slate"
           >
-            Durall’s international experience is shaped through collaboration with visionary
-            architects and designers across the globe.
+            {content.lead}
           </p>
           <p
             data-reveal
-            className="mt-[clamp(0.75rem,1.5vw,1.25rem)] max-w-[28rem] font-body text-[clamp(0.75rem,0.9vw,0.875rem)] leading-relaxed text-slate/80"
+            className="mt-[clamp(0.625rem,0.82vw,0.875rem)] max-w-[28rem] font-display text-[clamp(0.6875rem,0.645vw,0.75rem)] leading-[1.56] text-slate/80"
           >
-            And also with all leading architects &amp; interior designers on projects in India.
+            {content.note}
           </p>
         </div>
 
-        <div ref={imageRef} className="relative min-w-0">
+        <div
+          ref={imageRef}
+          className="relative mt-[clamp(2rem,4vw,3rem)] min-w-0 lg:absolute lg:top-[1.3rem] lg:right-0 lg:mt-0 lg:w-[69vw]"
+        >
           <img
-            {...IMAGES.partnersVilla}
-            alt="Rendered white residence with layered aluminium framed glazing"
-            sizes="(min-width: 64rem) 50vw, 100vw"
+            {...imageOf(content.photo.image)}
+            alt={content.photo.alt}
+            sizes="(min-width: 64rem) 69vw, 100vw"
             loading="lazy"
             decoding="async"
-            className="w-full object-contain"
+            className="w-full object-contain [mask-image:linear-gradient(to_bottom,black_60%,transparent_92%)]"
           />
         </div>
       </div>
@@ -71,8 +86,8 @@ export function LeadingPractices() {
         ref={gridRef}
         className="shell-about relative mt-[clamp(2.5rem,5vw,4.5rem)] grid grid-cols-1 gap-y-[clamp(2rem,4vw,3rem)] sm:grid-cols-2 lg:grid-cols-4"
       >
-        {PRACTICES.map((practice) => (
-          <li key={practice.name} data-cell className="min-w-0">
+        {practices.map((practice) => (
+          <li key={practice.id} data-cell className="min-w-0">
             <Interactive
               lift={-4}
               scale={1.01}
@@ -94,7 +109,7 @@ export function LeadingPractices() {
 
       <div ref={closingRef} className="shell-about mt-[clamp(2.5rem,5vw,4.5rem)] text-center">
         <p className="font-display text-[clamp(0.5625rem,0.75vw,0.6875rem)] font-bold tracking-eyebrow text-navy uppercase">
-          Collaboration beyond borders. Architecture without limits.
+          {content.tagline}
         </p>
         <span
           aria-hidden="true"

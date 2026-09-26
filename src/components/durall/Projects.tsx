@@ -1,38 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { IMAGES, type ImageAsset } from "@/assets/images";
-import { PARIKRAMA_SLUG } from "./project/data";
 import { TRAVEL, useReveal, useSectionIntro } from "@/lib/anim";
+import { imageOf, Lines } from "@/content/render";
+import type { HomeCard } from "@/content/select";
+import type { HomePage } from "@/content/types";
 import { ConnectorLine } from "./ConnectorLine";
 import { ViewMore } from "./ui";
-
-/** Each card opens its project's page, /projects/<slug>. */
-const PROJECTS: { name: string; place: string; image: ImageAsset; slug: string }[] = [
-  {
-    name: "Parikrama, Murud House",
-    place: "Murud — Spasm Architects",
-    image: IMAGES.cardParikrama,
-    slug: PARIKRAMA_SLUG,
-  },
-  { name: "Patina", place: "Maldives — Studio MK27", image: IMAGES.cardPatina, slug: "patina" },
-  {
-    name: "Chiltron House",
-    place: "Singapore — WOW Architects",
-    image: IMAGES.cardChiltron,
-    slug: "chiltron-house",
-  },
-  {
-    name: "Juhu house",
-    place: "Mumbai — Ernesto Bedmar",
-    image: IMAGES.cardJuhu,
-    slug: "juhu-house",
-  },
-  {
-    name: "Ritz-Carlton",
-    place: "Maldives — Kerry Hill Architects",
-    image: IMAGES.cardRitz,
-    slug: "ritz-carlton-maldives",
-  },
-];
 
 /**
  * The line behind a card's photograph on hover: the photograph's outline,
@@ -63,7 +35,14 @@ function CardFrame() {
   );
 }
 
-export function Projects() {
+/** Each card opens its project's page, /projects/<slug>. */
+export function Projects({
+  content,
+  cards,
+}: {
+  content: HomePage["projects"];
+  cards: readonly HomeCard[];
+}) {
   const headRef = useSectionIntro<HTMLDivElement>();
   /* The grid gets a wider window than the header above it — the cascade is
    * the point — but it ends on the grid's own top rather than its bottom, so
@@ -98,16 +77,13 @@ export function Projects() {
             data-anim="lines"
             className="min-w-0 max-w-[38rem] font-display text-[clamp(2.125rem,3.7vw,4.25rem)] leading-none font-medium tracking-section text-balance text-navy"
           >
-            What we&rsquo;ve
-            <br />
-            built together.
+            <Lines text={content.heading} />
           </h2>
           <p
             data-anim
             className="min-w-0 max-w-[35rem] font-body text-[clamp(1rem,1.2vw,1.125rem)] leading-relaxed text-slate lg:pb-4"
           >
-            Selected residences and landmarks where Durall&rsquo;s systems became the
-            architecture&rsquo;s most exacting details.
+            {content.lede}
           </p>
         </div>
 
@@ -115,14 +91,14 @@ export function Projects() {
           ref={gridRef}
           className="mt-[clamp(2.75rem,5.5vw,6.5625rem)] grid grid-cols-1 gap-x-[clamp(1rem,1.4vw,1.625rem)] gap-y-[clamp(1.75rem,2.2vw,2.1875rem)] sm:grid-cols-2 lg:grid-cols-3"
         >
-          {PROJECTS.map((project) => (
-            <li key={project.name} data-card className="min-w-0">
+          {cards.map((project) => (
+            <li key={project.slug} data-card className="min-w-0">
               <article className="group relative flex flex-col items-start text-left">
                 <div className="relative aspect-square w-full">
                   <CardFrame />
                   <img
-                    {...project.image}
-                    alt={`${project.name} — ${project.place}`}
+                    {...imageOf(project.image)}
+                    alt={`${project.title} — ${project.subtitle}`}
                     sizes="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
                     loading="lazy"
                     className="relative h-full w-full object-cover"
@@ -137,11 +113,11 @@ export function Projects() {
                       params={{ slug: project.slug }}
                       className="after:absolute after:inset-0 after:content-['']"
                     >
-                      {project.name}
+                      {project.title}
                     </Link>
                   </h3>
                   <p className="mt-1.5 font-body text-xs tracking-wide text-slate">
-                    {project.place}
+                    {project.subtitle}
                   </p>
                 </div>
               </article>

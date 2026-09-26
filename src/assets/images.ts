@@ -96,6 +96,20 @@ import sentosaLibrary480 from "./parikrama/sentosa-library-480w.webp";
 import sentosaLibrary from "./parikrama/sentosa-library-768w.webp";
 import projectRitz from "./project-ritz.webp";
 
+import logoAdl from "./partners/adl.webp";
+import logoAfw from "./partners/afw.webp";
+import logoAgor from "./partners/agor.webp";
+import logoBedmar from "./partners/bedmar.webp";
+import logoBrombal from "./partners/brombal.webp";
+import logoEcoid from "./partners/ecoid.svg";
+import logoGlasmarte from "./partners/glasmarte.svg";
+import logoMeshtec from "./partners/meshtec.webp";
+import logoNomadic from "./partners/nomadic.webp";
+import logoPalagina from "./partners/palagina.webp";
+import logoRenson from "./partners/renson.svg";
+import logoResplendent from "./partners/resplendent.svg";
+import logoSom from "./partners/som.webp";
+
 export type ImageAsset = {
   src: string;
   width: number;
@@ -344,4 +358,20 @@ export const IMAGES = {
     ],
     473,
   ),
+
+  /* Partner and practice logos (partners page), each at its own file's
+   * dimensions. How tall each is drawn is set per partner in the content. */
+  logoGlasmarte: one(logoGlasmarte, 185, 35),
+  logoMeshtec: one(logoMeshtec, 352, 77),
+  logoAgor: one(logoAgor, 148, 95),
+  logoAdl: one(logoAdl, 92, 40),
+  logoPalagina: one(logoPalagina, 600, 152),
+  logoBrombal: one(logoBrombal, 600, 56),
+  logoRenson: one(logoRenson, 172, 30),
+  logoBedmar: one(logoBedmar, 499, 39),
+  logoAfw: one(logoAfw, 600, 380),
+  logoEcoid: one(logoEcoid, 114, 23),
+  logoNomadic: one(logoNomadic, 249, 249),
+  logoSom: one(logoSom, 600, 208),
+  logoResplendent: one(logoResplendent, 701, 193),
 } as const satisfies Record<string, ImageAsset>;

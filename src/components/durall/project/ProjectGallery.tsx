@@ -15,6 +15,7 @@ import { prefersReducedMotion, useReducedMotion } from "@/lib/motion-prefs";
 import { GalleryViewer } from "./GalleryViewer";
 import { LANDING, useLineReveal } from "./motion";
 import { Eyebrow } from "./parts";
+import type { ProjectsPage } from "@/content/types";
 import type { Plate, ProjectDetail } from "./data";
 
 type Mode = "detail" | "masonry" | "slider";
@@ -73,7 +74,13 @@ function plateStyle(plate: Plate, index: number): CSSProperties {
  * shutter lifts off it from the bottom edge while the image settles out of
  * an overscan.
  */
-export function ProjectGallery({ project }: { project: ProjectDetail }) {
+export function ProjectGallery({
+  project,
+  labels,
+}: {
+  project: ProjectDetail;
+  labels: ProjectsPage["detail"];
+}) {
   const { plates } = project;
   const reduced = useReducedMotion();
   const headRef = useLineReveal<HTMLDivElement>();
@@ -303,9 +310,11 @@ export function ProjectGallery({ project }: { project: ProjectDetail }) {
             data-rise
             className="font-display text-[0.6875rem] font-bold tracking-[0.18em] text-slate uppercase"
           >
-            Project photography
+            {labels.gallery}
           </h2>
-          <Eyebrow>{count} plates</Eyebrow>
+          <Eyebrow>
+            {count} {labels.plates}
+          </Eyebrow>
         </div>
       </div>
 

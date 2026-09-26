@@ -1,8 +1,10 @@
-import { IMAGES } from "@/assets/images";
 import { useClipReveal, useParallax, useSectionIntro } from "@/lib/anim";
+import { destination, imageOf, TwoToneText } from "@/content/render";
+import type { HomePage } from "@/content/types";
 import { UnderlineLink } from "./ui";
 
-export function Philosophy() {
+export function Philosophy({ content }: { content: HomePage["philosophy"] }) {
+  const [lead, ...rest] = content.paragraphs;
   /* One timeline for the whole section. This used to be five independent
    * hooks — copy, frame, parallax, heading, clip — firing at two different
    * scroll positions on two different curves, which is why the heading and
@@ -22,29 +24,28 @@ export function Philosophy() {
             data-anim="lines"
             className="font-display text-[clamp(2.125rem,3.6vw,4rem)] leading-[1.17] font-medium tracking-tight text-balance text-navy"
           >
-            Luxury is never applied. <span className="text-slate">It is engineered.</span>
+            <TwoToneText value={content.heading} />
           </h2>
 
           <p
             data-anim
             className="mt-[clamp(2rem,2.7vw,3.25rem)] max-w-[27rem] font-body text-[clamp(0.875rem,1vw,0.9375rem)] leading-[1.75] text-slate"
           >
-            Durall works alongside architects and developers long before a building becomes visible
-            — coordinating design intent, engineering tolerance, and material performance into a
-            single, precise envelope.
+            {lead}
           </p>
-          <p
-            data-anim
-            data-anim-lead
-            className="mt-[clamp(1.25rem,1.4vw,1.625rem)] max-w-[27rem] font-body text-[clamp(0.875rem,1vw,0.9375rem)] leading-[1.75] text-slate"
-          >
-            Every threshold a building presents to the world — its windows, its skylights, its
-            screens — is a system we design, engineer, fabricate and install as one continuous
-            discipline.
-          </p>
+          {rest.map((paragraph, index) => (
+            <p
+              key={index}
+              data-anim
+              data-anim-lead
+              className="mt-[clamp(1.25rem,1.4vw,1.625rem)] max-w-[27rem] font-body text-[clamp(0.875rem,1vw,0.9375rem)] leading-[1.75] text-slate"
+            >
+              {paragraph}
+            </p>
+          ))}
 
           <div data-anim className="mt-[clamp(2.25rem,3.3vw,3.875rem)]">
-            <UnderlineLink to="/expertise">How we work</UnderlineLink>
+            <UnderlineLink {...destination(content.link.href)}>{content.link.label}</UnderlineLink>
           </div>
         </div>
 
@@ -75,8 +76,8 @@ export function Philosophy() {
             <div data-clip-inner className="h-full w-full">
               <img
                 ref={imageRef}
-                {...IMAGES.philosophyPavilion}
-                alt="Dining pavilion framed by full-height Durall sliding systems"
+                {...imageOf(content.photo.image)}
+                alt={content.photo.alt}
                 sizes="(min-width: 64rem) 45vw, 100vw"
                 loading="lazy"
                 decoding="async"

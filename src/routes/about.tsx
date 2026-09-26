@@ -7,36 +7,27 @@ import { MeetsEngineering } from "@/components/durall/about/MeetsEngineering";
 import { OurApproach } from "@/components/durall/about/OurApproach";
 import { Contact } from "@/components/durall/Contact";
 import { DurallFooter } from "@/components/durall/DurallFooter";
-
-const TITLE = "About Durall — Engineering What Architecture Demands";
-const DESCRIPTION =
-  "Durall brings architecture, engineering and precision fabrication together — coordinating systems, materials and specialist partners into aluminium envelopes built to endure.";
+import { seoHead } from "@/content/head";
+import { fetchPage } from "@/content/api";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: () => fetchPage("about"),
+  head: ({ loaderData }) => seoHead(loaderData?.page.seo),
   component: About,
 });
 
 function About() {
+  const { page } = Route.useLoaderData();
   return (
     <div className="relative bg-white font-body text-navy">
       <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <AboutHero />
-        <AboutPhilosophy />
-        <SystemSpec />
-        <MeetsEngineering />
-        <OurApproach />
-        <Contact />
+        <AboutHero content={page.hero} />
+        <AboutPhilosophy content={page.philosophy} />
+        <SystemSpec content={page.spec} />
+        <MeetsEngineering content={page.meets} />
+        <OurApproach content={page.approach} />
+        <Contact source="about" />
       </main>
       <DurallFooter />
     </div>

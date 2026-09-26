@@ -1,16 +1,35 @@
-import type { Logo, PartnerMark, PracticeMark } from "./data";
+import { imageOf } from "@/content/render";
+import type { PartnerDoc } from "@/content/types";
+
+type Logo = NonNullable<PartnerDoc["logo"]>;
+
+/* The typographic stand-ins drawn when a company has no logo file, by the
+ * `mark` stored with it. The admin panel offers these names. */
+export const PARTNER_MARKS = [
+  "jofebar",
+  "glasmarte",
+  "meshtec",
+  "agor",
+  "adl",
+  "palagina",
+  "brombal",
+  "renson",
+  "plain",
+] as const;
+export const PRACTICE_MARKS = ["plain", "wow", "italic", "ecoid", "diamond", "solid"] as const;
 
 /** A company's own logo file, at its tuned height. */
 function OfficialLogo({ logo, name }: { logo: Logo; name: string }) {
+  const { src, width, height } = imageOf(logo.image);
   return (
     <img
-      src={logo.src}
-      width={logo.width}
-      height={logo.height}
+      src={src}
+      width={width}
+      height={height}
       alt={name}
       loading="lazy"
       decoding="async"
-      style={{ height: `${logo.rem}rem` }}
+      style={{ height: `${logo.height}rem` }}
       className="w-auto max-w-[11.5rem] object-contain"
     />
   );
@@ -30,9 +49,9 @@ export function PartnerLogo({
   name,
   logo,
 }: {
-  mark: PartnerMark;
+  mark: string;
   name: string;
-  logo?: Logo | undefined;
+  logo: Logo | null;
 }) {
   if (logo) return <OfficialLogo logo={logo} name={name} />;
   switch (mark) {
@@ -141,9 +160,9 @@ export function PracticeLogo({
   name,
   logo,
 }: {
-  mark: PracticeMark;
+  mark: string;
   name: string;
-  logo?: Logo | undefined;
+  logo: Logo | null;
 }) {
   // Nomadic Resorts publishes its emblem without the name, so the name is set
   // beside it rather than leaving an unlabelled circle in the grid.

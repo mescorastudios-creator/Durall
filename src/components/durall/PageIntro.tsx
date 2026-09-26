@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { useSectionIntro } from "@/lib/anim";
 
 /**
- * The opening band every non-hero page uses: a quiet white plate with an
- * eyebrow, the page's h1 and a short lede.
+ * The opening band every non-hero page uses: a quiet white plate with the
+ * page's h1 and a short lede, and an optional eyebrow above them.
  *
  * ProjectsIntro and ContactIntro each carried their own copy of this markup.
  * It is one component now, so a page added later cannot drift from it — and
@@ -15,7 +15,7 @@ export function PageIntro({
   title,
   lede,
 }: {
-  eyebrow: string;
+  eyebrow?: string | undefined;
   title: ReactNode;
   lede: ReactNode;
 }) {
@@ -24,15 +24,17 @@ export function PageIntro({
   return (
     <section className="relative bg-white pt-[max(calc(var(--header-h)+2rem),clamp(5.5rem,9vw,9.5rem))] pb-[clamp(2rem,3.5vw,3.5rem)]">
       <div ref={ref} className="shell">
-        <p
-          data-anim
-          className="font-display text-[0.6875rem] font-bold tracking-eyebrow text-accent-blue uppercase"
-        >
-          {eyebrow}
-        </p>
+        {eyebrow ? (
+          <p
+            data-anim
+            className="mb-[clamp(1rem,2vw,1.5rem)] font-display text-[0.6875rem] font-bold tracking-eyebrow text-accent-blue uppercase"
+          >
+            {eyebrow}
+          </p>
+        ) : null}
         <h1
           data-anim="lines"
-          className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[60rem] font-display text-[clamp(2.25rem,4.6vw,4.25rem)] leading-[1.06] font-medium tracking-section text-balance text-navy"
+          className="max-w-[60rem] font-display text-[clamp(2.25rem,4.6vw,4.25rem)] leading-[1.06] font-medium tracking-section text-balance text-navy"
         >
           {title}
         </h1>

@@ -1,12 +1,13 @@
-import { IMAGES } from "@/assets/images";
 import { useClipReveal, useParallax, useSectionIntro } from "@/lib/anim";
+import { destination, imageOf } from "@/content/render";
+import type { CareersPage } from "@/content/types";
 import { CtaButton } from "../ui";
 
 /* From lg up the photograph runs to the edge of the page: the negative
  * margin is shell-about's own gutter, copied from its @utility. */
 const BLEED = "lg:-mr-[clamp(1.25rem,max(3.75vw,26.6vw-11.95rem),17.9375rem)]";
 
-export function CareersHero() {
+export function CareersHero({ content }: { content: CareersPage["hero"] }) {
   const introRef = useSectionIntro<HTMLDivElement>();
   const clipRef = useClipReveal<HTMLDivElement>();
   const imageRef = useParallax<HTMLImageElement>(6);
@@ -21,28 +22,21 @@ export function CareersHero() {
         className="shell-about grid grid-cols-1 items-center gap-[clamp(2.75rem,5vw,5rem)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
       >
         <div className="min-w-0">
-          <p
-            data-anim
-            className="font-display text-[0.6875rem] font-bold tracking-eyebrow text-accent-blue uppercase"
-          >
-            Careers
-          </p>
           <h1
             data-anim="lines"
-            className="mt-[clamp(1rem,2vw,1.5rem)] max-w-[11ch] font-display text-[clamp(2.5rem,4.4vw,4.75rem)] leading-[1.04] font-medium tracking-hero text-balance text-navy"
+            className="max-w-[11ch] font-display text-[clamp(2.5rem,4.4vw,4.75rem)] leading-[1.04] font-medium tracking-hero text-balance text-navy"
           >
-            Build the part people touch.
+            {content.heading}
           </h1>
           <p
             data-anim
             className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.9375rem,1.15vw,1.0625rem)] leading-relaxed text-pretty text-slate"
           >
-            People open, close and lean on a building&rsquo;s envelope every day. We design, make
-            and install it under one roof.
+            {content.body}
           </p>
           <div data-anim className="mt-[clamp(1.75rem,3vw,2.5rem)]">
-            <CtaButton href="#openings" variant="solid">
-              View open roles
+            <CtaButton {...destination(content.cta.href)} variant="solid">
+              {content.cta.label}
             </CtaButton>
           </div>
         </div>
@@ -64,8 +58,8 @@ export function CareersHero() {
                   the parallax drift never uncovers an edge. */}
               <img
                 ref={imageRef}
-                {...IMAGES.projectBanyan}
-                alt="Timber deck and frameless glass balustrade above the forest at Banyan Villa, Phuket"
+                {...imageOf(content.photo.image)}
+                alt={content.photo.alt}
                 sizes="(min-width: 64rem) 55vw, 100vw"
                 fetchPriority="high"
                 decoding="async"

@@ -1,0 +1,62 @@
+/* The Durall design tokens, shared by the site's stylesheet (styles.css)
+ * and the admin panel's (admin/admin.css), so the panel is drawn in the
+ * same navy, type and curves as the site it edits. */
+
+/* ── Figma design tokens (Durall / Frame 9) ───────────────────────────── */
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-body: "Inter", ui-sans-serif, sans-serif;
+  --font-serif: "EB Garamond", ui-serif, Georgia, serif;
+  /* The contact invitation's serif, matched to its design. */
+  --font-editorial: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-navy: #050834;
+  --color-navy-72: rgb(5 8 52 / 0.72);
+  --color-navy-14: rgb(5 8 52 / 0.14);
+  --color-slate: #5c6972;
+  --color-mist: #f4f4f4;
+  --color-paper: #f7f7f6;
+  --color-glass: #eef0f1;
+  /* Pantone 427 C. Slate body text drops to 3.85:1 on it, so copy set on
+   * silver uses slate-deep (5.4:1) instead. */
+  --color-silver: #d5d5d5;
+  --color-slate-deep: #485359;
+  --color-accent-blue: #1e539c;
+
+  --text-hero: 8rem;
+  --text-hero--line-height: 0.94;
+  --text-section: 4rem;
+  --text-section--line-height: 1.17;
+  --text-section-lg: 4.25rem;
+  --text-section-lg--line-height: 1;
+  --text-lede: 1.125rem;
+  --text-lede--line-height: 1.6;
+
+  --tracking-hero: -0.16rem;
+  --tracking-section: -0.06375rem;
+  --tracking-eyebrow: 0.075rem;
+  --tracking-button: 0.08125rem;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* ── Motion ───────────────────────────────────────────────────────────
+   * Two curves for the whole site, and they are deliberately the CSS twins
+   * of the two GSAP eases in src/lib/anim.ts, so a hover and the entrance
+   * it follows are the same gesture:
+   *
+   *   --ease-entrance  ==  gsap "power4.out"   (quint-out)
+   *   --ease-micro     ==  gsap "power3.out"   (cubic-out)
+   *
+   * Scrubbed motion uses neither — scroll position is its clock, so those
+   * tweens are linear and the shaping comes from the stagger instead.
+   *
+   * Before this there were ten curves on the landing page alone (power3.out,
+   * expo.out, power4.out, two hand-written cubic-beziers, `ease-out`, the
+   * browser default, motion's "easeOut" and a spring), which is why sections
+   * read as separate pieces of work rather than one system. */
+  --ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-micro: cubic-bezier(0.33, 1, 0.68, 1);
+}

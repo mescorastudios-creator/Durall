@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { TRAVEL, useReveal, useSectionIntro } from "@/lib/anim";
-import { FEATURED, REST } from "./insights/data";
+import { imageOf } from "@/content/render";
+import { formatDate, type ArticleCard } from "@/content/select";
+import type { HomePage } from "@/content/types";
 import { ViewMore } from "./ui";
 
 export function ReadArticle({ className = "" }: { className?: string }) {
@@ -37,7 +39,14 @@ const FEATURED_CUT =
   "[clip-path:polygon(0_0,100%_0,100%_calc(100%-clamp(2.5rem,5.5vw,5.5rem)),calc(100%-clamp(2.5rem,5.5vw,5.5rem))_100%,0_100%)]";
 const THUMB_CUT = "[clip-path:polygon(0_0,100%_0,100%_74%,74%_100%,0_100%)]";
 
-export function Insights() {
+export function Insights({
+  content,
+  articles,
+}: {
+  content: HomePage["insights"];
+  articles: readonly ArticleCard[];
+}) {
+  const [featured, ...rest] = articles;
   const headRef = useSectionIntro<HTMLDivElement>();
   const gridRef = useReveal<HTMLDivElement>({
     selector: "[data-card]",
@@ -57,7 +66,7 @@ export function Insights() {
             data-anim="lines"
             className="max-w-[13.5em] font-display text-[clamp(2.125rem,3.6vw,4rem)] leading-[1.17] font-medium tracking-tight text-pretty text-navy"
           >
-            Engineering insights that build better facades
+            {content.heading}
           </h2>
         </div>
 
@@ -67,42 +76,44 @@ export function Insights() {
           className="mt-[clamp(2.5rem,4vw,4.375rem)] grid grid-cols-1 gap-x-[clamp(2rem,5.5vw,6rem)] gap-y-[clamp(2.5rem,4vw,3.5rem)] lg:grid-cols-[minmax(0,1.19fr)_minmax(0,1fr)]"
         >
           {/* Featured article */}
-          <article data-card className="flex min-w-0 flex-col">
-            <div className={`aspect-[29/20] w-full overflow-hidden ${FEATURED_CUT}`}>
-              <img
-                {...FEATURED.image}
-                alt={FEATURED.alt}
-                sizes="(min-width: 64rem) 50vw, 100vw"
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="mt-[clamp(1.25rem,1.8vw,1.75rem)] flex min-w-0 flex-col">
-              <Meta
-                category={FEATURED.category}
-                date={`${FEATURED.date} · ${FEATURED.readingTime}`}
-                iso={FEATURED.iso}
-              />
-              <h3 className="mt-[clamp(0.75rem,1.2vw,1.125rem)] max-w-[30ch] font-display text-[clamp(1.5rem,2.5vw,2.75rem)] leading-[1.14] font-medium tracking-tight text-balance text-navy">
-                {FEATURED.title}
-              </h3>
-              <p className="mt-[clamp(0.875rem,1.4vw,1.25rem)] max-w-[46ch] font-body text-[clamp(0.875rem,1vw,1rem)] leading-relaxed text-slate">
-                {FEATURED.excerpt}
-              </p>
-              <Link
-                to="/insights/$slug"
-                params={{ slug: FEATURED.slug }}
-                className="group mt-[clamp(1.25rem,2vw,1.875rem)] inline-flex min-h-11 w-fit items-center"
-              >
-                <ReadArticle />
-                <span className="sr-only">: {FEATURED.title}</span>
-              </Link>
-            </div>
-          </article>
+          {featured ? (
+            <article data-card className="flex min-w-0 flex-col">
+              <div className={`aspect-[29/20] w-full overflow-hidden ${FEATURED_CUT}`}>
+                <img
+                  {...imageOf(featured.cover.image)}
+                  alt={featured.cover.alt}
+                  sizes="(min-width: 64rem) 50vw, 100vw"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="mt-[clamp(1.25rem,1.8vw,1.75rem)] flex min-w-0 flex-col">
+                <Meta
+                  category={featured.category}
+                  date={`${formatDate(featured.publishedAt)} · ${featured.readingTime}`}
+                  iso={featured.publishedAt}
+                />
+                <h3 className="mt-[clamp(0.75rem,1.2vw,1.125rem)] max-w-[30ch] font-display text-[clamp(1.5rem,2.5vw,2.75rem)] leading-[1.14] font-medium tracking-tight text-balance text-navy">
+                  {featured.title}
+                </h3>
+                <p className="mt-[clamp(0.875rem,1.4vw,1.25rem)] max-w-[46ch] font-body text-[clamp(0.875rem,1vw,1rem)] leading-relaxed text-slate">
+                  {featured.excerpt}
+                </p>
+                <Link
+                  to="/insights/$slug"
+                  params={{ slug: featured.slug }}
+                  className="group mt-[clamp(1.25rem,2vw,1.875rem)] inline-flex min-h-11 w-fit items-center"
+                >
+                  <ReadArticle />
+                  <span className="sr-only">: {featured.title}</span>
+                </Link>
+              </div>
+            </article>
+          ) : null}
 
           {/* Compact rows */}
           <div className="flex min-w-0 flex-col">
-            {REST.map((row, index) => (
+            {rest.map((row, index) => (
               <article
                 key={row.slug}
                 data-card
@@ -112,7 +123,11 @@ export function Insights() {
                 }
               >
                 <div className="min-w-0 flex-1">
-                  <Meta category={row.category} date={row.date} iso={row.iso} />
+                  <Meta
+                    category={row.category}
+                    date={formatDate(row.publishedAt)}
+                    iso={row.publishedAt}
+                  />
                   <h3 className="mt-[clamp(0.625rem,1vw,0.875rem)] max-w-[30ch] font-display text-[clamp(1.0625rem,1.35vw,1.5rem)] leading-[1.25] font-medium tracking-tight text-pretty text-navy">
                     {row.title}
                   </h3>
@@ -129,8 +144,8 @@ export function Insights() {
                   className={`aspect-square w-[clamp(5.5rem,9vw,8.75rem)] shrink-0 overflow-hidden ${THUMB_CUT}`}
                 >
                   <img
-                    {...row.image}
-                    alt={row.alt}
+                    {...imageOf(row.cover.image)}
+                    alt={row.cover.alt}
                     sizes="clamp(5.5rem, 9vw, 8.75rem)"
                     loading="lazy"
                     className="h-full w-full object-cover"

@@ -2,7 +2,9 @@ import { useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { ArrowRight } from "../ui";
-import { RESPONSE_NOTE } from "./data";
+import { useSite } from "@/content/site";
+import type { ContactPage } from "@/content/types";
+import { Honeypot } from "./Honeypot";
 import { submitEnquiry, type EnquiryValues } from "./submit";
 import { transition } from "@/lib/motion-tokens";
 
@@ -30,12 +32,9 @@ const RULES: Record<FieldName, (value: string) => string | null> = {
         ? null
         : "That doesn’t look like a complete email address — check for a missing @ or domain.",
   subject: (v) => (v.trim().length === 0 ? "Add a subject so we can route your enquiry." : null),
-  message: (v) =>
-    v.trim().length === 0
-      ? "Tell us a little about the project."
-      : v.trim().length < 20
-        ? "A sentence or two more will help us point you at the right engineer."
-        : null,
+  // Any note will do: a short one still reaches the team, and a length rule
+  // only turned real enquiries away.
+  message: (v) => (v.trim().length === 0 ? "Tell us a little about the project." : null),
 };
 
 const FIELD_ORDER: FieldName[] = ["name", "email", "subject", "message"];
@@ -56,7 +55,8 @@ const LABEL_CLASS = "block font-display text-xs font-bold tracking-eyebrow text-
 const CONTROL_CLASS =
   "w-full min-w-0 bg-transparent font-body text-base text-navy outline-hidden placeholder:text-navy/45 sm:text-sm";
 
-export function EnquiryForm() {
+export function EnquiryForm({ copy }: { copy: ContactPage["form"] }) {
+  const RESPONSE_NOTE = useSite().settings.contact.responseNote;
   const reduced = useReducedMotion();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -106,7 +106,8 @@ export function EnquiryForm() {
 
     setFailure(null);
     setStatus("submitting");
-    const result = await submitEnquiry(values);
+    const honeypot = new FormData(event.currentTarget).get("website");
+    const result = await submitEnquiry(values, typeof honeypot === "string" ? honeypot : "");
     if (result.ok) {
       setSent(true);
       setStatus("idle");
@@ -149,7 +150,7 @@ export function EnquiryForm() {
             className="border-t border-navy-14 pt-[clamp(1.5rem,2.4vw,2rem)]"
           >
             <p className="font-serif text-[clamp(1.75rem,3vw,2.5rem)] leading-[1.12] text-balance text-navy">
-              Thank you — your enquiry is with us.
+              {copy.sentHeading}
             </p>
             <p className="mt-4 max-w-[34rem] font-body text-sm leading-relaxed text-pretty text-slate">
               {RESPONSE_NOTE}
@@ -159,7 +160,7 @@ export function EnquiryForm() {
               onClick={() => setSent(false)}
               className="mt-6 inline-flex min-h-11 items-center gap-3 border-b border-navy-14 font-display text-xs font-bold tracking-button text-navy uppercase transition-colors hover:border-navy motion-safe:transition-[color,border-color,transform] motion-safe:hover:translate-x-0.5"
             >
-              Send Another Enquiry
+              {copy.sentAgain}
               <ArrowRight className="h-3 w-3" />
             </button>
           </motion.div>
@@ -175,19 +176,20 @@ export function EnquiryForm() {
             exit={{ opacity: 0 }}
             transition={transition("short", reduced)}
             onSubmit={handleSubmit}
-            className="flex flex-col gap-[clamp(1.5rem,2.4vw,2rem)]"
+            className="relative flex flex-col gap-[clamp(1.5rem,2.4vw,2rem)]"
           >
+            <Honeypot />
             <div className="grid grid-cols-1 gap-[clamp(1.5rem,2.4vw,2rem)] sm:grid-cols-2">
               <div className="min-w-0">
                 <label htmlFor="name" className={LABEL_CLASS}>
-                  Your Name
+                  {copy.name.label}
                 </label>
                 <div className={fieldShell(Boolean(errors.name))}>
                   <input
                     {...fieldProps("name")}
                     type="text"
                     autoComplete="name"
-                    placeholder="Jane Mehta…"
+                    placeholder={copy.name.placeholder}
                     className={`${CONTROL_CLASS} min-h-11`}
                   />
                 </div>
@@ -196,7 +198,7 @@ export function EnquiryForm() {
 
               <div className="min-w-0">
                 <label htmlFor="email" className={LABEL_CLASS}>
-                  Your Email
+                  {copy.email.label}
                 </label>
                 <div className={fieldShell(Boolean(errors.email))}>
                   <input
@@ -205,7 +207,7 @@ export function EnquiryForm() {
                     autoComplete="email"
                     inputMode="email"
                     spellCheck={false}
-                    placeholder="jane@studio.com…"
+                    placeholder={copy.email.placeholder}
                     className={`${CONTROL_CLASS} min-h-11`}
                   />
                 </div>
@@ -215,14 +217,14 @@ export function EnquiryForm() {
 
             <div className="min-w-0">
               <label htmlFor="subject" className={LABEL_CLASS}>
-                Subject
+                {copy.subject.label}
               </label>
               <div className={fieldShell(Boolean(errors.subject))}>
                 <input
                   {...fieldProps("subject")}
                   type="text"
                   autoComplete="off"
-                  placeholder="Sliding systems for a coastal residence…"
+                  placeholder={copy.subject.placeholder}
                   className={`${CONTROL_CLASS} min-h-11`}
                 />
               </div>
@@ -231,14 +233,14 @@ export function EnquiryForm() {
 
             <div className="min-w-0">
               <label htmlFor="message" className={LABEL_CLASS}>
-                Your Message
+                {copy.message.label}
               </label>
               <div className={`${fieldShell(Boolean(errors.message))} items-start`}>
                 <textarea
                   {...fieldProps("message")}
                   rows={5}
                   autoComplete="off"
-                  placeholder="Tell us about the project — location, stage, and what you need from the envelope…"
+                  placeholder={copy.message.placeholder}
                   className={`${CONTROL_CLASS} resize-y py-2`}
                 />
               </div>
@@ -265,7 +267,7 @@ export function EnquiryForm() {
               aria-busy={status === "submitting"}
               className="mt-2 flex min-h-12 w-full items-center justify-center gap-4 bg-navy py-4 font-display text-xs font-bold tracking-button text-white uppercase transition-colors hover:bg-[#0b1152] disabled:cursor-progress disabled:bg-navy/70 motion-safe:transition-[background-color,transform] motion-safe:not-disabled:hover:-translate-y-0.5 sm:w-auto sm:px-[clamp(1.5rem,3vw,2.5rem)]"
             >
-              {status === "submitting" ? "Sending…" : "Send Enquiry"}
+              {status === "submitting" ? copy.sending : copy.submit}
               {status === "submitting" ? (
                 <svg
                   viewBox="0 0 16 16"

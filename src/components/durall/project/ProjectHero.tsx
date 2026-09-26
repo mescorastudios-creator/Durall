@@ -3,6 +3,7 @@ import { isIntroPending } from "@/lib/intro";
 import { loadGsap, markAnimReady, playAfterIntro, splitToLines } from "@/lib/anim";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
 import { LANDING } from "./motion";
+import type { ProjectsPage } from "@/content/types";
 import type { ProjectDetail } from "./data";
 
 /** How many full turns each odometer column makes before it lands. */
@@ -79,7 +80,13 @@ function Odometer({ value, unit }: { value: number; unit?: string | undefined })
  * Scrolling away moves the photograph at a fifth of the page's speed, as the
  * reference does.
  */
-export function ProjectHero({ project }: { project: ProjectDetail }) {
+export function ProjectHero({
+  project,
+  labels,
+}: {
+  project: ProjectDetail;
+  labels: ProjectsPage["detail"];
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -219,7 +226,7 @@ export function ProjectHero({ project }: { project: ProjectDetail }) {
             data-anim-hide
             className="font-display text-[0.6875rem] font-bold tracking-[0.2em] text-white/70 uppercase"
           >
-            Project · {project.location}
+            {labels.heroPrefix} · {project.location}
           </p>
           <h1
             ref={titleRef}

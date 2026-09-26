@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Map as MapInstance } from "maplibre-gl";
 import { ArrowUpRight, LocateFixed, Minus, Plus } from "lucide-react";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
-import { OFFICE } from "./data";
+import { useSite } from "@/content/site";
+import type { ContactPage } from "@/content/types";
 
 /** Mumbai at a glance: where the camera starts before it flies in. */
 const WIDE = { zoom: 11.2, pitch: 0, bearing: 0 };
@@ -45,7 +46,12 @@ const PIN = `
  * the map says to hold ⌘/Ctrl to zoom it, and on touch one finger scrolls
  * the page while two move the map.
  */
-export function OfficeMap() {
+export function OfficeMap({ labels }: { labels: ContactPage["map"] }) {
+  const { office } = useSite().settings;
+  const OFFICE = { ...office, lngLat: [office.lng, office.lat] as [number, number] };
+  // The map is built once; later renders read the latest office from here.
+  const officeRef = useRef(OFFICE);
+  officeRef.current = OFFICE;
   const frameRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -57,6 +63,7 @@ export function OfficeMap() {
     const host = hostRef.current;
     if (!frame || !host) return;
     let cancelled = false;
+    const OFFICE = officeRef.current;
     let map: MapInstance | undefined;
     let flyObserver: IntersectionObserver | undefined;
     let resizeObserver: ResizeObserver | undefined;
@@ -225,7 +232,7 @@ export function OfficeMap() {
         className="absolute inset-x-3 top-3 z-10 rounded-2xl bg-white/95 p-[clamp(1.1rem,1.6vw,1.5rem)] shadow-[0_12px_36px_rgb(5_8_52/0.14)] backdrop-blur-md sm:inset-x-auto sm:top-5 sm:left-5 sm:max-w-[23rem]"
       >
         <p className="font-display text-[0.6875rem] font-bold tracking-[0.16em] text-accent-blue uppercase">
-          Head office
+          {labels.eyebrow}
         </p>
         <p className="mt-2 font-display text-[clamp(1.0625rem,1.3vw,1.25rem)] leading-snug font-medium tracking-tight text-navy">
           {OFFICE.name}
@@ -247,7 +254,7 @@ export function OfficeMap() {
             rel="noopener noreferrer"
             className="group inline-flex min-h-11 items-center gap-2 rounded-full bg-navy px-4 font-display text-[0.6875rem] font-bold tracking-[0.12em] text-white uppercase transition-colors duration-[var(--dur-short)] hover:bg-accent-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue"
           >
-            Get directions
+            {labels.directions}
             <span className="sr-only"> (opens Google Maps in a new tab)</span>
             <ArrowUpRight
               aria-hidden="true"
@@ -261,7 +268,7 @@ export function OfficeMap() {
             rel="noopener noreferrer"
             className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-14 px-4 font-display text-[0.6875rem] font-bold tracking-[0.12em] text-navy uppercase transition-colors duration-[var(--dur-short)] hover:border-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue"
           >
-            Open in Maps
+            {labels.openInMaps}
             <span className="sr-only"> (Google Maps, new tab)</span>
             <ArrowUpRight
               aria-hidden="true"

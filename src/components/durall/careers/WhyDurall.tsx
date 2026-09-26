@@ -1,10 +1,10 @@
 import { useReveal, useSectionIntro } from "@/lib/anim";
-import { REASONS } from "./data";
+import type { CareersPage } from "@/content/types";
 
 /* Four short points under one heading. No cards and no icons: each point
  * hangs from a hairline, the way the specification rows on the About page
  * do, so the section reads as a list of facts rather than a feature grid. */
-export function WhyDurall() {
+export function WhyDurall({ content }: { content: CareersPage["why"] }) {
   const headRef = useSectionIntro<HTMLDivElement>();
   const listRef = useReveal<HTMLUListElement>({ selector: "li", y: 24, stagger: 0.1 });
 
@@ -20,7 +20,7 @@ export function WhyDurall() {
             data-anim="lines"
             className="max-w-[16ch] font-display text-[clamp(2rem,3vw,3.5rem)] leading-[1.11] font-medium tracking-tight text-balance text-navy"
           >
-            What working here is like.
+            {content.heading}
           </h2>
         </div>
 
@@ -28,7 +28,7 @@ export function WhyDurall() {
           ref={listRef}
           className="mt-[clamp(2.5rem,4.5vw,4rem)] grid grid-cols-1 gap-x-[clamp(2rem,5vw,6rem)] gap-y-[clamp(2.25rem,3.5vw,3.25rem)] md:grid-cols-2"
         >
-          {REASONS.map(({ title, body }) => (
+          {content.reasons.map(({ title, body }) => (
             <li
               key={title}
               className="min-w-0 border-t border-navy-14 pt-[clamp(1.25rem,2vw,1.75rem)]"

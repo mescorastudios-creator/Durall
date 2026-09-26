@@ -1,46 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/durall/SiteHeader";
-import { PageCta } from "@/components/durall/PageCta";
+import { PageCtaBand } from "@/components/durall/PageCta";
 import { CareersHero } from "@/components/durall/careers/CareersHero";
 import { HandoverBand } from "@/components/durall/careers/HandoverBand";
 import { WhyDurall } from "@/components/durall/careers/WhyDurall";
 import { Openings } from "@/components/durall/careers/Openings";
-import { APPLY_EMAIL } from "@/components/durall/careers/data";
 import { DurallFooter } from "@/components/durall/DurallFooter";
-
-const TITLE = "Careers — Durall Systems";
-const DESCRIPTION =
-  "Design, engineering, workshop and site roles at Durall Systems, and how to apply. We design, make and install building envelopes under one roof.";
+import { seoHead } from "@/content/head";
+import { fetchCareers } from "@/content/api";
+import { useSite } from "@/content/site";
 
 export const Route = createFileRoute("/careers")({
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: () => fetchCareers(),
+  head: ({ loaderData }) => seoHead(loaderData?.page.seo),
   component: CareersPage,
 });
 
 function CareersPage() {
+  const { page, roles } = Route.useLoaderData();
+  const email = useSite().settings.contact.careersEmail;
   return (
     <div className="relative bg-white font-body text-navy">
-      <SiteHeader variant="light" />
+      <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <CareersHero />
-        <HandoverBand />
-        <WhyDurall />
-        <Openings />
-        <PageCta
-          eyebrow="Open application"
-          heading="No role that fits? Send your work anyway."
-          body="We would rather hear from the right person a year early than not at all."
-          action="Send your work"
-          href={`mailto:${APPLY_EMAIL}`}
+        <CareersHero content={page.hero} />
+        <HandoverBand content={page.band} />
+        <WhyDurall content={page.why} />
+        <Openings content={page.openings} roles={roles} email={email} />
+        {/* An empty action link means "apply by email". */}
+        <PageCtaBand
+          band={{
+            ...page.cta,
+            action: { ...page.cta.action, href: page.cta.action.href || `mailto:${email}` },
+          }}
         />
       </main>
       <DurallFooter />

@@ -1,12 +1,13 @@
-import { IMAGES } from "@/assets/images";
 import { useParallax, useSplitLines } from "@/lib/anim";
+import { imageOf } from "@/content/render";
+import type { CareersPage } from "@/content/types";
 
 /**
  * One sentence over a photograph, full bleed. It is the page's pause
  * between the hero and what it is like to work here, and the one place
  * the careers page picks up the navy of the rest of the site.
  */
-export function HandoverBand() {
+export function HandoverBand({ content }: { content: CareersPage["band"] }) {
   const headingRef = useSplitLines<HTMLHeadingElement>();
   const imageRef = useParallax<HTMLImageElement>(10);
 
@@ -15,7 +16,7 @@ export function HandoverBand() {
       {/* Decorative: the sentence carries the section. */}
       <img
         ref={imageRef}
-        {...IMAGES.projectBangalore}
+        {...imageOf(content.image)}
         alt=""
         sizes="100vw"
         loading="lazy"
@@ -33,7 +34,7 @@ export function HandoverBand() {
           ref={headingRef}
           className="max-w-[19ch] font-display text-[clamp(2rem,4vw,4.25rem)] leading-[1.08] font-medium tracking-section text-balance text-white"
         >
-          The person who drew the detail stands in front of it at handover.
+          {content.heading}
         </h2>
       </div>
     </section>

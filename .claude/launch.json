@@ -4,8 +4,50 @@
     {
       "name": "durall-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 8080
+    },
+    {
+      "name": "durall-dev-unreachable-db",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "dev",
+        "--port",
+        "8091",
+        "--strictPort"
+      ],
+      "port": 8091,
+      "env": {
+        "SUPABASE_URL": "http://127.0.0.1:9",
+        "SUPABASE_ANON_KEY": "test-anon-key",
+        "SUPABASE_SERVICE_ROLE_KEY": "test-service-key"
+      }
+    },
+    {
+      "name": "durall-dev-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "dev",
+        "--port",
+        "8092",
+        "--strictPort"
+      ],
+      "port": 8092,
+      "env": {
+        "SUPABASE_URL": "",
+        "SUPABASE_ANON_KEY": "",
+        "SUPABASE_SERVICE_ROLE_KEY": "",
+        "VITE_SUPABASE_URL": "",
+        "VITE_SUPABASE_ANON_KEY": "",
+        "VITE_SUPABASE_PUBLISHABLE_KEY": "",
+        "SUPABASE_PUBLISHABLE_KEY": "",
+        "SUPABASE_SECRET_KEY": ""
+      }
     }
   ]
 }

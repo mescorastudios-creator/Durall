@@ -3,7 +3,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { TRAVEL, useReveal } from "@/lib/anim";
 import { useReducedMotion } from "@/lib/motion-prefs";
-import { CATEGORIES, PROJECTS, SORTS, type Category, type SortKey } from "./data";
+import { CATEGORIES, SORTS, type Category, type SortKey } from "@/content/categories";
+import { imageOf } from "@/content/render";
+import type { PortfolioItem } from "@/content/select";
+import type { ProjectsPage } from "@/content/types";
 import { CURVE, transition } from "@/lib/motion-tokens";
 
 function ArrowUpRight() {
@@ -14,7 +17,13 @@ function ArrowUpRight() {
   );
 }
 
-export function ProjectGrid() {
+export function ProjectGrid({
+  projects: PROJECTS,
+  labels,
+}: {
+  projects: readonly PortfolioItem[];
+  labels: ProjectsPage["grid"];
+}) {
   const reduced = useReducedMotion();
   const barRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 16, stagger: 0.08 });
   /* No scroll reveal on this grid, deliberately.
@@ -57,10 +66,10 @@ export function ProjectGrid() {
     const filtered =
       category === "All" ? PROJECTS : PROJECTS.filter((p) => p.categories.includes(category));
     const sorted = [...filtered];
-    if (sort === "newest") sorted.sort((a, b) => b.year - a.year);
+    if (sort === "newest") sorted.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
     if (sort === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
     return sorted;
-  }, [category, sort]);
+  }, [PROJECTS, category, sort]);
 
   return (
     <section id="portfolio" className="bg-white pb-[clamp(3.5rem,6vw,7.5rem)]">
@@ -102,7 +111,7 @@ export function ProjectGrid() {
               aria-expanded={sortOpen}
               className="relative flex items-center gap-2 pb-1 font-display text-xs font-bold tracking-[0.0625rem] text-slate uppercase transition-colors hover:text-navy after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
             >
-              Sort
+              {labels.sort}
               <motion.span
                 animate={{ rotate: reduced || !sortOpen ? 0 : 180 }}
                 transition={transition("short", reduced)}
@@ -148,7 +157,7 @@ export function ProjectGrid() {
           <AnimatePresence initial={false} mode="popLayout">
             {visible.map((project) => (
               <motion.li
-                key={project.name}
+                key={project.slug}
                 data-card
                 layout={!reduced}
                 initial={reduced ? { opacity: 1 } : { opacity: 0, y: TRAVEL.sm }}
@@ -164,7 +173,7 @@ export function ProjectGrid() {
                 >
                   <div className="aspect-[848/565] w-full overflow-hidden rounded-sm bg-mist">
                     <img
-                      {...project.image}
+                      {...imageOf(project.hero.image)}
                       alt={`${project.name} — ${project.location}, ${project.architect}`}
                       sizes="(min-width: 40rem) 50vw, 100vw"
                       loading="lazy"
@@ -189,7 +198,7 @@ export function ProjectGrid() {
                       params={{ slug: project.slug }}
                       className="mt-1.5 inline-flex shrink-0 items-center gap-2 border-b border-navy pb-0.5 font-display text-xs font-bold tracking-[0.0625rem] text-navy uppercase after:absolute after:inset-0 after:content-['']"
                     >
-                      View Project
+                      {labels.view}
                       <span className="sr-only">: {project.name}</span>
                       <span className="hover-arrow inline-flex">
                         <ArrowUpRight />
@@ -207,7 +216,7 @@ export function ProjectGrid() {
         </ul>
 
         {visible.length === 0 ? (
-          <p className="mt-12 font-body text-sm text-slate">No projects in this category yet.</p>
+          <p className="mt-12 font-body text-sm text-slate">{labels.empty}</p>
         ) : null}
       </div>
     </section>
