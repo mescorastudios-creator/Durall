@@ -919,3 +919,14 @@ html.intro-pending [data-site-header] {
     animation: none;
   }
 }
+
+/* The home page slideshow's progress bars: the current one fills in time
+ * with its slide (HomeEnquiry.tsx). */
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

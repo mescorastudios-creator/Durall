@@ -5,7 +5,7 @@ import { Philosophy } from "@/components/durall/Philosophy";
 import { Projects } from "@/components/durall/Projects";
 import { Process } from "@/components/durall/Process";
 import { Insights } from "@/components/durall/Insights";
-import { Contact } from "@/components/durall/Contact";
+import { HomeEnquiry } from "@/components/durall/HomeEnquiry";
 import { DurallFooter } from "@/components/durall/DurallFooter";
 import { seoHead } from "@/content/head";
 import { fetchHome } from "@/content/api";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { page, cards, articles } = Route.useLoaderData();
+  const { page, cards, articles, slides } = Route.useLoaderData();
   return (
     <div className="relative bg-white font-body text-navy">
       <SiteHeader />
@@ -27,7 +27,7 @@ function Index() {
         <Projects content={page.projects} cards={cards} />
         <Process />
         <Insights content={page.insights} articles={articles} />
-        <Contact />
+        <HomeEnquiry copy={page.enquiry} slides={slides} />
       </main>
       <DurallFooter />
     </div>

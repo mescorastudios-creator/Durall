@@ -15,6 +15,8 @@ export type Enquiry = {
   studio: string;
   projectType: string;
   subject: string;
+  phone: string;
+  location: string;
   message: string;
   status: "new" | "read" | "replied" | "archived";
   notes: string;
@@ -29,6 +31,9 @@ type EnquiryRow = {
   studio: string;
   project_type: string;
   subject: string;
+  /** Absent until migration 0002 has run. */
+  phone?: string;
+  location?: string;
   message: string;
   status: Enquiry["status"];
   notes: string;
@@ -43,6 +48,8 @@ const enquiryOf = (row: EnquiryRow): Enquiry => ({
   studio: row.studio,
   projectType: row.project_type,
   subject: row.subject,
+  phone: row.phone ?? "",
+  location: row.location ?? "",
   message: row.message,
   status: row.status,
   notes: row.notes,

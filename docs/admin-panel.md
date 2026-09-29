@@ -7,7 +7,9 @@ all editable there, and enquiries from the site's forms arrive there.
 ## Setting it up (once)
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. In its **SQL Editor**, run `supabase/migrations/0001_cms.sql`.
+2. In its **SQL Editor**, run each file in `supabase/migrations/` in order
+   (`0001_cms.sql`, then `0002_enquiry_phone_location.sql`). A project set
+   up before 0002 existed only needs 0002 run.
 3. **Authentication → Sign In / Providers:** switch off *Allow new users to sign up*.
 4. **Authentication → URL Configuration:** set the Site URL to the live
    domain, and add `https://<your-domain>/admin/set-password` (plus

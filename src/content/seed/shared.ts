@@ -42,7 +42,7 @@ export const SHARED_SEED: SharedContent = {
     ],
     link: { label: "Explore our approach", href: "/about#approach" },
   },
-  // Home and About: the enquiry form on the frosted glass.
+  // About: the enquiry form on the frosted glass.
   enquiry: {
     eyebrow: "Start a Conversation",
     heading: "We’re here to\nhelp you build\nwhat’s next.",

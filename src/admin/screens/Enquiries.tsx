@@ -38,6 +38,8 @@ function csvOf(rows: Enquiry[]) {
       "Form",
       "Name",
       "Email",
+      "Phone",
+      "Location",
       "Studio",
       "Project type",
       "Subject",
@@ -51,6 +53,8 @@ function csvOf(rows: Enquiry[]) {
         SOURCES[r.source],
         r.name,
         r.email,
+        r.phone,
+        r.location,
         r.studio,
         r.projectType,
         r.subject,
@@ -77,7 +81,7 @@ export function EnquiriesScreen({ enquiries: initial }: { enquiries: Enquiry[] }
           (filter === "all" ||
             (filter === "open" ? e.status !== "archived" : e.status === filter)) &&
           (!needle ||
-            `${e.name} ${e.email} ${e.studio} ${e.subject} ${e.message}`
+            `${e.name} ${e.email} ${e.phone} ${e.location} ${e.studio} ${e.subject} ${e.message}`
               .toLowerCase()
               .includes(needle)),
       ),
@@ -338,6 +342,8 @@ function EnquiryDialog({
         {(
           [
             ["Email", enquiry.email],
+            ["Phone", enquiry.phone],
+            ["Project location", enquiry.location],
             ["Studio / company", enquiry.studio],
             ["Project type", enquiry.projectType],
             ["Subject", enquiry.subject],

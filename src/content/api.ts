@@ -6,6 +6,7 @@ import {
   homeCardsOf,
   nextProjectOf,
   portfolioOf,
+  projectSlidesOf,
   publishedArticles,
   publishedProjects,
 } from "@/content/select";
@@ -40,6 +41,7 @@ export const fetchHome = createServerFn({ method: "GET" }).handler(async () => {
     page,
     cards: homeCardsOf(projects),
     articles: publishedArticles(articles).slice(0, 4).map(cardOf),
+    slides: projectSlidesOf(projects),
   };
 });
 

@@ -19,6 +19,8 @@ const enquiry = z.object({
   studio: z.string().trim().max(200).default(""),
   projectType: z.string().trim().max(200).default(""),
   subject: z.string().trim().max(300).default(""),
+  phone: z.string().trim().max(60).default(""),
+  location: z.string().trim().max(200).default(""),
   message: z.string().trim().max(10_000).default(""),
   /** A field people never see; only a bot fills it. */
   website: z.string().max(500).default(""),
@@ -74,7 +76,7 @@ export const sendEnquiry = createServerFn({ method: "POST" })
           "That didn’t send — our enquiry service is not connected yet. Please email us directly using the address on this page.",
       };
     }
-    const { error } = await serviceClient().from("enquiries").insert({
+    const row = {
       source: data.source,
       name: data.name,
       email: data.email,
@@ -82,7 +84,22 @@ export const sendEnquiry = createServerFn({ method: "POST" })
       project_type: data.projectType,
       subject: data.subject,
       message: data.message,
-    });
+    };
+    let { error } = await serviceClient()
+      .from("enquiries")
+      .insert({ ...row, phone: data.phone, location: data.location });
+    if (error?.code === "PGRST204") {
+      // A database set up before migration 0002 has no phone or location
+      // column. Keep the enquiry rather than lose it: the two go at the top
+      // of the message instead.
+      const noted = [
+        data.phone ? `Phone: ${data.phone}` : "",
+        data.location ? `Location: ${data.location}` : "",
+      ].filter(Boolean);
+      ({ error } = await serviceClient()
+        .from("enquiries")
+        .insert({ ...row, message: [...noted, data.message].filter(Boolean).join("\n\n") }));
+    }
     if (error) {
       console.error("[enquiry] could not store", error);
       return {

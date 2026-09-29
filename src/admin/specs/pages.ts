@@ -92,6 +92,42 @@ export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
         "The heading over the latest articles. The four newest published articles appear here (a pinned one first).",
       fields: [text("insights.heading", "Heading")],
     },
+    {
+      id: "enquiry",
+      title: "Enquiry",
+      description:
+        "The navy band at the foot of the page: the enquiry form, with a slideshow of every published project beside it. Messages sent with this form arrive under Enquiries.",
+      fields: [
+        text("enquiry.heading", "Heading"),
+        text("enquiry.lede", "Text"),
+        group("enquiry.fields.name", "Name field", [
+          text("label", "Label"),
+          text("placeholder", "Example text"),
+        ]),
+        group("enquiry.fields.email", "Email field", [
+          text("label", "Label"),
+          text("placeholder", "Example text"),
+        ]),
+        group("enquiry.fields.phone", "Phone field", [
+          text("label", "Label"),
+          text("placeholder", "Example text"),
+        ]),
+        group("enquiry.fields.location", "Location field", [
+          text("label", "Label"),
+          text("placeholder", "Example text"),
+        ]),
+        group("enquiry.fields.message", "Message field", [
+          text("label", "Label"),
+          text("placeholder", "Example text"),
+        ]),
+        text("enquiry.submit", "Send button"),
+        text("enquiry.sending", "While sending"),
+        text("enquiry.writeTo", "Words before the email address"),
+        text("enquiry.sentHeading", "After sending"),
+        text("enquiry.sentAgain", "“Send another” button"),
+        text("enquiry.viewProject", "Button on each slide"),
+      ],
+    },
     SEO,
   ],
 
@@ -435,7 +471,7 @@ export const SHARED_FORM: SectionSpec[] = [
     id: "enquiry",
     title: "Enquiry on Glass",
     description:
-      "The invitation and form on the frosted-glass photograph, on the home page and the About page.",
+      "The invitation and form on the frosted-glass photograph, on the About page. The home page has its own enquiry form, under Pages → Home.",
     fields: [
       text("enquiry.eyebrow", "Small heading"),
       lines("enquiry.heading", "Heading"),

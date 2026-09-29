@@ -267,6 +267,26 @@ export type HomePage = {
   };
   projects: { heading: string; lede: string };
   insights: { heading: string };
+  /** The navy band at the foot of the page: the form, and a slideshow of the projects. */
+  enquiry: {
+    heading: string;
+    lede: string;
+    fields: {
+      name: FormField;
+      email: FormField;
+      phone: FormField;
+      location: FormField;
+      message: FormField;
+    };
+    submit: string;
+    sending: string;
+    sentHeading: string;
+    sentAgain: string;
+    /** The words before the email address beside the button. */
+    writeTo: string;
+    /** The button on each slide. */
+    viewProject: string;
+  };
 };
 
 /** The photographic hero with two inset plates (About, Partners). */

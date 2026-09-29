@@ -37,4 +37,24 @@ export const HOME_SEED: HomePage = {
   insights: {
     heading: "Engineering insights that build better facades",
   },
+  enquiry: {
+    heading: "Let’s frame the view.",
+    lede: "Tell us about the project — we’ll take it from there.",
+    fields: {
+      name: { label: "Name", placeholder: "Your full name…" },
+      email: { label: "Email", placeholder: "you@studio.com…" },
+      phone: { label: "Phone", placeholder: "+91…" },
+      location: { label: "Project Location", placeholder: "City…" },
+      message: {
+        label: "About the Project",
+        placeholder: "Openings, sizes, the view you want to keep…",
+      },
+    },
+    submit: "Send Enquiry",
+    sending: "Sending…",
+    sentHeading: "Thank you — your enquiry is with us.",
+    sentAgain: "Send Another Enquiry",
+    writeTo: "Or write to",
+    viewProject: "View Project",
+  },
 };

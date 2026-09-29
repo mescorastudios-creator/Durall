@@ -74,6 +74,19 @@ export function homeCardsOf(projects: readonly ProjectDoc[]): HomeCard[] {
     .map((p) => ({ slug: p.slug, ...p.home }));
 }
 
+/** A slide in the home page's enquiry band: every published project, in order. */
+export type ProjectSlide = Pick<ProjectDoc, "slug" | "name" | "architect" | "location" | "hero">;
+
+export function projectSlidesOf(projects: readonly ProjectDoc[]): ProjectSlide[] {
+  return publishedProjects(projects).map(({ slug, name, architect, location, hero }) => ({
+    slug,
+    name,
+    architect,
+    location,
+    hero,
+  }));
+}
+
 /** The project after this one, wrapping round to the first. */
 export function nextProjectOf(
   projects: readonly ProjectDoc[],
