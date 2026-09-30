@@ -48,9 +48,12 @@ const CRITICAL_FONTS = [
  * On every full page load (a refresh or an opened link, never a client-side
  * navigation, since this script only runs with the document) it also adds
  * `intro-pending`, which shows the SiteIntro curtain from the very first
- * paint. Its own timeout is the safety net for a bundle that never arrives:
- * the curtain is dropped at 4.5s regardless. SiteIntro clears that timer
- * when it mounts and takes over.
+ * paint, and notes that moment in `__introAt`: SiteIntro times the curtain
+ * from it, not from navigation start, which on the live site can be a
+ * couple of seconds of server response earlier. Its own timeout is the
+ * safety net for a bundle that never arrives: at 4.5s the curtain fades
+ * out (`intro-bailout`) regardless. SiteIntro clears that timer when it
+ * mounts and takes over.
  *
  * Marks the document as
  * "entrance animations are about to run" so the CSS in styles.css can hide
@@ -63,7 +66,7 @@ const animBootstrap = (loadingScreen: boolean) => `(function(){try{
 if(location.pathname.indexOf("/admin")===0)return;
 if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
 var d=document.documentElement;d.classList.add("anim-pending");
-${loadingScreen ? `d.classList.add("intro-pending");window.__introSafety=setTimeout(function(){d.classList.remove("intro-pending")},4500);` : ""}
+${loadingScreen ? `d.classList.add("intro-pending");window.__introAt=performance.now();window.__introSafety=setTimeout(function(){d.classList.add("intro-bailout");setTimeout(function(){d.classList.remove("intro-pending","intro-bailout")},400)},4500);` : ""}
 setTimeout(function(){d.classList.remove("anim-pending")},5000);
 }catch(e){}})();`;
 

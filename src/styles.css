@@ -374,6 +374,13 @@ html.intro-pending [data-site-header] {
   opacity: 0;
 }
 
+/* The pre-paint script's safety net, for a page whose script is very late:
+ * the curtain fades away rather than vanishing in one frame. */
+html.intro-bailout .site-intro {
+  opacity: 0;
+  transition: opacity 400ms var(--ease-micro);
+}
+
 .intro-mark path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;

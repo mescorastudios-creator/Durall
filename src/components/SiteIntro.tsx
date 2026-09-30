@@ -4,10 +4,14 @@ import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 const WORDMARK = "DURALL SYSTEMS";
 
-/* The loading half has to be shown for at least this long from navigation
- * start, or on a warm cache the mark would not finish drawing before the
- * doors part. The cap is the other side of the bargain: however slow the
- * hero image is, the reader is never held behind the curtain longer. */
+/* The loading half has to be shown for at least this long from the moment
+ * the curtain first painted, or the mark would not finish drawing before the
+ * doors part. Timed from that moment (`__introAt`, set by the pre-paint
+ * script in __root.tsx), not from navigation start: on the live site the
+ * server can take a couple of seconds to answer, and all of that used to
+ * count, so the doors opened on a half-drawn mark. The cap is the other
+ * side of the bargain: however slow the hero image is, the reader is never
+ * held behind the curtain longer. */
 const MIN_MS = 1250;
 const CAP_MS = 2600;
 
@@ -40,14 +44,18 @@ export function SiteIntro() {
     const root = rootRef.current;
     if (!root || !isIntroPending()) {
       releaseIntro();
-      setDone(true);
-      return;
+      // The pre-paint script's safety net may still be fading the curtain
+      // out; let it finish rather than cutting it off.
+      const bailing = document.documentElement.classList.contains("intro-bailout");
+      const t = window.setTimeout(() => setDone(true), bailing ? 450 : 0);
+      return () => window.clearTimeout(t);
     }
 
     // The pre-paint script's safety net is only for a page whose script
     // never arrives. It has arrived; this component owns the curtain now.
-    const w = window as Window & { __introSafety?: number };
+    const w = window as Window & { __introSafety?: number; __introAt?: number };
     if (w.__introSafety) window.clearTimeout(w.__introSafety);
+    const shownAt = w.__introAt ?? 0;
 
     lockScroll();
     window.scrollTo(0, 0);
@@ -137,7 +145,7 @@ export function SiteIntro() {
 
     // Leave once the page is genuinely ready and the mark has had its moment,
     // or at the cap, whichever comes first.
-    const elapsed = () => performance.now();
+    const elapsed = () => performance.now() - shownAt;
     const hero = document.querySelector<HTMLImageElement>('img[fetchpriority="high"]');
     const ready = Promise.all([
       document.fonts?.ready,

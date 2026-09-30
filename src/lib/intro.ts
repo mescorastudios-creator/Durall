@@ -42,10 +42,12 @@ export function holdEntrances(): () => void {
   return () => letGo();
 }
 
+/** Whether the curtain is up and waiting for SiteIntro. Not while the
+ * pre-paint script's safety net is already fading it out (`intro-bailout`). */
 export function isIntroPending() {
-  return (
-    typeof document !== "undefined" && document.documentElement.classList.contains("intro-pending")
-  );
+  if (typeof document === "undefined") return false;
+  const { classList } = document.documentElement;
+  return classList.contains("intro-pending") && !classList.contains("intro-bailout");
 }
 
 if (!isIntroPending()) {
