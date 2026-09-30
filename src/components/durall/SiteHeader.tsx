@@ -169,6 +169,7 @@ export function SiteHeader() {
         ref={headerRef}
         data-site-header
         data-hidden={hidden && !open ? "true" : "false"}
+        data-clear={clear ? "true" : "false"}
         data-hero-bar
         className={`fixed inset-x-0 top-0 z-50 ${
           clear
@@ -176,7 +177,13 @@ export function SiteHeader() {
             : "bg-navy/95 shadow-[0_10px_30px_-18px_rgb(5_8_52/0.6)] backdrop-blur-md"
         }`}
       >
-        <div className="mx-auto flex w-full max-w-[120rem] items-center justify-between gap-4 pt-[clamp(0.75rem,2.34vw,2.8rem)] pr-[clamp(1.25rem,4.53vw,5.45rem)] pb-[clamp(0.75rem,1.2vw,1.45rem)] pl-[clamp(1.25rem,7.92vw,9.5rem)]">
+        {/* A compact bar, the same height clear or navy; over a photograph
+            the row is carried lower by transform (see [data-site-header-row]
+            in styles.css), where the designs place the wordmark. */}
+        <div
+          data-site-header-row
+          className="mx-auto flex w-full max-w-[120rem] items-center justify-between gap-4 py-[clamp(0.75rem,0.97vw,1.125rem)] pr-[clamp(1.25rem,4.53vw,5.45rem)] pl-[clamp(1.25rem,7.92vw,9.5rem)]"
+        >
           <Link
             to="/"
             className="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"

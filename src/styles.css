@@ -184,7 +184,7 @@
 
 @media (min-width: 64rem) {
   :root {
-    --header-h: 6rem;
+    --header-h: 4.5rem;
   }
 }
 
@@ -493,6 +493,19 @@ html.intro-pending [data-site-header] {
   translate: 0 -100%;
 }
 
+/* Over a photograph the designs set the wordmark and links lower than a
+ * compact bar would, 2.34vw from the top. The bar keeps its compact height
+ * either way, so `--header-h` and the pages under it never move on scroll;
+ * only the row travels, by transform, closing up as the bar turns navy. */
+[data-site-header-row] {
+  translate: 0 0;
+  transition: translate var(--dur-medium) var(--ease-entrance);
+}
+
+[data-site-header][data-clear="true"] [data-site-header-row] {
+  translate: 0 calc(clamp(0.75rem, 2.34vw, 2.8rem) - clamp(0.75rem, 0.97vw, 1.125rem));
+}
+
 /* Items cascade in behind the panel rather than arriving with it. The delay
  * is per item, computed from its index, and the whole run is over in well
  * under half a second — long enough to read as deliberate, short enough that
@@ -531,6 +544,10 @@ html.intro-pending [data-site-header] {
 
   [data-site-header][data-hidden="true"] {
     translate: 0 0;
+  }
+
+  [data-site-header-row] {
+    transition: none;
   }
 
   [data-site-menu][data-open="true"] [data-menu-item] {
