@@ -81,7 +81,7 @@
  * server-rendered layout closely enough that nothing jumps, and SiteHeader
  * overwrites the variable with the measured height once it mounts. */
 :root {
-  --header-h: 9.5rem;
+  --header-h: 4.25rem;
   --radius: 0.625rem;
 
   /* Four durations, used by both CSS and GSAP (see DUR in src/lib/anim.ts).
@@ -184,7 +184,7 @@
 
 @media (min-width: 64rem) {
   :root {
-    --header-h: 4rem;
+    --header-h: 6rem;
   }
 }
 

@@ -21,12 +21,17 @@ import { contentStore } from "@/server/store";
  * content.
  */
 
-/** Settings and the shared sections, for the root route (header, footer…). */
+/** Settings, the shared sections and the project slides, for the root route
+ * (header, footer, enquiry band…). */
 export const fetchSite = createServerFn({ method: "GET" }).handler(async () => {
   cachePublicly();
   const store = contentStore();
-  const [settings, shared] = await Promise.all([store.settings(), store.shared()]);
-  return { settings, shared };
+  const [settings, shared, projects] = await Promise.all([
+    store.settings(),
+    store.shared(),
+    store.projects(),
+  ]);
+  return { settings, shared, slides: projectSlidesOf(projects) };
 });
 
 export const fetchHome = createServerFn({ method: "GET" }).handler(async () => {
@@ -41,7 +46,6 @@ export const fetchHome = createServerFn({ method: "GET" }).handler(async () => {
     page,
     cards: homeCardsOf(projects),
     articles: publishedArticles(articles).slice(0, 4).map(cardOf),
-    slides: projectSlidesOf(projects),
   };
 });
 

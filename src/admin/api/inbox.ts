@@ -9,7 +9,7 @@ import { idSchema, input } from "@/server/validate";
 export type Enquiry = {
   id: string;
   createdAt: string;
-  source: "contact" | "home" | "about";
+  source: "contact" | "home" | "about" | "partners" | "expertise";
   name: string;
   email: string;
   studio: string;

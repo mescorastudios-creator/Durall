@@ -8,7 +8,9 @@ import {
   iconItems,
   image,
   lines,
+  link,
   list,
+  number,
   paragraphs,
   photo,
   seo,
@@ -30,29 +32,17 @@ const SEO: SectionSpec = {
   fields: [seo()],
 };
 
-/** The photographic hero with two inset photographs (About, Partners). */
-const plateHero = (description: string): SectionSpec => ({
-  id: "hero",
+/** The full-width photographic opening (About, Partners, Projects, Expertise). */
+const photoHero = (description: string): SectionSpec => ({
+  id: "opening",
   title: "Opening (Hero)",
   description,
   fields: [
-    photo("hero.photo", "Background photograph"),
-    text("hero.eyebrow", "Small heading"),
-    text("hero.heading", "Heading"),
-    area("hero.body", "Text", { rows: 3 }),
-    cta("hero.cta", "Button", { optional: true }),
-    text("hero.caption", "Caption under the text"),
-    list<{ alt: string }>(
-      "hero.plates",
-      "Inset photographs",
-      [photo("", "Photograph")],
-      (item, index) => item.alt || `Photograph ${index + 1}`,
-      { fixed: true },
-    ),
-    text("hero.badge", "Label on the photographs"),
+    photo("opening.photo", "Background photograph"),
+    lines("opening.heading", "Heading"),
+    area("opening.body", "Text", { rows: 3 }),
   ],
 });
-
 export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
   home: [
     {
@@ -92,47 +82,26 @@ export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
         "The heading over the latest articles. The four newest published articles appear here (a pinned one first).",
       fields: [text("insights.heading", "Heading")],
     },
-    {
-      id: "enquiry",
-      title: "Enquiry",
-      description:
-        "The navy band at the foot of the page: the enquiry form, with a slideshow of every published project beside it. Messages sent with this form arrive under Enquiries.",
-      fields: [
-        text("enquiry.heading", "Heading"),
-        text("enquiry.lede", "Text"),
-        group("enquiry.fields.name", "Name field", [
-          text("label", "Label"),
-          text("placeholder", "Example text"),
-        ]),
-        group("enquiry.fields.email", "Email field", [
-          text("label", "Label"),
-          text("placeholder", "Example text"),
-        ]),
-        group("enquiry.fields.phone", "Phone field", [
-          text("label", "Label"),
-          text("placeholder", "Example text"),
-        ]),
-        group("enquiry.fields.location", "Location field", [
-          text("label", "Label"),
-          text("placeholder", "Example text"),
-        ]),
-        group("enquiry.fields.message", "Message field", [
-          text("label", "Label"),
-          text("placeholder", "Example text"),
-        ]),
-        text("enquiry.submit", "Send button"),
-        text("enquiry.sending", "While sending"),
-        text("enquiry.writeTo", "Words before the email address"),
-        text("enquiry.sentHeading", "After sending"),
-        text("enquiry.sentAgain", "“Send another” button"),
-        text("enquiry.viewProject", "Button on each slide"),
-      ],
-    },
     SEO,
   ],
 
   about: [
-    plateHero("The full-screen opening of the About page."),
+    photoHero("The full-width photograph and heading at the top of the About page."),
+    {
+      id: "approach",
+      title: "Our Approach",
+      description: "The animated diagram: four capabilities joining into the Durall mark.",
+      fields: [
+        text("approach.eyebrow", "Title above the diagram"),
+        text("approach.heading", "Heading"),
+        area("approach.body", "Text", { rows: 3 }),
+        iconItems("approach.capabilities", "Capabilities", { fixed: true }),
+        photo("approach.mark", "Centre mark"),
+        photo("approach.drawing", "Drawing"),
+        text("approach.outcomeTitle", "Outcome heading"),
+        area("approach.outcomeBody", "Outcome text", { rows: 2 }),
+      ],
+    },
     {
       id: "philosophy",
       title: "Philosophy",
@@ -182,31 +151,11 @@ export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
         photo("meets.photo", "Photograph"),
       ],
     },
-    {
-      id: "approach",
-      title: "Our Approach",
-      description: "The animated diagram: four capabilities joining into the Durall mark.",
-      fields: [
-        text("approach.eyebrow", "Small heading"),
-        text("approach.heading", "Heading"),
-        area("approach.body", "Text", { rows: 3 }),
-        iconItems("approach.capabilities", "Capabilities", { fixed: true }),
-        photo("approach.mark", "Centre mark"),
-        photo("approach.drawing", "Drawing"),
-        text("approach.outcomeTitle", "Outcome heading"),
-        area("approach.outcomeBody", "Outcome text", { rows: 2 }),
-      ],
-    },
     SEO,
   ],
 
   projects: [
-    {
-      id: "intro",
-      title: "Opening",
-      description: "The heading at the top of the Projects page.",
-      fields: [text("intro.title", "Heading"), area("intro.lede", "Text", { rows: 2 })],
-    },
+    photoHero("The full-width photograph and heading at the top of the Projects page."),
     {
       id: "labels",
       title: "Portfolio Labels",
@@ -247,33 +196,121 @@ export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
 
   expertise: [
     {
-      id: "intro",
-      title: "Opening",
-      fields: [text("intro.title", "Heading"), area("intro.lede", "Text", { rows: 3 })],
+      id: "opening",
+      title: "Opening (Hero)",
+      description:
+        "The full-width photograph and heading at the top of the Expertise page, with the strip of systems along its foot.",
+      fields: [
+        photo("opening.photo", "Background photograph"),
+        lines("opening.heading", "Heading"),
+        area("opening.body", "Text", { rows: 3 }),
+        text("opening.credit", "Photograph credit"),
+        text("opening.ribbon.count", "Number in the strip"),
+        text("opening.ribbon.label", "Words beside the number"),
+        strings("opening.ribbon.items", "Systems in the strip", { addLabel: "Add System" }),
+      ],
     },
     {
-      id: "systems",
-      title: "Systems",
-      description: "“Four systems, one discipline.”",
+      id: "statement",
+      title: "What We Do",
+      fields: [text("statement.eyebrow", "Small heading"), twoTone("statement.text", "Statement")],
+    },
+    {
+      id: "anatomy",
+      title: "Anatomy of a Frame",
+      description:
+        "The navy section with the sill drawing. The six parts match the six numbers on the drawing.",
       fields: [
-        text("systems.eyebrow", "Small heading"),
-        twoTone("systems.heading"),
-        iconItems("systems.items", "Systems", { max: 8 }),
+        text("anatomy.eyebrow", "Small heading"),
+        lines("anatomy.heading", "Heading"),
+        area("anatomy.body", "Text", { rows: 3 }),
+        list<{ title: string }>(
+          "anatomy.parts",
+          "Parts",
+          [
+            text("title", "Part"),
+            area("body", "Text", { rows: 3 }),
+            text("appliesTo", "Applies to"),
+          ],
+          (item, index) => `${String(index + 1).padStart(2, "0")} ${item.title}`,
+          { fixed: true, hint: "Six parts, in the order of the numbers on the drawing." },
+        ),
+        text("anatomy.appliesToLabel", "“Applies to” label"),
+        text("anatomy.outside", "Label over the outside"),
+        text("anatomy.inside", "Label over the inside"),
+        text("anatomy.elevation", "Label under the small elevation"),
+        group("anatomy.detail", "Detail number", [text("label", "Label"), text("value", "Value")]),
+        group("anatomy.drawing", "Drawing title", [
+          text("label", "Label"),
+          text("title", "Title"),
+          text("hint", "Hint"),
+        ]),
+        group("anatomy.scale", "Scale", [text("label", "Label"), text("value", "Value")]),
+        group("anatomy.download", "Download", [
+          text("heading", "Label"),
+          text("label", "Link text"),
+          link("href", "File", { hint: "Leave empty to hide the download." }),
+        ]),
       ],
     },
     {
       id: "process",
-      title: "Process",
+      title: "How We Work",
       description:
-        "The five-stage process appears here and on the home page, so it is edited once, under Pages → Shared sections.",
-      fields: [],
+        "The five stages appear here and on the home page, so they are edited once, under Pages → Shared sections.",
+      fields: [text("process.eyebrow", "Small heading")],
     },
-    { id: "cta", title: "Closing Band", fields: ctaBand("cta") },
+    {
+      id: "performance",
+      title: "Tested Performance",
+      fields: [
+        text("performance.eyebrow", "Small heading"),
+        lines("performance.heading", "Heading"),
+        area("performance.body", "Text", { rows: 3 }),
+        list<{ label: string }>(
+          "performance.metrics",
+          "Figures",
+          [
+            text("label", "Measure"),
+            text("value", "Value"),
+            text("unit", "Unit (set smaller, optional)"),
+            number("rating", "Bars filled", { min: 0, max: 8 }),
+            number("of", "Bars in all", { min: 1, max: 8 }),
+            text("standard", "Standard"),
+          ],
+          (item) => item.label,
+          {
+            create: () => ({ label: "", value: "", unit: "", rating: 3, of: 5, standard: "" }),
+            max: 6,
+          },
+        ),
+        text("performance.low", "Left of the bars"),
+        text("performance.high", "Right of the bars"),
+        text("performance.note", "Note under the figures"),
+        cta("performance.download", "Download", { hint: "Leave the link empty to hide it." }),
+      ],
+    },
+    {
+      id: "architects",
+      title: "For Architects",
+      fields: [
+        text("architects.eyebrow", "Small heading"),
+        text("architects.heading", "Heading"),
+        area("architects.body", "Text", { rows: 2 }),
+        list<{ title: string }>(
+          "architects.cards",
+          "Cards",
+          [text("title", "Title"), area("body", "Text", { rows: 3 }), cta("link", "Link")],
+          (item) => item.title,
+          { fixed: true, hint: "Three cards; the middle one is drawn in navy." },
+        ),
+      ],
+    },
     SEO,
   ],
 
   partners: [
-    plateHero("The full-screen opening of the Partners page."),
+    photoHero("The full-width photograph and heading at the top of the Partners page."),
     {
       id: "network",
       title: "International Systems",
@@ -299,16 +336,6 @@ export const PAGE_FORMS: Record<PageKey, SectionSpec[]> = {
         area("practices.note", "Smaller text", { rows: 2 }),
         photo("practices.photo", "Drawing of the house"),
         text("practices.tagline", "Line under the logos"),
-      ],
-    },
-    {
-      id: "closing",
-      title: "Closing",
-      fields: [
-        text("closing.eyebrow", "Small heading"),
-        text("closing.heading", "Heading"),
-        area("closing.body", "Text", { rows: 3 }),
-        cta("closing.cta", "Button"),
       ],
     },
     SEO,
@@ -468,28 +495,39 @@ export const SHARED_FORM: SectionSpec[] = [
     ],
   },
   {
-    id: "enquiry",
-    title: "Enquiry on Glass",
+    id: "enquiryBand",
+    title: "Enquiry Band",
     description:
-      "The invitation and form on the frosted-glass photograph, on the About page. The home page has its own enquiry form, under Pages → Home.",
+      "“Let’s frame the view.” — the navy band with the enquiry form and a slideshow of every published project, at the foot of Home, About, Partners and Expertise. Messages sent with it arrive under Enquiries.",
     fields: [
-      text("enquiry.eyebrow", "Small heading"),
-      lines("enquiry.heading", "Heading"),
-      lines("enquiry.lede", "Text"),
-      photo("enquiry.photo", "Photograph"),
-      lines("enquiry.wallCaption", "Caption beside the glass (wide screens)"),
-      text("enquiry.fields.name", "Name field"),
-      text("enquiry.fields.email", "Email field"),
-      text("enquiry.fields.studio", "Studio field"),
-      strings("enquiry.fields.studioOptions", "Studio choices", { addLabel: "Add Choice" }),
-      text("enquiry.fields.projectType", "Project type field"),
-      strings("enquiry.fields.projectTypeOptions", "Project type choices", {
-        addLabel: "Add Choice",
-      }),
-      text("enquiry.fields.message", "Message field"),
-      text("enquiry.submit", "Send button"),
-      text("enquiry.sentHeading", "After sending"),
-      text("enquiry.sentAgain", "“Send another” button"),
+      text("enquiryBand.heading", "Heading"),
+      text("enquiryBand.lede", "Text"),
+      group("enquiryBand.fields.name", "Name field", [
+        text("label", "Label"),
+        text("placeholder", "Example text"),
+      ]),
+      group("enquiryBand.fields.email", "Email field", [
+        text("label", "Label"),
+        text("placeholder", "Example text"),
+      ]),
+      group("enquiryBand.fields.phone", "Phone field", [
+        text("label", "Label"),
+        text("placeholder", "Example text"),
+      ]),
+      group("enquiryBand.fields.location", "Location field", [
+        text("label", "Label"),
+        text("placeholder", "Example text"),
+      ]),
+      group("enquiryBand.fields.message", "Message field", [
+        text("label", "Label"),
+        text("placeholder", "Example text"),
+      ]),
+      text("enquiryBand.submit", "Send button"),
+      text("enquiryBand.sending", "While sending"),
+      text("enquiryBand.writeTo", "Words before the email address"),
+      text("enquiryBand.sentHeading", "After sending"),
+      text("enquiryBand.sentAgain", "“Send another” button"),
+      text("enquiryBand.viewProject", "Button on each slide"),
     ],
   },
 ];

@@ -6,15 +6,16 @@ import { imageOf } from "@/content/render";
 import { useSite } from "@/content/site";
 import { sendEnquiry } from "@/content/enquiry";
 import type { ProjectSlide } from "@/content/select";
-import type { HomePage } from "@/content/types";
+import type { SharedContent } from "@/content/types";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { transition } from "@/lib/motion-tokens";
 import { Honeypot } from "./contact/Honeypot";
 import { RULES } from "./contact/submit";
 
 /**
- * "Let's frame the view." — the navy band at the foot of the home page: the
- * enquiry form, and beside it a framed slideshow of the projects, with
+ * "Let's frame the view." — the navy band at the foot of Home, About,
+ * Partners and Expertise: the enquiry form, and beside it a framed
+ * slideshow of the projects, with
  * lines running from the photograph's edges out to the section's, so the
  * frame reads as a window at the end of a room. It runs straight into the
  * navy footer, whose top rule closes the design.
@@ -23,9 +24,12 @@ import { RULES } from "./contact/submit";
  * are container query units of the photograph (802px there, so 1cqw is
  * 8.02px); everything else is vw, clamped for small and large screens.
  */
-type Copy = HomePage["enquiry"];
+type Copy = SharedContent["enquiryBand"];
+type Source = "home" | "about" | "partners" | "expertise";
 
-export function HomeEnquiry({ copy, slides }: { copy: Copy; slides: readonly ProjectSlide[] }) {
+export function EnquiryBand({ source }: { source: Source }) {
+  const { shared, slides } = useSite();
+  const copy = shared.enquiryBand;
   const sectionRef = useRef<HTMLElement>(null);
   const photoRef = useRef<HTMLDivElement>(null);
   const introRef = useSectionIntro<HTMLDivElement>();
@@ -55,7 +59,7 @@ export function HomeEnquiry({ copy, slides }: { copy: Copy; slides: readonly Pro
               {copy.lede}
             </p>
           </div>
-          <EnquiryForm copy={copy} />
+          <EnquiryForm copy={copy} source={source} />
         </div>
 
         <div ref={frameRef} className="min-w-0">
@@ -382,7 +386,7 @@ const LABEL =
 const CONTROL =
   "block w-full min-w-0 bg-transparent py-[clamp(0.375rem,0.55vw,0.625rem)] font-display text-[clamp(1rem,1.18vw,1.42rem)] leading-[1.4] text-white outline-hidden placeholder:text-white/50";
 
-function EnquiryForm({ copy }: { copy: Copy }) {
+function EnquiryForm({ copy, source }: { copy: Copy; source: Source }) {
   const { settings } = useSite();
   const reduced = useReducedMotion();
   const formRef = useRef<HTMLFormElement>(null);
@@ -418,7 +422,7 @@ function EnquiryForm({ copy }: { copy: Copy }) {
     try {
       const result = await sendEnquiry({
         data: {
-          source: "home",
+          source,
           name: value("name"),
           email: value("email"),
           phone: value("phone"),

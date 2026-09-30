@@ -13,7 +13,7 @@ import { serviceClient, supabaseConfig } from "@/server/supabase";
  */
 
 const enquiry = z.object({
-  source: z.enum(["contact", "home", "about"]),
+  source: z.enum(["contact", "home", "about", "partners", "expertise"]),
   name: z.string().trim().min(2).max(200),
   email: z.string().trim().email().max(320),
   studio: z.string().trim().max(200).default(""),
@@ -27,6 +27,9 @@ const enquiry = z.object({
 });
 
 export type EnquiryInput = z.input<typeof enquiry>;
+
+/** The sources the enquiries table accepted before migration 0002. */
+const LEGACY_SOURCES = new Set(["contact", "home", "about"]);
 
 /* A few messages a minute from one address is plenty for a person. Kept per
  * warm function instance — a speed bump for scripts, not a guarantee. */
@@ -88,17 +91,24 @@ export const sendEnquiry = createServerFn({ method: "POST" })
     let { error } = await serviceClient()
       .from("enquiries")
       .insert({ ...row, phone: data.phone, location: data.location });
-    if (error?.code === "PGRST204") {
+    if (error?.code === "PGRST204" || error?.code === "23514") {
       // A database set up before migration 0002 has no phone or location
-      // column. Keep the enquiry rather than lose it: the two go at the top
-      // of the message instead.
+      // column (PGRST204) and takes only the first three forms as a source
+      // (23514). Keep the enquiry rather than lose it: what it cannot hold
+      // goes at the top of the message instead.
+      const legacy = LEGACY_SOURCES.has(data.source);
       const noted = [
+        legacy ? "" : `Form: ${data.source} page`,
         data.phone ? `Phone: ${data.phone}` : "",
         data.location ? `Location: ${data.location}` : "",
       ].filter(Boolean);
       ({ error } = await serviceClient()
         .from("enquiries")
-        .insert({ ...row, message: [...noted, data.message].filter(Boolean).join("\n\n") }));
+        .insert({
+          ...row,
+          source: legacy ? data.source : "home",
+          message: [...noted, data.message].filter(Boolean).join("\n\n"),
+        }));
     }
     if (error) {
       console.error("[enquiry] could not store", error);

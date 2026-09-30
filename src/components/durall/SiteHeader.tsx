@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { Link, useRouterState } from "@tanstack/react-router";
 import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import { Lines } from "@/content/render";
+import { IMAGES } from "@/assets/images";
 import { useSite } from "@/content/site";
 
 /* The items come from the admin panel (Navigation). `fullLabel` is the
@@ -12,11 +13,16 @@ import { useSite } from "@/content/site";
  * for it. WCAG 2.5.3 is satisfied because the accessible name contains the
  * visible label. */
 
-/* Eight items need 998px beside the wordmark before they start to crowd, so
- * the inline bar starts at 72rem/1152px and everything below it gets the
- * menu. At 1024 they fit with about 18px to spare, which is the definition
- * of cramped. Written out literally at each call site because Tailwind scans
- * source text and never sees a class name assembled at runtime. */
+/* Five items and the button need about 800px beside the wordmark, so the
+ * inline bar starts at 64rem/1024px and everything below it gets the menu.
+ * Written out literally at each call site because Tailwind scans source
+ * text and never sees a class name assembled at runtime. */
+
+/* Pages that open on a dark full-width photograph. Over those the bar is
+ * clear until the page scrolls, as in the design; everywhere else it is
+ * navy from the start, so the white wordmark and links always have
+ * something dark behind them. */
+const PHOTO_TOP = /^\/(about|partners|projects|expertise)?$|^\/projects\/[^/]+$/;
 
 function isActive(pathname: string, href: string) {
   const [to = "/"] = href.split("#");
@@ -31,26 +37,10 @@ function linkTarget(href: string) {
   return hash ? { to, hash } : { to };
 }
 
-function DurallMark({ className }: { className: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
-      <path
-        d="M4 4h7a8 8 0 0 1 0 16H4V4Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path d="M14 12h7" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-}
-
 /**
- * A floating pill: the logo on the left and the pages on the right, on a
- * white bar that sits just inside the top of the page rather than across
- * its full width. It is the same white on every page, so it reads the same
- * over a dark photographic hero as over a white page, and it needs no
- * light/dark variant.
+ * The white wordmark on the left and the pages and "Start a project" on the
+ * right, in white, across the full width of the page. Clear over a dark
+ * opening photograph and navy once the page moves (see PHOTO_TOP).
  */
 export function SiteHeader() {
   const { settings } = useSite();
@@ -72,6 +62,9 @@ export function SiteHeader() {
    * guard in the handler means a re-render only happens when the value
    * actually changes, not on every scroll event. */
   const [hidden, setHidden] = useState(false);
+  // Whether the page is still at its top, where a photograph shows through.
+  const [atTop, setAtTop] = useState(true);
+  const clear = PHOTO_TOP.test(pathname) && atTop && !open;
 
   /* The header overlays the heroes, so the pages underneath reserve its
    * height themselves. Publishing the measured value means they stay clear
@@ -109,6 +102,7 @@ export function SiteHeader() {
 
     const read = () => {
       const y = window.scrollY;
+      setAtTop(y < 24);
       const delta = y - last;
       if (Math.abs(delta) > THRESHOLD) {
         setHidden(delta > 0 && y > HIDE_AFTER);
@@ -171,74 +165,87 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* The header box spans the page so it can be fixed and slide away as
-          one; only the pill inside it takes the pointer, so the strip of
-          page around the pill stays clickable. */}
       <header
         ref={headerRef}
         data-site-header
         data-hidden={hidden && !open ? "true" : "false"}
         data-hero-bar
-        className="pointer-events-none fixed inset-x-0 top-0 z-50 pt-[clamp(0.625rem,1.2vw,1.125rem)]"
+        className={`fixed inset-x-0 top-0 z-50 ${
+          clear
+            ? "bg-transparent"
+            : "bg-navy/95 shadow-[0_10px_30px_-18px_rgb(5_8_52/0.6)] backdrop-blur-md"
+        }`}
       >
-        <div className="shell">
-          <div className="pointer-events-auto flex min-h-[3.25rem] items-center justify-between gap-4 rounded-full border border-navy/10 bg-white/95 py-1.5 pr-1.5 pl-[clamp(1rem,1.6vw,1.5rem)] shadow-[0_10px_30px_-14px_rgb(5_8_52/0.35)] backdrop-blur-md">
-            <Link
-              to="/"
-              className="hover-lift flex min-h-10 shrink-0 items-center gap-2 font-display text-[clamp(0.875rem,1.05vw,1rem)] font-bold tracking-[0.16em] text-navy uppercase"
-            >
-              <DurallMark className="h-[1.125rem] w-[1.125rem]" />
-              <span translate="no">{settings.company.name}</span>
-            </Link>
+        <div className="mx-auto flex w-full max-w-[120rem] items-center justify-between gap-4 pt-[clamp(0.75rem,2.34vw,2.8rem)] pr-[clamp(1.25rem,4.53vw,5.45rem)] pb-[clamp(0.75rem,1.2vw,1.45rem)] pl-[clamp(1.25rem,7.92vw,9.5rem)]">
+          <Link
+            to="/"
+            className="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+          >
+            <img
+              {...IMAGES.logoDurallWhite}
+              alt={settings.company.name}
+              translate="no"
+              className="h-auto w-[clamp(8.5rem,12.5vw,15rem)]"
+            />
+          </Link>
 
-            <nav aria-label="Primary" className="hidden min-w-0 min-[72rem]:block">
-              <ul className="flex items-center justify-end gap-x-0.5">
-                {items.map((item) => {
-                  const active = isActive(pathname, item.href);
-                  const full = item.fullLabel || undefined;
-                  return (
-                    <li key={item.href + item.label}>
-                      <Link
-                        {...linkTarget(item.href)}
-                        aria-current={active ? "page" : undefined}
-                        {...(full ? { "aria-label": full } : {})}
-                        className={`flex min-h-10 items-center rounded-full px-[clamp(0.625rem,0.95vw,0.9375rem)] font-body text-[clamp(0.8125rem,0.9vw,0.875rem)] font-medium transition-colors duration-[var(--dur-short)] ease-[var(--ease-micro)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue ${
-                          active
-                            ? "bg-navy text-white"
-                            : "text-navy/70 hover:bg-mist hover:text-navy"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
+          <nav aria-label="Primary" className="hidden min-w-0 lg:block">
+            <ul className="flex items-center justify-end gap-x-[clamp(1.25rem,1.82vw,2.2rem)]">
+              {items.map((item) => {
+                const active = isActive(pathname, item.href);
+                const full = item.fullLabel || undefined;
+                return (
+                  <li key={item.href + item.label}>
+                    <Link
+                      {...linkTarget(item.href)}
+                      aria-current={active ? "page" : undefined}
+                      {...(full ? { "aria-label": full } : {})}
+                      className={`flex min-h-11 items-center border-b-2 font-display text-[clamp(0.875rem,0.78vw,0.9375rem)] text-white transition-colors duration-[var(--dur-short)] ease-[var(--ease-micro)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                        active
+                          ? "border-white font-medium"
+                          : "border-transparent hover:border-white/45"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+              {settings.header.cta.label ? (
+                <li className="ml-[clamp(0rem,0.1vw,0.1rem)]">
+                  <Link
+                    {...linkTarget(settings.header.cta.href)}
+                    className="hover-lift flex min-h-11 items-center bg-white px-5 font-display text-xs font-medium tracking-[0.1em] text-navy uppercase transition-colors duration-[var(--dur-short)] hover:bg-white/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    {settings.header.cta.label}
+                  </Link>
+                </li>
+              ) : null}
+            </ul>
+          </nav>
 
-            <button
-              ref={toggleRef}
-              type="button"
-              onClick={() => setOpen((v) => !v)}
-              aria-expanded={open}
-              aria-controls="site-menu"
-              className="flex min-h-10 min-w-11 items-center justify-center gap-2.5 rounded-full px-4 font-display text-[0.6875rem] font-bold tracking-eyebrow text-navy uppercase transition-colors duration-[var(--dur-short)] hover:bg-mist focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue min-[72rem]:hidden"
-            >
-              <span>{open ? "Close" : "Menu"}</span>
-              <span aria-hidden="true" className="relative block h-3 w-4">
-                <span
-                  className={`absolute left-0 block h-px w-4 bg-current transition-[translate,rotate] duration-[var(--dur-short)] ease-[var(--ease-micro)] ${
-                    open ? "top-1.5 rotate-45" : "top-0.5"
-                  }`}
-                />
-                <span
-                  className={`absolute left-0 block h-px w-4 bg-current transition-[translate,rotate,opacity] duration-[var(--dur-short)] ease-[var(--ease-micro)] ${
-                    open ? "top-1.5 -rotate-45" : "top-2.5"
-                  }`}
-                />
-              </span>
-            </button>
-          </div>
+          <button
+            ref={toggleRef}
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="site-menu"
+            className="-mr-3 flex min-h-11 min-w-11 items-center justify-center gap-2.5 px-3 font-display text-[0.6875rem] font-bold tracking-eyebrow text-white uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:hidden"
+          >
+            <span>{open ? "Close" : "Menu"}</span>
+            <span aria-hidden="true" className="relative block h-3 w-4">
+              <span
+                className={`absolute left-0 block h-px w-4 bg-current transition-[translate,rotate] duration-[var(--dur-short)] ease-[var(--ease-micro)] ${
+                  open ? "top-1.5 rotate-45" : "top-0.5"
+                }`}
+              />
+              <span
+                className={`absolute left-0 block h-px w-4 bg-current transition-[translate,rotate,opacity] duration-[var(--dur-short)] ease-[var(--ease-micro)] ${
+                  open ? "top-1.5 -rotate-45" : "top-2.5"
+                }`}
+              />
+            </span>
+          </button>
         </div>
       </header>
 
@@ -251,7 +258,7 @@ export function SiteHeader() {
         data-site-menu
         data-open={open ? "true" : "false"}
         hidden={!open}
-        className="fixed inset-0 z-40 flex flex-col overflow-y-auto overscroll-contain bg-navy pt-[calc(var(--header-h)+clamp(1.5rem,5vh,3rem))] pb-[max(2rem,env(safe-area-inset-bottom))] text-white min-[72rem]:hidden"
+        className="fixed inset-0 z-40 flex flex-col overflow-y-auto overscroll-contain bg-navy pt-[calc(var(--header-h)+clamp(1.5rem,5vh,3rem))] pb-[max(2rem,env(safe-area-inset-bottom))] text-white lg:hidden"
       >
         <nav aria-label="Primary" className="shell flex-1">
           <ul>
@@ -286,6 +293,16 @@ export function SiteHeader() {
               );
             })}
           </ul>
+
+          {settings.header.cta.label ? (
+            <Link
+              {...linkTarget(settings.header.cta.href)}
+              onClick={close}
+              className="mt-[clamp(1.5rem,4vh,2.5rem)] inline-flex min-h-12 items-center bg-white px-6 font-display text-xs font-medium tracking-[0.1em] text-navy uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {settings.header.cta.label}
+            </Link>
+          ) : null}
 
           <p className="mt-[clamp(2rem,5vh,3rem)] font-display text-[0.6875rem] leading-[2.1] font-medium tracking-eyebrow text-white/60 uppercase">
             <Lines text={settings.header.menuTagline} />

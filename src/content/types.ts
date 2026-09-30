@@ -98,12 +98,21 @@ export type SiteSettings = {
   };
   header: {
     items: NavItem[];
+    /** The button at the end of the bar. */
+    cta: Cta;
     menuTagline: string;
   };
   footer: {
+    /** The paragraph under the logo and tagline. */
+    blurb: string;
     columns: FooterColumn[];
+    officeHeading: string;
+    contactHeading: string;
+    /** The line under the email and phone. */
+    hours: string;
+    social: Cta[];
     legal: Cta[];
-    signOff: string;
+    backToTop: string;
   };
   seo: {
     shareImage: string;
@@ -127,24 +136,26 @@ export type SharedContent = {
     stages: ProcessStage[];
     link: Cta;
   };
-  enquiry: {
-    eyebrow: string;
+  /** "Let's frame the view.": the navy enquiry band with the project
+   * slideshow, at the foot of Home, About, Partners and Expertise. */
+  enquiryBand: {
     heading: string;
     lede: string;
-    photo: Photo;
-    wallCaption: string;
     fields: {
-      name: string;
-      email: string;
-      studio: string;
-      studioOptions: string[];
-      projectType: string;
-      projectTypeOptions: string[];
-      message: string;
+      name: FormField;
+      email: FormField;
+      phone: FormField;
+      location: FormField;
+      message: FormField;
     };
     submit: string;
+    sending: string;
     sentHeading: string;
     sentAgain: string;
+    /** The words before the email address beside the button. */
+    writeTo: string;
+    /** The button on each slide. */
+    viewProject: string;
   };
 };
 
@@ -267,44 +278,19 @@ export type HomePage = {
   };
   projects: { heading: string; lede: string };
   insights: { heading: string };
-  /** The navy band at the foot of the page: the form, and a slideshow of the projects. */
-  enquiry: {
-    heading: string;
-    lede: string;
-    fields: {
-      name: FormField;
-      email: FormField;
-      phone: FormField;
-      location: FormField;
-      message: FormField;
-    };
-    submit: string;
-    sending: string;
-    sentHeading: string;
-    sentAgain: string;
-    /** The words before the email address beside the button. */
-    writeTo: string;
-    /** The button on each slide. */
-    viewProject: string;
-  };
 };
 
-/** The photographic hero with two inset plates (About, Partners). */
-export type PlateHero = {
+/** The full-width photographic opening (About, Partners, Projects,
+ * Expertise). Newlines in the heading are forced line breaks. */
+export type PhotoHero = {
   photo: Photo;
-  eyebrow: string;
   heading: string;
   body: string;
-  /** Optional button; hidden when the label is empty. */
-  cta: Cta;
-  caption: string;
-  plates: Photo[];
-  badge: string;
 };
 
 export type AboutPage = {
   seo: Seo;
-  hero: PlateHero;
+  opening: PhotoHero;
   philosophy: {
     heading: string;
     body: string;
@@ -339,7 +325,7 @@ export type AboutPage = {
 
 export type PartnersPage = {
   seo: Seo;
-  hero: PlateHero;
+  opening: PhotoHero;
   network: {
     eyebrow: string;
     heading: string;
@@ -356,17 +342,69 @@ export type PartnersPage = {
     photo: Photo;
     tagline: string;
   };
-  closing: { eyebrow: string; heading: string; body: string; cta: Cta };
 };
 
 /** The plain white opening band (PageIntro). */
 export type Intro = { title: string; lede: string };
 
+/** One of the six numbered parts of the Expertise page's sill section. */
+export type AnatomyPart = { title: string; body: string; appliesTo: string };
+
+/** A tested figure on the Expertise page, with its rating out of `of`. */
+export type Metric = {
+  label: string;
+  value: string;
+  /** Set smaller after the value, e.g. W/m²K. */
+  unit: string;
+  rating: number;
+  of: number;
+  standard: string;
+};
+
 export type ExpertisePage = {
   seo: Seo;
-  intro: Intro;
-  systems: { eyebrow: string; heading: TwoTone; items: IconItem[] };
-  cta: CtaBand;
+  opening: PhotoHero & {
+    /** Credit for the photograph, bottom right. */
+    credit: string;
+    /** The strip along the foot: a count, its label and the systems. */
+    ribbon: { count: string; label: string; items: string[] };
+  };
+  statement: { eyebrow: string; text: TwoTone };
+  anatomy: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    /** Exactly six, matching the numbers on the drawing. */
+    parts: AnatomyPart[];
+    appliesToLabel: string;
+    outside: string;
+    inside: string;
+    elevation: string;
+    detail: Fact;
+    drawing: { label: string; title: string; hint: string };
+    scale: Fact;
+    /** Hidden until it links to a file. */
+    download: Cta & { heading: string };
+  };
+  process: { eyebrow: string };
+  performance: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    metrics: Metric[];
+    low: string;
+    high: string;
+    note: string;
+    /** Hidden until it links to a file. */
+    download: Cta;
+  };
+  architects: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    /** The second card is drawn in navy, as in the design. */
+    cards: { title: string; body: string; link: Cta }[];
+  };
 };
 
 export type CareersPage = {
@@ -416,7 +454,7 @@ export type ContactPage = {
 
 export type ProjectsPage = {
   seo: Seo;
-  intro: Intro;
+  opening: PhotoHero;
   featured: { exploreLabel: string };
   grid: { sort: string; view: string; empty: string };
   cta: CtaBand;

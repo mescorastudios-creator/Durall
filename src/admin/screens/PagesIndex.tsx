@@ -43,7 +43,7 @@ export function PagesIndex() {
       <div className="mt-6">
         <Card
           title="Shared Sections"
-          description="Sections that appear on more than one page, so they are edited once: the five-stage process (Home and Expertise) and the enquiry on glass (About)."
+          description="Sections that appear on more than one page, so they are edited once: the five-stage process (Home and Expertise) and the enquiry band (Home, About, Partners and Expertise)."
           actions={
             <Link
               to="/admin/pages/$page"

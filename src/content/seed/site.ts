@@ -7,7 +7,7 @@ export const SETTINGS_SEED: SiteSettings = {
   company: {
     name: "Durall Systems",
     legalName: "Durall Systems Pvt. Ltd.",
-    tagline: "Engineering architectural possibilities.",
+    tagline: "Enveloping Luxury",
   },
   contact: {
     details: [
@@ -46,8 +46,6 @@ export const SETTINGS_SEED: SiteSettings = {
   },
   header: {
     items: [
-      { label: "Home", fullLabel: "", href: "/", visible: true },
-      { label: "About", fullLabel: "", href: "/about", visible: true },
       { label: "Projects", fullLabel: "", href: "/projects", visible: true },
       { label: "Expertise", fullLabel: "", href: "/expertise", visible: true },
       {
@@ -56,57 +54,42 @@ export const SETTINGS_SEED: SiteSettings = {
         href: "/partners",
         visible: true,
       },
+      { label: "About", fullLabel: "", href: "/about", visible: true },
       { label: "Insights", fullLabel: "", href: "/insights", visible: true },
-      { label: "Careers", fullLabel: "", href: "/careers", visible: true },
-      { label: "Contact", fullLabel: "", href: "/contact", visible: true },
     ],
+    cta: { label: "Start a Project", href: "/contact" },
     menuTagline: "Architecture\nstarts with\na conversation.",
   },
   footer: {
+    blurb:
+      "Premium aluminium window, door and façade systems — designed, engineered, fabricated and installed in India.",
     columns: [
       {
-        title: "Company",
+        title: "Explore",
         links: [
-          { label: "About Durall", href: "/about" },
-          { label: "Our Legacy", href: "/about#philosophy" },
-          { label: "Leadership", href: "/about#approach" },
+          { label: "Projects", href: "/projects" },
+          { label: "Expertise", href: "/expertise" },
+          { label: "Partners", href: "/partners" },
+          { label: "About", href: "/about" },
+          { label: "Insights", href: "/insights" },
           { label: "Careers", href: "/careers" },
         ],
       },
-      {
-        title: "Solutions",
-        links: [
-          { label: "Window Systems", href: "/expertise#systems" },
-          { label: "Door Systems", href: "/expertise#systems" },
-          { label: "Facade Systems", href: "/expertise#systems" },
-          { label: "Technical Performance", href: "/expertise#process" },
-        ],
-      },
-      {
-        title: "Resources",
-        links: [
-          { label: "Technical Library", href: "/insights" },
-          { label: "Case Studies", href: "/projects" },
-          { label: "International Systems", href: "/partners#international-systems" },
-          { label: "Care & Maintenance", href: "/insights" },
-        ],
-      },
-      {
-        // TODO — no real profile URLs yet; these point at the contact page.
-        title: "Connect",
-        links: [
-          { label: "LinkedIn", href: "/contact" },
-          { label: "Instagram", href: "/contact" },
-          { label: "YouTube", href: "/contact" },
-        ],
-      },
+    ],
+    officeHeading: "Head Office",
+    contactHeading: "Talk to Us",
+    hours: "Weekdays, 9:30–18:00 IST · Visits by appointment",
+    // TODO — no real profile URLs yet: plain text until they are added.
+    social: [
+      { label: "LinkedIn", href: "" },
+      { label: "Instagram", href: "" },
     ],
     // Plain text until the pages exist: an empty href renders no link.
     legal: [
       { label: "Privacy Policy", href: "" },
       { label: "Terms of Use", href: "" },
     ],
-    signOff: "Built for architectural precision.",
+    backToTop: "Back to Top",
   },
   seo: {
     shareImage: "/og-durall.jpg",

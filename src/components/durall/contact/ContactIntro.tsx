@@ -2,7 +2,7 @@ import { REVEAL_WINDOW, useReveal, useSplitLines } from "@/lib/anim";
 import type { Intro } from "@/content/types";
 
 /**
- * Page opening, built to the same shape as ProjectsIntro: a quiet white band
+ * Page opening, built to the same shape as PageIntro: a quiet white band
  * rather than the full-height photographic hero /about and /partners use. A
  * contact page should not ask for a viewport of scrolling before the form is
  * reachable, and this is the pattern the site already has for that.

@@ -22,14 +22,20 @@ export const NAVIGATION_FORM: SectionSpec[] = [
         (item) => `${item.label}${item.visible ? "" : " (hidden)"}`,
         { create: () => ({ label: "", fullLabel: "", href: "/", visible: true }), max: 10 },
       ),
+      group("header.cta", "Button at the end of the bar", [
+        text("label", "Label"),
+        link("href", "Goes to"),
+      ]),
       lines("header.menuTagline", "Line in the phone menu"),
     ],
   },
   {
     id: "footer",
     title: "Footer",
-    description: "The columns of links at the foot of every page.",
+    description:
+      "The foot of every page: the logo and tagline (under Company & Contact), a short description, columns of links, the office address and the email and phone.",
     fields: [
+      area("footer.blurb", "Description under the tagline", { rows: 3 }),
       list<{ title: string }>(
         "footer.columns",
         "Columns",
@@ -46,6 +52,19 @@ export const NAVIGATION_FORM: SectionSpec[] = [
         (item) => item.title,
         { create: () => ({ title: "", links: [] }), max: 5 },
       ),
+      text("footer.officeHeading", "Heading over the address"),
+      text("footer.contactHeading", "Heading over the email and phone"),
+      text("footer.hours", "Line under the email and phone"),
+      list<{ label: string }>(
+        "footer.social",
+        "Social links",
+        [
+          text("label", "Label"),
+          link("href", "Goes to", { hint: "Leave empty to show the label as plain text." }),
+        ],
+        (item) => item.label,
+        { create: () => ({ label: "", href: "" }), max: 5 },
+      ),
       list<{ label: string }>(
         "footer.legal",
         "Bottom line links",
@@ -56,7 +75,7 @@ export const NAVIGATION_FORM: SectionSpec[] = [
         (item) => item.label,
         { create: () => ({ label: "", href: "" }), max: 4 },
       ),
-      text("footer.signOff", "Line at the far right"),
+      text("footer.backToTop", "“Back to top” link"),
     ],
   },
 ];

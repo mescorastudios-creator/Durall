@@ -1,3 +1,4 @@
+import { photo } from "../../render";
 import type { ProjectsPage } from "../../types";
 
 export const PROJECTS_PAGE_SEED: ProjectsPage = {
@@ -7,9 +8,13 @@ export const PROJECTS_PAGE_SEED: ProjectsPage = {
       "Residences, resorts and landmarks where Durall’s aluminium systems became the architecture's most exacting details — from Parikrama in Murud to Patina in the Maldives.",
     image: null,
   },
-  intro: {
-    title: "What we’ve built together.",
-    lede: "A collection of spaces shaped through architecture, engineering and collaboration.",
+  opening: {
+    photo: photo(
+      "heroProjects",
+      "Residential tower with timber-toned panels between deep white floor bands, above the city",
+    ),
+    heading: "What we’ve built\ntogether.",
+    body: "Homes, resorts and residences across India, the Maldives and Singapore — every opening engineered, fabricated and installed by Durall, alongside the architects who imagined them.",
   },
   featured: { exploreLabel: "Explore Project" },
   grid: { sort: "Sort", view: "View Project", empty: "No projects in this category yet." },

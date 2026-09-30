@@ -50,11 +50,7 @@ function todosOf(content: AllContent): Todo[] {
       to: "/admin/careers",
     });
   }
-  const socials = content.settings.footer.columns
-    .flatMap((column) => column.links)
-    .filter(
-      (link) => /linkedin|instagram|youtube/i.test(link.label) && !/^https?:/i.test(link.href),
-    );
+  const socials = content.settings.footer.social.filter((link) => !/^https?:/i.test(link.href));
   if (socials.length) {
     todos.push({
       text: "Add the addresses of your social profiles",

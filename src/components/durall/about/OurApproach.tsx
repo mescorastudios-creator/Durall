@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { EASE, loadGsap, useSectionIntro } from "@/lib/anim";
+import { EASE, loadGsap, useReveal, useSectionIntro } from "@/lib/anim";
 import { iconOf } from "@/content/icons";
-import { imageOf } from "@/content/render";
+import { imageOf, Lines } from "@/content/render";
 import type { AboutPage } from "@/content/types";
 
 const SCENE_QUERY = "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
@@ -45,6 +45,7 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
   // Plays through once on arrival rather than following the scroll, like
   // the sequence beside it.
   const copyRef = useSectionIntro<HTMLDivElement>({ scrub: false });
+  const titleRef = useReveal<HTMLParagraphElement>({ y: 16 });
 
   /* ---- Connector geometry ----------------------------------------------- */
   useEffect(() => {
@@ -275,12 +276,20 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
       ref={sectionRef}
       id="approach"
       aria-labelledby="approach-heading"
-      className="relative bg-white pb-[clamp(3rem,6vw,5.5rem)]"
+      className="relative bg-white pt-[clamp(2.5rem,2.2vw,2.6rem)] pb-[clamp(3rem,6vw,5.5rem)]"
     >
-      <div>
+      {/* The section opens the page under the hero, with its name set large
+          and centred above the diagram, as in the design. */}
+      <p
+        ref={titleRef}
+        className="shell-about text-center font-display text-[clamp(1.75rem,2.5vw,3rem)] leading-tight font-bold tracking-[0.03em] text-accent-blue uppercase"
+      >
+        {content.eyebrow}
+      </p>
+      <div className="mt-[clamp(2rem,4.6vw,5.5rem)]">
         <div
           ref={stageRef}
-          className="shell-about relative grid grid-cols-1 items-center gap-[clamp(2.5rem,4vw,3rem)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,1.2fr)] lg:gap-[clamp(1.5rem,4vw,4.5rem)]"
+          className="shell-about relative grid grid-cols-1 items-center gap-[clamp(2.5rem,4vw,3rem)] lg:grid-cols-[minmax(0,280fr)_minmax(0,240fr)_minmax(0,280fr)_minmax(0,359fr)] lg:gap-[clamp(1.5rem,4vw,4.5rem)]"
         >
           {/* Connectors — absolutely over the stage, geometry set in JS. */}
           <svg
@@ -344,18 +353,12 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
           {/* Copy — reveals as the section arrives, so the frame is never
               empty while it scrolls into place. */}
           <div ref={copyRef} className="relative min-w-0 lg:self-start">
-            <p
-              data-anim
-              className="font-display text-[clamp(0.875rem,1vw,1.0625rem)] font-bold tracking-eyebrow text-accent-blue uppercase"
-            >
-              {content.eyebrow}
-            </p>
             <h2
               id="approach-heading"
               data-anim="lines"
-              className="mt-3 font-display text-[clamp(1.375rem,1.6vw,1.75rem)] leading-tight font-medium tracking-tight text-balance text-navy"
+              className="font-display text-[clamp(1.75rem,2.34vw,2.8125rem)] leading-[1.11] font-medium tracking-[-0.011em] text-navy lg:whitespace-nowrap"
             >
-              {content.heading}
+              <Lines text={content.heading} />
             </h2>
             <span data-anim aria-hidden="true" className="mt-6 flex items-center">
               <span className="block h-px w-20 bg-accent-blue" />

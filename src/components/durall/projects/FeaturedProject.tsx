@@ -52,7 +52,7 @@ export function FeaturedProject({
   const current = FEATURED_GALLERY[active] ?? FEATURED_GALLERY[0]!;
 
   return (
-    <section className="relative bg-white pb-[clamp(3.5rem,6vw,7.5rem)]">
+    <section className="relative bg-white pt-[clamp(2.5rem,4.6vw,5.5rem)] pb-[clamp(3.5rem,6vw,7.5rem)]">
       {/* Stepped hairline stepping down into the featured frame (Figma Vector 31). */}
       <svg
         aria-hidden="true"

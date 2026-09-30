@@ -42,37 +42,25 @@ export const SHARED_SEED: SharedContent = {
     ],
     link: { label: "Explore our approach", href: "/about#approach" },
   },
-  // About: the enquiry form on the frosted glass.
-  enquiry: {
-    eyebrow: "Start a Conversation",
-    heading: "We’re here to\nhelp you build\nwhat’s next.",
-    lede: "From concept to completion,\nour team is with you at\nevery step.",
-    photo: photo("contactGlass", "A frosted glass pane in front of a contemporary house"),
-    wallCaption: "Architecture\nstarts with\na conversation.",
+  // Home, About, Partners and Expertise: "Let's frame the view."
+  enquiryBand: {
+    heading: "Let’s frame the view.",
+    lede: "Tell us about the project — we’ll take it from there.",
     fields: {
-      name: "Your name",
-      email: "Your email",
-      studio: "Studio / Company",
-      // TODO: confirm these options.
-      studioOptions: [
-        "Architecture studio",
-        "Interior design studio",
-        "Developer",
-        "Contractor",
-        "Private client",
-        "Other",
-      ],
-      projectType: "Project type",
-      projectTypeOptions: [
-        "Private residence",
-        "Hospitality",
-        "Commercial façade",
-        "Institutional",
-      ],
-      message: "Tell us about your project",
+      name: { label: "Name", placeholder: "Your full name…" },
+      email: { label: "Email", placeholder: "you@studio.com…" },
+      phone: { label: "Phone", placeholder: "+91…" },
+      location: { label: "Project Location", placeholder: "City…" },
+      message: {
+        label: "About the Project",
+        placeholder: "Openings, sizes, the view you want to keep…",
+      },
     },
     submit: "Send Enquiry",
-    sentHeading: "Thank you. Your enquiry is with us.",
+    sending: "Sending…",
+    sentHeading: "Thank you — your enquiry is with us.",
     sentAgain: "Send Another Enquiry",
+    writeTo: "Or write to",
+    viewProject: "View Project",
   },
 };

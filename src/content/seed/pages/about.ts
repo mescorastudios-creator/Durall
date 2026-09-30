@@ -8,21 +8,10 @@ export const ABOUT_SEED: AboutPage = {
       "Durall brings architecture, engineering and precision fabrication together — coordinating systems, materials and specialist partners into aluminium envelopes built to endure.",
     image: null,
   },
-  hero: {
-    photo: photo(
-      "heroParikrama",
-      "A Durall aluminium envelope framed by palms at Parikrama House, Murud",
-    ),
-    eyebrow: "01 — About Durall",
-    heading: "Engineering what architecture demands.",
+  opening: {
+    photo: photo("heroAbout", "Curved terrace and infinity pool facing the sea at sunset"),
+    heading: "Engineering what\narchitecture\ndemands.",
     body: "Durall brings architecture, engineering and precision fabrication together to create aluminium systems shaped around the demands of each project.",
-    cta: { label: "Explore Our Work", href: "/projects" },
-    caption: "03 — Architectural Datum / 01",
-    plates: [
-      photo("aboutPlateLeft", "Balcony detail of a Durall-glazed residence"),
-      photo("aboutPlateRight", "Aerial view of the same residence within its palm canopy"),
-    ],
-    badge: "System Detail / 01",
   },
   philosophy: {
     heading: "Luxury is never applied. It is engineered.",
@@ -76,7 +65,7 @@ export const ABOUT_SEED: AboutPage = {
   },
   approach: {
     eyebrow: "Our Approach",
-    heading: "Intelligence that brings it all together.",
+    heading: "Intelligence\nthat brings\nit all together.",
     body: "We don’t manufacture every component. We ensure the right systems, materials and expertise come together in perfect balance.",
     capabilities: [
       {

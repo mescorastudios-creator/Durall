@@ -24,7 +24,13 @@ const STATUSES = [
   { key: "archived", label: "Archived", tone: "neutral" },
 ] as const;
 
-const SOURCES = { contact: "Contact page", home: "Home page", about: "About page" } as const;
+const SOURCES = {
+  contact: "Contact page",
+  home: "Home page",
+  about: "About page",
+  partners: "Partners page",
+  expertise: "Expertise page",
+} as const;
 
 const stamp = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
 

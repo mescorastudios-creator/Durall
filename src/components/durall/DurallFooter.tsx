@@ -1,85 +1,161 @@
-import { Fragment, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { linkTo, Lines } from "@/content/render";
+import { IMAGES } from "@/assets/images";
+import { linkTo } from "@/content/render";
+import type { Cta } from "@/content/types";
 import { useSite } from "@/content/site";
+import { scrollToY } from "@/lib/scroll-lock";
+import { prefersReducedMotion } from "@/lib/motion-prefs";
 
-const LINK_CLASS =
-  "hover-lift -mx-2 flex min-h-11 items-center px-2 font-body text-xs tracking-wide text-white/80 hover:text-white";
-const LINK_STYLE = { "--lift-x": "0.125rem", "--lift-y": "0" } as CSSProperties;
+/* Everything here comes from the admin panel: the words and links under
+ * Navigation & Footer, the address under the office, and the email and
+ * phone under Company & Contact. Site paths render as router Links, so a
+ * footer link never forces a full reload; anything else (a profile URL,
+ * mailto:) is a plain anchor, and an entry with no address yet is plain text.
+ *
+ * Measured from the design at 1920px wide, where the content runs from 232px
+ * to 1686px: 12.1vw either side. */
 
-/* Columns, links and the bottom line come from the admin panel
- * (Navigation & footer). Site paths render as router Links, so a footer
- * link never forces a full reload; anything else (a profile URL, mailto:)
- * is a plain anchor. A legal entry with no address yet is plain text. */
+const HEADING =
+  "font-display text-xs leading-none font-medium tracking-[0.16em] text-silver uppercase";
+const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+function FooterLink({
+  item,
+  className,
+  style,
+}: {
+  item: Cta;
+  className: string;
+  style?: CSSProperties;
+}) {
+  if (!item.href) return <span className={className}>{item.label}</span>;
+  const target = linkTo(item.href);
+  return "to" in target ? (
+    <Link {...target} className={`${className} ${FOCUS}`} style={style}>
+      {item.label}
+    </Link>
+  ) : (
+    <a href={target.href} className={`${className} ${FOCUS}`} style={style}>
+      {item.label}
+    </a>
+  );
+}
+
 export function DurallFooter() {
   const { settings } = useSite();
-  const { company, footer } = settings;
+  const { company, footer, office, contact } = settings;
+  const email = contact.details.find((detail) => detail.icon === "mail");
+  const phone = contact.details.find((detail) => detail.icon === "phone");
+
   return (
-    <footer className="bg-navy pt-[clamp(2.5rem,5vw,4.5rem)] pb-[max(2.5rem,env(safe-area-inset-bottom))] text-white">
-      <div className="shell">
-        <div className="border-t border-white/18 pt-[clamp(2rem,3.5vw,2.5rem)]">
-          <div className="grid grid-cols-2 gap-[clamp(1.75rem,3vw,2.5rem)] md:grid-cols-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]">
-            <div className="col-span-2 min-w-0 md:col-span-3 lg:col-span-1">
-              <p
-                translate="no"
-                className="font-display text-xl font-bold tracking-[0.125rem] text-white uppercase"
-              >
-                <Lines text={company.name.replace(" ", "\n")} />
-              </p>
-              <p className="mt-4 font-body text-xs text-white/80">{company.tagline}</p>
-            </div>
-
-            {footer.columns.map((column) => (
-              <nav key={column.title} aria-label={column.title} className="min-w-0">
-                <p className="font-display text-xs font-bold tracking-eyebrow text-white uppercase">
-                  {column.title}
-                </p>
-                <ul className="mt-2 space-y-0.5">
-                  {column.links.map((link) => {
-                    const target = linkTo(link.href);
-                    return (
-                      <li key={link.label + link.href}>
-                        {/* min-h-11 gives a 44px tap target; -mx-2 px-2 keeps
-                            the label flush with the column heading above it. */}
-                        {"to" in target ? (
-                          <Link {...target} className={LINK_CLASS} style={LINK_STYLE}>
-                            {link.label}
-                          </Link>
-                        ) : (
-                          <a href={target.href} className={LINK_CLASS} style={LINK_STYLE}>
-                            {link.label}
-                          </a>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
-            ))}
-          </div>
-
-          <div className="mt-[clamp(2.5rem,5vw,3.5rem)] flex flex-col gap-2 font-body text-[0.6875rem] tracking-wider text-white/60 md:flex-row md:items-center md:justify-between">
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span>
-                © {new Date().getFullYear()} {company.legalName}
-              </span>
-              {footer.legal.map((item) => (
-                <Fragment key={item.label}>
-                  <span aria-hidden="true" className="text-white/30">
-                    ·
-                  </span>
-                  {item.href ? (
-                    <a href={item.href} className="hover:text-white">
-                      {item.label}
-                    </a>
-                  ) : (
-                    <span>{item.label}</span>
-                  )}
-                </Fragment>
-              ))}
+    <footer className="bg-navy pb-[max(0.5rem,env(safe-area-inset-bottom))] text-white">
+      <div className="mx-auto w-full max-w-[120rem] px-[clamp(1.25rem,12.1vw,14.5rem)]">
+        {/* The design's columns sit at 617 / 247 / 247 / 343px of 1454; a
+            second column of links added in the admin gets another 247. */}
+        <div
+          className="grid grid-cols-1 gap-x-6 gap-y-10 pt-[clamp(2.5rem,2.34vw,2.8rem)] pb-[clamp(2.5rem,1.8vw,2.2rem)] sm:grid-cols-2 lg:grid-cols-[minmax(0,617fr)_repeat(var(--columns),minmax(0,247fr))_minmax(0,247fr)_minmax(0,343fr)]"
+          style={{ "--columns": Math.max(1, footer.columns.length) } as CSSProperties}
+        >
+          <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+            <Link
+              to="/"
+              className={`inline-flex min-h-11 items-center ${FOCUS}`}
+              aria-label={company.name}
+            >
+              <img
+                {...IMAGES.logoDurallWhite}
+                alt=""
+                className="h-auto w-[clamp(11rem,13.55vw,16.25rem)]"
+              />
+            </Link>
+            <p className="mt-[clamp(0.75rem,1vw,1.2rem)] font-display text-[clamp(1.125rem,1.04vw,1.25rem)] font-light">
+              {company.tagline}
             </p>
-            <p>{footer.signOff}</p>
+            <p className="mt-[clamp(1rem,1.2vw,1.4rem)] max-w-[21.5rem] font-display text-sm leading-[1.6] text-pretty text-silver">
+              {footer.blurb}
+            </p>
           </div>
+
+          {footer.columns.map((column) => (
+            <nav key={column.title} aria-label={column.title} className="min-w-0">
+              <p className={HEADING}>{column.title}</p>
+              <ul className="mt-[clamp(0.75rem,0.9vw,1rem)]">
+                {column.links.map((link) => (
+                  <li key={link.label + link.href}>
+                    {/* The design's 35px rhythm on wide screens; a full 44px
+                        tap target on phones. */}
+                    <FooterLink
+                      item={link}
+                      className="hover-lift -mx-2 flex min-h-11 items-center px-2 lg:min-h-[2.1875rem] font-display text-[0.9375rem] hover:text-white/75"
+                      style={{ "--lift-x": "0.125rem", "--lift-y": "0" } as CSSProperties}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          <div className="min-w-0">
+            <p className={HEADING}>{footer.officeHeading}</p>
+            <address className="mt-[clamp(1rem,1.3vw,1.6rem)] font-display text-[0.9375rem] leading-[1.6] not-italic">
+              {office.lines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </address>
+          </div>
+
+          <div className="min-w-0">
+            <p className={HEADING}>{footer.contactHeading}</p>
+            <div className="mt-[clamp(0.75rem,1vw,1.1rem)] flex flex-col items-start font-display text-lg">
+              {email ? (
+                <a
+                  href={email.href}
+                  className={`flex min-h-10 items-center break-all hover:text-white/75 ${FOCUS}`}
+                >
+                  {email.value}
+                </a>
+              ) : null}
+              {phone ? (
+                <a
+                  href={phone.href}
+                  className={`flex min-h-10 items-center whitespace-nowrap hover:text-white/75 ${FOCUS}`}
+                >
+                  {phone.value}
+                </a>
+              ) : null}
+            </div>
+            {footer.hours ? (
+              <p className="mt-2 max-w-[21.5rem] font-display text-sm leading-snug text-pretty text-silver">
+                {footer.hours}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate py-5 font-display text-[0.8125rem] text-silver md:flex-row md:items-center md:justify-between">
+          <p>
+            © {new Date().getFullYear()} {company.legalName}
+          </p>
+          <ul className="flex flex-wrap items-center gap-x-[clamp(1rem,1.45vw,1.75rem)] gap-y-1">
+            {[...footer.social, ...footer.legal].map((item) => (
+              <li key={item.label}>
+                <FooterLink item={item} className="flex min-h-11 items-center hover:text-white" />
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                onClick={() => scrollToY(0, { immediate: prefersReducedMotion() })}
+                className={`flex min-h-11 cursor-pointer items-center gap-1 text-white hover:text-white/75 ${FOCUS}`}
+              >
+                {footer.backToTop}
+                <span aria-hidden="true">↑</span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CATEGORIES, SORTS, type Category, type SortKey } from "@/content/categories";
 import { SiteHeader } from "@/components/durall/SiteHeader";
-import { ProjectsIntro } from "@/components/durall/projects/ProjectsIntro";
+import { PhotoHero } from "@/components/durall/PhotoHero";
 import { FeaturedProject } from "@/components/durall/projects/FeaturedProject";
 import { ProjectGrid } from "@/components/durall/projects/ProjectGrid";
 import { PageCtaBand } from "@/components/durall/PageCta";
@@ -42,7 +42,7 @@ function ProjectsPage() {
     <div className="relative bg-white font-body text-navy">
       <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <ProjectsIntro content={page.intro} />
+        <PhotoHero content={page.opening} wash={{ corners: true, left: 0.25, top: true }} />
         {featured ? (
           <FeaturedProject
             slug={featured.slug}

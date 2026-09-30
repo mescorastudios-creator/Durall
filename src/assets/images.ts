@@ -21,6 +21,16 @@
 import heroParikrama960 from "./hero-parikrama-960w.webp";
 import heroParikrama1440 from "./hero-parikrama-1440w.webp";
 import heroParikrama1920 from "./hero-parikrama.webp";
+import heroAbout960 from "./hero-about-960w.webp";
+import heroAbout1440 from "./hero-about-1440w.webp";
+import heroAbout1920 from "./hero-about.webp";
+import heroPartners960 from "./hero-partners-960w.webp";
+import heroPartners1440 from "./hero-partners-1440w.webp";
+import heroPartners1920 from "./hero-partners.webp";
+import heroProjects960 from "./hero-projects-960w.webp";
+import heroProjects1440 from "./hero-projects-1440w.webp";
+import heroProjects1920 from "./hero-projects.webp";
+import logoDurallWhite from "./logo-durall-white.webp";
 import philosophyPavilion880 from "./philosophy-pavilion-880w.webp";
 import philosophyPavilion1440 from "./philosophy-pavilion.webp";
 
@@ -66,8 +76,6 @@ import aboutDurallMark from "./about-durall-mark.webp";
 
 import partnersVilla from "./partners-villa.webp";
 import partnersWorldMap from "./partners-world-map.webp";
-import contactGlass1280 from "./contact-glass-1280w.webp";
-import contactGlass from "./contact-glass.webp";
 
 import parikramaPalms960 from "./parikrama/palms-960w.webp";
 import parikramaPalms1440 from "./parikrama/palms-1440w.webp";
@@ -143,6 +151,32 @@ export const IMAGES = {
     ],
     1287,
   ),
+  heroAbout: set(
+    [
+      [heroAbout960, 960],
+      [heroAbout1440, 1440],
+      [heroAbout1920, 1920],
+    ],
+    964,
+  ),
+  heroPartners: set(
+    [
+      [heroPartners960, 960],
+      [heroPartners1440, 1440],
+      [heroPartners1920, 1920],
+    ],
+    964,
+  ),
+  heroProjects: set(
+    [
+      [heroProjects960, 960],
+      [heroProjects1440, 1440],
+      [heroProjects1920, 1920],
+    ],
+    955,
+  ),
+  /** The white wordmark from the design, for the header and footer. */
+  logoDurallWhite: one(logoDurallWhite, 1200, 180),
   philosophyPavilion: set(
     [
       [philosophyPavilion880, 880],
@@ -256,15 +290,6 @@ export const IMAGES = {
 
   partnersVilla: one(partnersVilla, 1365, 648),
   partnersWorldMap: one(partnersWorldMap, 1400, 474),
-  /* contact-frame-2.png with the blurred copy of the form that was painted
-   * into its glass taken out. */
-  contactGlass: set(
-    [
-      [contactGlass1280, 1280],
-      [contactGlass, 1920],
-    ],
-    826,
-  ),
 
   /* Parikrama — Murud House, the first project detail page. Brought over from
    * its own Lovable project: the originals were 1px-feathered PNG exports (one
