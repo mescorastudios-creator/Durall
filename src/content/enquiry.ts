@@ -22,6 +22,9 @@ const enquiry = z.object({
   phone: z.string().trim().max(60).default(""),
   location: z.string().trim().max(200).default(""),
   message: z.string().trim().max(10_000).default(""),
+  /** The enquiry band's "Subscribe for updates" tick box. The contact page's
+   * form has none and leaves this out. */
+  subscribe: z.boolean().optional(),
   /** A field people never see; only a bot fills it. */
   website: z.string().max(500).default(""),
 });
@@ -79,6 +82,14 @@ export const sendEnquiry = createServerFn({ method: "POST" })
           "That didn’t send — our enquiry service is not connected yet. Please email us directly using the address on this page.",
       };
     }
+    // The enquiries table has no column for the tick box, so the answer
+    // travels at the foot of the message, where the inbox shows it.
+    const message =
+      data.subscribe === undefined
+        ? data.message
+        : [data.message, `Subscribe for updates: ${data.subscribe ? "Yes" : "No"}`]
+            .filter(Boolean)
+            .join("\n\n");
     const row = {
       source: data.source,
       name: data.name,
@@ -86,7 +97,7 @@ export const sendEnquiry = createServerFn({ method: "POST" })
       studio: data.studio,
       project_type: data.projectType,
       subject: data.subject,
-      message: data.message,
+      message,
     };
     let { error } = await serviceClient()
       .from("enquiries")
@@ -107,7 +118,7 @@ export const sendEnquiry = createServerFn({ method: "POST" })
         .insert({
           ...row,
           source: legacy ? data.source : "home",
-          message: [...noted, data.message].filter(Boolean).join("\n\n"),
+          message: [...noted, message].filter(Boolean).join("\n\n"),
         }));
     }
     if (error) {

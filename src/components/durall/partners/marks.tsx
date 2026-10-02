@@ -23,6 +23,7 @@ function OfficialLogo({ logo, name }: { logo: Logo; name: string }) {
   const { src, width, height } = imageOf(logo.image);
   return (
     <img
+      draggable={false}
       src={src}
       width={width}
       height={height}

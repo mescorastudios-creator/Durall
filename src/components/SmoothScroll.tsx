@@ -53,27 +53,45 @@ export function SmoothScroll() {
        * scrolls everything else — the hero's own "Discover Durall" button
        * among them. Delegated here rather than in each component so any
        * anchor added later inherits it, and so the landing accounts for the
-       * fixed header's height. */
+       * fixed header's height.
+       *
+       * In the capture phase, so it also takes the router's own links to a
+       * section of the page they are on ("View open roles"): the router sees
+       * the click as handled and does not jump there first. A link to a
+       * different page, or to the same page under a different filter, is
+       * left to the router. */
       const onAnchorClick = (event: MouseEvent) => {
         if (event.defaultPrevented || event.button !== 0) return;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        const anchor = (event.target as Element | null)?.closest?.("a[href^='#']");
-        if (!(anchor instanceof HTMLAnchorElement)) return;
-        const id = anchor.getAttribute("href")?.slice(1);
-        if (!id) return;
-        const target = document.getElementById(id);
+        const anchor = (event.target as Element | null)?.closest?.("a[href*='#']");
+        if (!(anchor instanceof HTMLAnchorElement) || anchor.target === "_blank") return;
+        const url = new URL(anchor.href, window.location.href);
+        if (
+          url.origin !== window.location.origin ||
+          url.pathname !== window.location.pathname ||
+          url.search !== window.location.search
+        )
+          return;
+        const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
         if (!target) return;
         event.preventDefault();
         const headerH = parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
         );
-        lenis.scrollTo(target, { offset: -(Number.isFinite(headerH) ? headerH : 0) - 16 });
+        // An absolute position, measured here: given the element, Lenis adds
+        // its `scroll-margin-top` to the offset and lands a header too low.
+        lenis.scrollTo(
+          target.getBoundingClientRect().top +
+            window.scrollY -
+            (Number.isFinite(headerH) ? headerH : 0) -
+            16,
+        );
         // Scrolling is not navigating: move focus too, or a keyboard reader
         // is left where they were.
         target.setAttribute("tabindex", "-1");
         target.focus({ preventScroll: true });
       };
-      document.addEventListener("click", onAnchorClick);
+      document.addEventListener("click", onAnchorClick, true);
 
       const raf = (time: number) => lenis.raf(time * 1000);
       gsap.ticker.add(raf);
@@ -119,7 +137,7 @@ export function SmoothScroll() {
 
       dispose = () => {
         if (resizeTimer) clearTimeout(resizeTimer);
-        document.removeEventListener("click", onAnchorClick);
+        document.removeEventListener("click", onAnchorClick, true);
         registerScroller(null);
         motionQuery.removeEventListener("change", onMotionChange);
         window.removeEventListener("resize", refreshLayout);

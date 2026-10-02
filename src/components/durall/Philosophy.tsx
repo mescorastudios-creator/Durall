@@ -29,6 +29,7 @@ export function Philosophy({ content }: { content: HomePage["philosophy"] }) {
 
           <p
             data-anim
+            data-fx="words"
             className="mt-[clamp(2rem,2.7vw,3.25rem)] max-w-[27rem] font-body text-[clamp(0.875rem,1vw,0.9375rem)] leading-[1.75] text-slate"
           >
             {lead}
@@ -38,6 +39,7 @@ export function Philosophy({ content }: { content: HomePage["philosophy"] }) {
               key={index}
               data-anim
               data-anim-lead
+              data-fx="words"
               className="mt-[clamp(1.25rem,1.4vw,1.625rem)] max-w-[27rem] font-body text-[clamp(0.875rem,1vw,0.9375rem)] leading-[1.75] text-slate"
             >
               {paragraph}
@@ -62,6 +64,9 @@ export function Philosophy({ content }: { content: HomePage["philosophy"] }) {
            * photograph, so it has no right-hand side. */}
           <div
             aria-hidden="true"
+            // Travels a little against the photograph it frames.
+            data-fx="drift"
+            data-fx-by="14"
             className="absolute top-[1.625rem] right-0 -left-[1.375rem] hidden h-full border-y border-l border-navy lg:block"
           />
           {/* The connector line in the projects section starts at this
@@ -75,6 +80,7 @@ export function Philosophy({ content }: { content: HomePage["philosophy"] }) {
                 photograph is already carrying the parallax drift. */}
             <div data-clip-inner className="h-full w-full">
               <img
+                draggable={false}
                 ref={imageRef}
                 {...imageOf(content.photo.image)}
                 alt={content.photo.alt}

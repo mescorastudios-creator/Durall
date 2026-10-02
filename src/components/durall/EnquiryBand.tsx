@@ -10,6 +10,7 @@ import type { SharedContent } from "@/content/types";
 import { useReducedMotion } from "@/lib/motion-prefs";
 import { transition } from "@/lib/motion-tokens";
 import { Honeypot } from "./contact/Honeypot";
+import { ArrowRight, BUTTON } from "./ui";
 import { RULES } from "./contact/submit";
 
 /**
@@ -231,6 +232,7 @@ function Slideshow({
       {slides.map((item, i) =>
         loaded.has(i) ? (
           <img
+            draggable={false}
             key={item.slug}
             {...imageOf(item.hero.image)}
             alt={i === index ? item.hero.alt : ""}
@@ -394,7 +396,6 @@ function EnquiryForm({ copy, source }: { copy: Copy; source: Source }) {
   const [failure, setFailure] = useState<string | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState(false);
-  const email = settings.contact.details.find((detail) => detail.icon === "mail");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -428,6 +429,7 @@ function EnquiryForm({ copy, source }: { copy: Copy; source: Source }) {
           phone: value("phone"),
           location: value("location"),
           message: value("message"),
+          subscribe: form.get("subscribe") === "yes",
           website: value("website"),
         },
       });
@@ -535,6 +537,30 @@ function EnquiryForm({ copy, source }: { copy: Copy; source: Source }) {
               />
             </Field>
 
+            {/* Optional, unticked by default. Drawn like the fields: the
+                same label, a hairline box that fills when ticked. */}
+            <label className="group relative flex cursor-pointer items-start gap-[clamp(0.75rem,0.95vw,1.125rem)] sm:col-span-2">
+              <input type="checkbox" name="subscribe" value="yes" className="peer sr-only" />
+              <span
+                aria-hidden="true"
+                className="mt-px flex size-5 shrink-0 items-center justify-center border border-white/35 text-navy transition-colors duration-[var(--dur-short)] group-hover:border-white group-has-[:checked]:border-white group-has-[:checked]:bg-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="size-3.5 opacity-0 transition-opacity duration-[var(--dur-micro)] group-has-[:checked]:opacity-100"
+                >
+                  <path d="M3 8.5l3.2 3L13 4.5" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+              </span>
+              <span className="min-w-0 pt-[0.1875rem]">
+                <span className={LABEL}>{copy.subscribe.label}</span>
+                <span className="mt-[clamp(0.5rem,0.55vw,0.625rem)] block max-w-[36rem] font-display text-[clamp(0.875rem,0.97vw,1.0625rem)] leading-[1.45] text-pretty text-white/75">
+                  {copy.subscribe.note}
+                </span>
+              </span>
+            </label>
+
             {failure ? (
               <p
                 role="alert"
@@ -545,32 +571,10 @@ function EnquiryForm({ copy, source }: { copy: Copy; source: Source }) {
             ) : null}
 
             <div className="mt-[clamp(0.5rem,0.3vw,0.75rem)] flex flex-wrap items-center gap-x-[clamp(1.25rem,1.72vw,2.1rem)] gap-y-4 sm:col-span-2">
-              <button
-                type="submit"
-                disabled={sending}
-                className={`hover-lift inline-flex h-[clamp(3rem,3.64vw,4.375rem)] cursor-pointer items-center gap-[clamp(0.75rem,1vw,1.2rem)] bg-white px-[clamp(1.25rem,1.9vw,2.3rem)] font-display text-[clamp(0.75rem,0.885vw,1.0625rem)] font-medium tracking-[0.135em] text-navy uppercase transition-colors duration-[var(--dur-short)] hover:bg-white/85 disabled:cursor-progress disabled:opacity-80 ${FOCUS}`}
-              >
+              <button type="submit" disabled={sending} className={BUTTON.inverted}>
                 {sending ? copy.sending : copy.submit}
-                <svg
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden="true"
-                  className="h-[1.05em] w-[1.05em] shrink-0"
-                >
-                  <path d="M2.5 8h11M9.5 4l4 4-4 4" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
+                <ArrowRight className="hover-arrow h-4 w-4 shrink-0" />
               </button>
-              {email ? (
-                <p className="font-display text-[clamp(0.875rem,0.97vw,1.17rem)] text-white/85">
-                  {copy.writeTo}{" "}
-                  <a
-                    href={email.href}
-                    className={`text-white underline decoration-white/50 underline-offset-[0.2em] transition-colors duration-[var(--dur-short)] hover:decoration-white ${FOCUS}`}
-                  >
-                    {email.value}
-                  </a>
-                </p>
-              ) : null}
             </div>
           </motion.form>
         )}

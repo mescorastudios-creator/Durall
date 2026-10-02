@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { isIntroPending } from "@/lib/intro";
-import { loadGsap, markAnimReady, playAfterIntro, splitToLines } from "@/lib/anim";
+import { heroCover, loadGsap, markAnimReady, playAfterIntro, splitToLines } from "@/lib/anim";
+import { Lines } from "@/content/render";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
 import { LANDING } from "./motion";
 import type { ProjectsPage } from "@/content/types";
@@ -77,8 +78,8 @@ function Odometer({ value, unit }: { value: number; unit?: string | undefined })
  *   4. The built area rolls into place column by column, each column making a
  *      different number of turns, so the figure lands left to right.
  *
- * Scrolling away moves the photograph at a fifth of the page's speed, as the
- * reference does.
+ * Scrolling on, the page slides up over the photograph, which pushes in and
+ * darkens underneath it (lib/anim heroCover).
  */
 export function ProjectHero({
   project,
@@ -112,15 +113,21 @@ export function ProjectHero({
       const [curtain] = q("[data-hero-curtain]");
       const [counter] = q("[data-hero-counter]");
       const [photo] = q("[data-hero-photo]");
-      const [drift] = q("[data-hero-drift]");
       const strips = q("[data-odometer-strip]");
       const rise = q("[data-hero-rise]");
 
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: LANDING },
-        onComplete: () => split.revert(),
       });
+      /* The lines are only put back together when the width changes and the
+       * title has to wrap again. Doing it as the reveal finished repainted
+       * the title as new text four seconds after load, and that repaint was
+       * what the browser reported as the page's largest paint. */
+      const reflow = () => {
+        if (tl.progress() === 1) split.revert();
+      };
+      window.addEventListener("resize", reflow);
       // Everything the pre-paint class held back is now held by the timeline.
       gsap.set([title, curtain, ...q("[data-hero-hold]")].filter(Boolean), { opacity: 1 });
 
@@ -159,31 +166,15 @@ export function ProjectHero({
         );
       });
 
-      const parallax = drift
-        ? gsap.fromTo(
-            drift,
-            { y: 0 },
-            {
-              y: () => section.offsetHeight * 0.2,
-              ease: "none",
-              scrollTrigger: {
-                trigger: section,
-                start: "top top",
-                end: "bottom top",
-                scrub: true,
-                invalidateOnRefresh: true,
-              },
-            },
-          )
-        : undefined;
+      const stopCover = heroCover(gsap, section);
 
       markAnimReady();
       playAfterIntro(tl, () => cancelled);
 
       dispose = () => {
+        window.removeEventListener("resize", reflow);
         tl.kill();
-        parallax?.scrollTrigger?.kill();
-        parallax?.kill();
+        stopCover();
         split.revert();
       };
     })();
@@ -197,12 +188,14 @@ export function ProjectHero({
   return (
     <section
       ref={sectionRef}
+      data-hero-pin
       className="relative flex h-[100svh] min-h-[34rem] items-end overflow-hidden bg-navy text-white"
     >
       <div data-hero-curtain data-anim-hide className="absolute inset-0 overflow-hidden">
         <div data-hero-counter className="absolute inset-0">
-          <div data-hero-drift className="absolute inset-0">
+          <div data-hero-media className="absolute inset-0">
             <img
+              draggable={false}
               data-hero-photo
               {...project.hero.image}
               alt={project.hero.alt}
@@ -217,6 +210,18 @@ export function ProjectHero({
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-linear-to-t from-navy/75 via-navy/15 to-navy/35"
+      />
+      {/* Behind the clear header: a pale sky left the white wordmark and
+          links at under 2:1. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[26%] bg-linear-to-b from-navy/70 to-transparent"
+      />
+      {/* Deepens as the page slides over the opening (lib/anim heroCover). */}
+      <div
+        data-hero-dim
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-navy opacity-0"
       />
 
       <div className="shell relative flex w-full flex-col gap-8 pb-[clamp(2rem,5vh,3.5rem)] md:flex-row md:items-end md:justify-between">
@@ -233,12 +238,10 @@ export function ProjectHero({
             data-anim-hide
             className="mt-4 font-display text-[clamp(2.75rem,7.4vw,7.5rem)] leading-[0.94] font-light tracking-[-0.035em]"
           >
-            {project.title.map((line, index) => (
-              <span key={line}>
-                {line}
-                {index < project.title.length - 1 ? <br /> : null}
-              </span>
-            ))}
+            {/* The breaks sit directly in the heading: wrapped in a span
+                each, the line split treats the span as one unbreakable word
+                and the break inside it stops applying while the title rises. */}
+            <Lines text={project.title.join("\n")} />
           </h1>
           <p data-hero-rise data-anim-hide className="mt-5 font-body text-sm text-white/75">
             {project.architect}

@@ -51,14 +51,19 @@ export function InternationalNetwork({
             stacking context), not just behind the grid: it is taller than
             the grid and reaches up under the intro, and its translucent white
             backing would otherwise wash that text out. */}
-        <img
-          {...imageOf(content.map)}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          className="pointer-events-none absolute top-1/2 left-1/2 w-[130%] max-w-none -z-1 -translate-x-1/2 -translate-y-1/2 opacity-45 select-none"
-          loading="lazy"
-        />
+        {/* The wrapper carries the map's slow drift against the logos over
+            it (ScrollFx); the image keeps its own centring. */}
+        <div data-fx="drift" data-fx-by="48" className="pointer-events-none absolute inset-0 -z-1">
+          <img
+            draggable={false}
+            {...imageOf(content.map)}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            className="absolute top-1/2 left-1/2 w-[130%] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-45 select-none"
+            loading="lazy"
+          />
+        </div>
         <ul
           ref={gridRef}
           className="shell-about relative grid grid-cols-1 gap-y-[clamp(2rem,4vw,3rem)] sm:grid-cols-2 lg:grid-cols-4"
@@ -116,7 +121,10 @@ export function InternationalNetwork({
             aria-hidden="true"
             className="absolute bottom-0 -left-1.5 h-px w-[min(calc(100%+0.375rem),67.3rem)] bg-navy/10"
           />
-          <p className="max-w-[63.5rem] pt-[2.125rem] pb-[0.625rem] pl-[4.375rem] font-display text-[clamp(0.875rem,0.905vw,1rem)] leading-[1.6] text-pretty text-navy">
+          <p
+            data-fx="words"
+            className="max-w-[63.5rem] pt-[2.125rem] pb-[0.625rem] pl-[4.375rem] font-display text-[clamp(0.875rem,0.905vw,1rem)] leading-[1.6] text-pretty text-navy"
+          >
             {content.quote}
           </p>
         </div>

@@ -93,7 +93,7 @@
   --dur-long: 900ms;
   /* The page change (lib/page-transition.ts): starts gently from the click,
    * sweeps across the screen, and settles as it reaches the corners. */
-  --dur-reveal: 900ms;
+  --dur-reveal: 600ms;
   --ease-reveal: cubic-bezier(0.65, 0, 0.35, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -176,9 +176,22 @@
  *     and then being snapped away when GSAP's `from` tweens initialise.
  * The same script drops the class after a timeout, so a blocked or failed
  * GSAP import can never leave the page blank.
+ *
+ * Not while the opening curtain is still closed over the page
+ * (`intro-covered`, dropped by SiteIntro as the doors are about to part):
+ * the curtain is already hiding everything, and text held at `opacity: 0`
+ * underneath it is not painted, so the page's LCP would wait for the doors.
  */
-.anim-pending [data-anim-hide],
-.anim-pending [data-hero-fade] {
+/* Under the closed curtain the page is not drawn until Space Grotesk and
+ * Inter have arrived (the pre-paint script drops `fonts-pending` then, or
+ * after 1.2s): its first paint is in the real faces, so nothing re-wraps
+ * and shifts when they swap in. */
+.fonts-pending.intro-covered :is(main, footer) {
+  visibility: hidden;
+}
+
+.anim-pending:not(.intro-covered) [data-anim-hide],
+.anim-pending:not(.intro-covered) [data-hero-fade] {
   opacity: 0;
 }
 
@@ -225,6 +238,29 @@
 
   img {
     height: auto;
+  }
+
+  /* Photographs and films cannot be dragged out of the page, selected, or
+   * long-pressed for a "save image" sheet. The context menu is handled in
+   * routes/__root.tsx. Nothing here changes how they look or lay out. */
+  /* The opening film starts itself; the browser's own "tap to play" button
+   * (a phone in a power-saving mode puts one over a film it has held back)
+   * is never shown. */
+  [data-hero-film]::-webkit-media-controls,
+  [data-hero-film]::-webkit-media-controls-panel,
+  [data-hero-film]::-webkit-media-controls-start-playback-button,
+  [data-hero-film]::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
+  }
+
+  img,
+  video {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 }
 
@@ -275,6 +311,142 @@
 @media (hover: hover) {
   .group:hover .media-zoom {
     scale: var(--zoom, 1.04);
+  }
+}
+
+/* ── The line behind a project photograph (ui.tsx: CardFrame) ─────────────
+ * Five pieces, each grown along its own length, timed so the line travels
+ * without a break: up the left side, along the top, down the cut corner,
+ * then round behind the photograph to where it began. The delays in the
+ * resting state are the same journey backwards, twice as fast, so leaving
+ * the card runs the line back to nothing rather than cutting it off.
+ *
+ * The cut is 10.5% of the frame's width on both axes, so it stays at 45°
+ * whatever the photograph's proportions. */
+.card-frame {
+  position: absolute;
+  inset: 0;
+  translate: -0.625rem -0.75rem;
+  pointer-events: none;
+  container-type: inline-size;
+  --line: 1.5px;
+  --cut: 10.5cqw;
+}
+
+.card-frame > span {
+  position: absolute;
+  background-color: var(--color-navy);
+  transition: scale var(--back) linear var(--back-delay);
+}
+
+.card-frame > [data-edge="left"] {
+  inset: 0 auto 0 0;
+  width: var(--line);
+  transform-origin: bottom;
+  scale: 1 0;
+  --draw: 300ms;
+  --draw-delay: 0ms;
+  --back: 150ms;
+  --back-delay: 290ms;
+}
+
+.card-frame > [data-edge="top"] {
+  inset: 0 var(--cut) auto 0;
+  height: var(--line);
+  transform-origin: left;
+  scale: 0 1;
+  --draw: 300ms;
+  --draw-delay: 300ms;
+  --back: 150ms;
+  --back-delay: 140ms;
+}
+
+.card-frame > [data-edge="cut"] {
+  top: 0;
+  right: var(--cut);
+  width: calc(var(--cut) * 1.4142);
+  height: var(--line);
+  translate: 100% 0;
+  rotate: 45deg;
+  transform-origin: left center;
+  scale: 0 1;
+  --draw: 60ms;
+  --draw-delay: 600ms;
+  --back: 40ms;
+  --back-delay: 100ms;
+}
+
+.card-frame > [data-edge="right"] {
+  inset: var(--cut) 0 0 auto;
+  width: var(--line);
+  transform-origin: top;
+  scale: 1 0;
+  --draw: 90ms;
+  --draw-delay: 660ms;
+  --back: 50ms;
+  --back-delay: 50ms;
+}
+
+.card-frame > [data-edge="bottom"] {
+  inset: auto 0 0 0;
+  height: var(--line);
+  transform-origin: right;
+  scale: 0 1;
+  --draw: 90ms;
+  --draw-delay: 750ms;
+  --back: 50ms;
+  --back-delay: 0ms;
+}
+
+.group:focus-within .card-frame > span {
+  scale: 1 1;
+  transition: scale var(--draw) linear var(--draw-delay);
+}
+
+@media (hover: hover) {
+  .group:hover .card-frame > span {
+    scale: 1 1;
+    transition: scale var(--draw) linear var(--draw-delay);
+  }
+}
+
+/* Nothing travels: the whole line is in place and simply fades in. */
+@media (prefers-reduced-motion: reduce) {
+  .card-frame {
+    opacity: 0;
+    transition: opacity var(--dur-micro) ease;
+  }
+
+  .card-frame > span,
+  .group:hover .card-frame > span,
+  .group:focus-within .card-frame > span {
+    scale: 1 1;
+    transition: none;
+  }
+
+  .group:hover .card-frame,
+  .group:focus-within .card-frame {
+    opacity: 1;
+  }
+}
+
+/* A label that changes in place (the stage tag, caption and count on the
+ * home page's process photograph): the new words roll up into the line. The
+ * element is re-keyed when its text changes, which restarts this. */
+@keyframes label-roll {
+  from {
+    translate: 0 1.6em;
+    opacity: 0;
+  }
+}
+
+.label-roll {
+  animation: label-roll var(--dur-medium) var(--ease-entrance) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label-roll {
+    animation: none;
   }
 }
 
@@ -480,37 +652,81 @@ html.intro-bailout .site-intro {
   }
 }
 
+/* ── Opening photographs ──────────────────────────────────────────────────
+ * Each page's opening holds still while the rest of the page slides up over
+ * it (and, on pointer devices, pushes in and darkens underneath: lib/anim
+ * heroCover). Sticky rather than a scripted pin: the browser does it, on
+ * its own thread, at every size.
+ *
+ * Only where the opening fits the window. Its text sits at its foot, and a
+ * sticky opening taller than the window would have that text covered before
+ * it was ever on screen. Not under reduced motion, where it scrolls away
+ * like anything else.
+ */
+@media (min-height: 40rem) and (prefers-reduced-motion: no-preference) {
+  main:has(> [data-hero-pin]) {
+    isolation: isolate;
+  }
+
+  main > [data-hero-pin] {
+    position: sticky;
+    top: 0;
+    z-index: -1;
+  }
+}
+
+@layer base {
+  /* Whatever follows an opening travels over it, so it needs a ground of
+   * its own; a section's own background class still wins over this. */
+  main > [data-hero-pin] ~ * {
+    background-color: #fff;
+  }
+}
+
 /* ── Site header and menu ─────────────────────────────────────────────────
  * The bar is fixed and direction-aware: it slides out of the way on the way
  * down and returns the moment the reader scrolls up. Transform only, so the
- * slide never touches layout, and the colour change is a separate, shorter
- * transition so the background settles before the movement finishes.
+ * slide never touches layout. It has no background of its own; the ink
+ * changes on the wordmark, links and button themselves (SiteHeader.tsx).
  */
 [data-site-header] {
   translate: 0 0;
   transition:
     opacity var(--dur-long) var(--ease-entrance),
-    translate var(--dur-medium) var(--ease-entrance),
-    background-color var(--dur-short) var(--ease-micro),
-    border-color var(--dur-short) var(--ease-micro),
-    backdrop-filter var(--dur-short) var(--ease-micro);
+    translate var(--dur-medium) var(--ease-entrance);
 }
 
-[data-site-header][data-hidden="true"] {
+/* Never while something in it has the keyboard's focus: tabbing back into a
+ * bar that had slid away put the focus ring off screen. */
+[data-site-header][data-hidden="true"]:not(:focus-within) {
   translate: 0 -100%;
 }
 
-/* Over a photograph the designs set the wordmark and links lower than a
- * compact bar would, 2.34vw from the top. The bar keeps its compact height
- * either way, so `--header-h` and the pages under it never move on scroll;
- * only the row travels, by transform, closing up as the bar turns navy. */
-[data-site-header-row] {
+/* The menu fades and settles in, and fades out again when it closes: it
+ * used to appear and vanish in a single frame. It is `hidden` while shut;
+ * `allow-discrete` holds `display` until the fade has finished on the way
+ * out, and `@starting-style` gives the fade somewhere to start from on the
+ * way in. A browser without either (before Chrome 117, Safari 17.4,
+ * Firefox 129) shows and hides it at once, as before. */
+[data-site-menu] {
+  opacity: 1;
   translate: 0 0;
-  transition: translate var(--dur-medium) var(--ease-entrance);
+  transition:
+    opacity var(--dur-short) var(--ease-micro),
+    translate var(--dur-medium) var(--ease-entrance),
+    display var(--dur-short) allow-discrete;
 }
 
-[data-site-header][data-clear="true"] [data-site-header-row] {
-  translate: 0 calc(clamp(0.75rem, 2.34vw, 2.8rem) - clamp(0.75rem, 0.97vw, 1.125rem));
+@starting-style {
+  [data-site-menu] {
+    opacity: 0;
+    translate: 0 -0.75rem;
+  }
+}
+
+[data-site-menu][hidden] {
+  opacity: 0;
+  translate: 0 -0.75rem;
 }
 
 /* Items cascade in behind the panel rather than arriving with it. The delay
@@ -541,19 +757,19 @@ html.intro-bailout .site-intro {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* The bar keeps its colour change and stops moving: a header that slides
-   * away is motion, and it is also the only navigation on the page. */
+  /* The bar stops moving: a header that slides away is motion, and it is
+   * also the only navigation on the page. Its ink still changes colour. */
   [data-site-header] {
-    transition:
-      background-color var(--dur-micro) ease,
-      border-color var(--dur-micro) ease;
+    transition: none;
   }
 
-  [data-site-header][data-hidden="true"] {
+  [data-site-header][data-hidden="true"]:not(:focus-within) {
     translate: 0 0;
   }
 
-  [data-site-header-row] {
+  [data-site-menu],
+  [data-site-menu][hidden] {
+    translate: 0 0;
     transition: none;
   }
 
@@ -615,20 +831,6 @@ html.intro-bailout .site-intro {
  * a photograph never shows before its shutter is in place. */
 .anim-pending [data-plate-cover] {
   transform: scaleY(1) !important;
-}
-
-/* A line's mask is its own box, so at a tight leading it clips descenders
- * (and accents) while the line is rising — "journey" reads "iourneu" for a
- * second. The mask is padded past the glyphs and the padding is taken back
- * with a negative margin, so the reveal clears them and the layout doesn't
- * move. The reference pads its masks the same way. */
-/* Every line mask leaves room for ascents and descenders: `split-line` is
- * useSplitLines', which clipped "help you build" on the home contact. */
-.reveal-line,
-.project-hero-line,
-.split-line {
-  padding-block: 0.1em 0.16em;
-  margin-block: -0.1em -0.16em;
 }
 
 /* Gallery: one list, three arrangements. The same elements are laid out
@@ -947,6 +1149,43 @@ html.intro-bailout .site-intro {
 /* The home page slideshow's progress bars: the current one fills in time
  * with its slide (HomeEnquiry.tsx). */
 @keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Article reading progress ─────────────────────────────────────────────
+ * A hairline across the top of the screen that fills as the article is
+ * read: driven by the article's own view timeline (see insights.$slug), so
+ * no script runs while scrolling. Where scroll-driven animation is not
+ * supported, or motion is reduced, it is simply not shown. */
+.read-progress {
+  display: none;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .read-progress {
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      z-index: 60;
+      display: block;
+      height: 3px;
+      background: var(--color-accent-blue);
+      transform-origin: 0 50%;
+      pointer-events: none;
+      animation: read-progress linear both;
+      animation-timeline: --article;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+}
+
+@keyframes read-progress {
   from {
     transform: scaleX(0);
   }

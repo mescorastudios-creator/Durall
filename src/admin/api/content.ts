@@ -16,7 +16,7 @@ import type {
   SharedContent,
   SiteSettings,
 } from "@/content/types";
-import type { Section } from "@/admin/permissions";
+import { can, type Member, type Section } from "@/admin/permissions";
 import { currentMember, fail, logActivity, requireMember, requireOwner } from "@/server/auth";
 import { purgeContentCache } from "@/server/cache";
 import { databaseStore, markImported, seedStore, type ContentStore } from "@/server/store";
@@ -42,11 +42,13 @@ async function isImported(db: SupabaseClient) {
 }
 
 /** The store the panel reads from, and whether what it shows can be saved. */
-async function adminStore(section?: Section): Promise<{ store: ContentStore; editable: boolean }> {
-  if (!isSupabaseConfigured()) return { store: seedStore, editable: false };
-  const { db } = await requireMember(section);
-  if (!(await isImported(db))) return { store: seedStore, editable: false };
-  return { store: databaseStore(db), editable: true };
+async function adminStore(
+  section?: Section,
+): Promise<{ store: ContentStore; editable: boolean; member: Member | null }> {
+  if (!isSupabaseConfigured()) return { store: seedStore, editable: false, member: null };
+  const { db, member } = await requireMember(section);
+  if (!(await isImported(db))) return { store: seedStore, editable: false, member };
+  return { store: databaseStore(db), editable: true, member };
 }
 
 async function saved(
@@ -139,7 +141,10 @@ export const saveSettingsParts = createServerFn({ method: "POST" })
   .inputValidator(
     input(
       z.object({
-        parts: z.record(
+        // partialRecord: zod 4's record with enum keys is exhaustive, and
+        // would fill every part not sent with undefined, resetting the
+        // other screens' settings and demanding access to all of them.
+        parts: z.partialRecord(
           z.enum(Object.keys(SETTINGS_PARTS) as [SettingsPart, ...SettingsPart[]]),
           z.unknown(),
         ),
@@ -147,21 +152,38 @@ export const saveSettingsParts = createServerFn({ method: "POST" })
     ),
   )
   .handler(async ({ data }) => {
-    const names = Object.keys(data.parts) as SettingsPart[];
+    const names = (Object.keys(data.parts) as SettingsPart[]).filter(
+      (name) => data.parts[name] !== undefined,
+    );
     if (!names.length) fail("Nothing to save.");
     const session = await requireMember();
     for (const name of names) await requireMember(SETTINGS_PARTS[name]);
-    const current = await databaseStore(session.db).settings();
-    const next = withDefaults(SEED.settings, { ...current, ...data.parts });
+    // Only the parts sent are rewritten. The rest go back exactly as stored,
+    // so the database can see which parts this save changed and check each
+    // against the saver's sections (0003_section_access.sql).
+    const { data: row, error: readError } = await session.db
+      .from("settings")
+      .select("content")
+      .eq("key", "site")
+      .maybeSingle();
+    dbError(readError, "settings");
+    const stored = ((row as { content?: unknown } | null)?.content ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const content: Record<string, unknown> = { ...stored };
+    for (const name of names) {
+      content[name] = withDefaults(SEED.settings[name] as unknown, data.parts[name]);
+    }
     const { error } = await session.db.from("settings").upsert({
       key: "site",
-      content: next,
+      content,
       updated_by: session.member.id,
       updated_at: new Date().toISOString(),
     });
     dbError(error, "settings");
     await saved(session, "update", "settings", names.join(","), `Updated ${names.join(", ")}`);
-    return { settings: next };
+    return { settings: withDefaults(SEED.settings, content) };
   });
 
 export const loadShared = createServerFn({ method: "GET" }).handler(async () => {
@@ -461,25 +483,30 @@ export const reorderProjects = createServerFn({ method: "POST" })
  * media library's "where is this used" and the dashboard's checklist.
  */
 export const loadAllContent = createServerFn({ method: "GET" }).handler(async () => {
-  const { store, editable } = await adminStore();
-  const [settings, shared, projects, articles, roles, partners, pageList] = await Promise.all([
-    store.settings(),
-    store.shared(),
-    store.projects(),
-    store.articles(),
-    store.roles(),
-    store.partners(),
-    Promise.all(PAGES.map(async (page) => [page.key, await store.page(page.key)] as const)),
-  ]);
+  const { store, editable, member } = await adminStore();
+  // Every member sees what the site shows; drafts, closed roles and hidden
+  // partners only in the sections they were given.
+  const visible = <T>(section: Section, items: T[], live: (item: T) => boolean) =>
+    !member || can(member, section) ? items : items.filter(live);
+  const [settings, shared, allProjects, allArticles, allRoles, allPartners, pageList] =
+    await Promise.all([
+      store.settings(),
+      store.shared(),
+      store.projects(),
+      store.articles(),
+      store.roles(),
+      store.partners(),
+      Promise.all(PAGES.map(async (page) => [page.key, await store.page(page.key)] as const)),
+    ]);
   return {
     editable,
     settings,
     shared,
     pages: Object.fromEntries(pageList) as PageMap,
-    projects,
-    articles,
-    roles,
-    partners,
+    projects: visible("projects", allProjects, (p) => p.status === "published"),
+    articles: visible("insights", allArticles, (a) => a.status === "published"),
+    roles: visible("careers", allRoles, (r) => r.open),
+    partners: visible("partners", allPartners, (p) => p.visible),
   };
 });
 

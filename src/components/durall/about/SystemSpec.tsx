@@ -14,14 +14,17 @@ export function SystemSpec({ content }: { content: AboutPage["spec"] }) {
           {/* The profile photograph runs to the card's edge; the other three
               cells carry their own padding. */}
           <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-navy-14 md:grid-cols-2 xl:grid-cols-[minmax(0,0.2fr)_minmax(0,0.16fr)_minmax(0,0.265fr)_minmax(0,0.375fr)]">
-            <div className="relative min-w-0 bg-paper">
-              <img
-                {...imageOf(content.photo.image)}
-                alt={content.photo.alt}
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover"
-              />
+            <div className="relative min-w-0 overflow-hidden bg-paper">
+              <div data-fx="zoom" data-fx-by="1.14" className="h-full w-full">
+                <img
+                  draggable={false}
+                  {...imageOf(content.photo.image)}
+                  alt={content.photo.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </div>
             </div>
 
             <div className="flex min-w-0 flex-col justify-center p-6 xl:px-[clamp(1rem,1.3vw,1.5rem)]">
@@ -39,6 +42,7 @@ export function SystemSpec({ content }: { content: AboutPage["spec"] }) {
 
             <div className="flex min-w-0 items-center border-navy-14 p-4 xl:border-l xl:p-0">
               <img
+                draggable={false}
                 {...imageOf(content.drawing.image)}
                 alt={content.drawing.alt}
                 loading="lazy"

@@ -24,6 +24,7 @@ export function AboutPhilosophy({ content }: { content: AboutPage["philosophy"] 
           </h2>
           <p
             data-reveal
+            data-fx="words"
             className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[30rem] font-body text-[clamp(0.8125rem,0.95vw,0.875rem)] leading-[1.75] text-slate"
           >
             {content.body}
@@ -66,6 +67,7 @@ export function AboutPhilosophy({ content }: { content: AboutPage["philosophy"] 
           <div ref={clipRef} className="relative aspect-[1023/840] w-full overflow-hidden">
             <div data-clip-inner className="h-full w-full">
               <img
+                draggable={false}
                 ref={imageRef}
                 {...imageOf(content.photo.image)}
                 alt={content.photo.alt}

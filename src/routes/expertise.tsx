@@ -1,13 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/durall/SiteHeader";
 import { PhotoHero } from "@/components/durall/PhotoHero";
-import { HeroRibbon } from "@/components/durall/expertise/HeroRibbon";
-import { Statement } from "@/components/durall/expertise/Statement";
-import { Anatomy } from "@/components/durall/expertise/Anatomy";
-import { ProcessList } from "@/components/durall/expertise/ProcessList";
-import { Performance } from "@/components/durall/expertise/Performance";
-import { Architects } from "@/components/durall/expertise/Architects";
-import { EnquiryBand } from "@/components/durall/EnquiryBand";
+import { OurExpertise } from "@/components/durall/expertise/OurExpertise";
+import { HowWeWork } from "@/components/durall/expertise/HowWeWork";
+import { TrustedWith } from "@/components/durall/expertise/TrustedWith";
+import { InTheDetail } from "@/components/durall/expertise/InTheDetail";
+import { OpeningCta } from "@/components/durall/expertise/OpeningCta";
 import { DurallFooter } from "@/components/durall/DurallFooter";
 import { seoHead } from "@/content/head";
 import { fetchPage } from "@/content/api";
@@ -24,15 +22,12 @@ function ExpertisePage() {
     <div className="relative bg-white font-body text-navy">
       <SiteHeader />
       <main id="main" tabIndex={-1} className="scroll-mt-24">
-        <PhotoHero content={page.opening} wash={{ corners: true, left: 1 }}>
-          <HeroRibbon content={page.opening} />
-        </PhotoHero>
-        <Statement content={page.statement} />
-        <Anatomy content={page.anatomy} />
-        <ProcessList eyebrow={page.process.eyebrow} />
-        <Performance content={page.performance} />
-        <Architects content={page.architects} />
-        <EnquiryBand source="expertise" />
+        <PhotoHero content={page.opening} wash={{ corners: true, left: 1 }} />
+        <OurExpertise content={page.intro} />
+        <HowWeWork content={page.process} />
+        <TrustedWith content={page.trusted} />
+        <InTheDetail content={page.detail} />
+        <OpeningCta band={page.cta} />
       </main>
       <DurallFooter />
     </div>

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { can } from "@/admin/permissions";
 import { fail, logActivity, requireMember } from "@/server/auth";
 import { isSupabaseConfigured } from "@/server/supabase";
 import { idSchema, input } from "@/server/validate";
@@ -111,12 +112,12 @@ export const listActivity = createServerFn({ method: "GET" })
   .inputValidator(input(z.object({ limit: z.number().int().min(1).max(500) })))
   .handler(async ({ data }) => {
     if (!isSupabaseConfigured()) return { entries: [] as ActivityEntry[] };
-    const { db } = await requireMember();
-    const { data: rows, error } = await db
-      .from("activity")
-      .select("*")
-      .order("at", { ascending: false })
-      .limit(data.limit);
+    const { db, member } = await requireMember();
+    let query = db.from("activity").select("*");
+    // The whole team's log (who was invited, with which email) is for the
+    // owner and admins; an editor sees their own changes.
+    if (member.role === "editor") query = query.eq("user_id", member.id);
+    const { data: rows, error } = await query.order("at", { ascending: false }).limit(data.limit);
     if (error) fail(error.message, 500);
     return {
       entries: (rows ?? []).map((row: Record<string, unknown>): ActivityEntry => ({
@@ -135,6 +136,7 @@ export const listActivity = createServerFn({ method: "GET" })
 export const countNewEnquiries = createServerFn({ method: "GET" }).handler(async () => {
   if (!isSupabaseConfigured()) return { count: 0 };
   const session = await requireMember();
+  if (!can(session.member, "enquiries")) return { count: 0 };
   const { count, error } = await session.db
     .from("enquiries")
     .select("id", { count: "exact", head: true })

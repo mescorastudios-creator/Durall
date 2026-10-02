@@ -356,7 +356,14 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
             <h2
               id="approach-heading"
               data-anim="lines"
-              className="font-display text-[clamp(1.75rem,2.34vw,2.8125rem)] leading-[1.11] font-medium tracking-[-0.011em] text-navy lg:whitespace-nowrap"
+              // With its lines set by hand it is as wide as the longest of
+              // them from `lg`: they never wrap there, and a line mask the
+              // width of the column cut the end off "it all together." while
+              // it was revealed. Saved as one line it wraps in its column
+              // instead; unwrapped, it ran straight over the capabilities.
+              className={`font-display text-[clamp(1.75rem,2.34vw,2.8125rem)] leading-[1.11] font-medium tracking-[-0.011em] text-navy ${
+                content.heading.includes("\n") ? "lg:w-max lg:whitespace-nowrap" : "text-balance"
+              }`}
             >
               <Lines text={content.heading} />
             </h2>
@@ -385,7 +392,7 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
                     <Icon aria-hidden="true" className="h-4 w-4 text-navy" strokeWidth={1.4} />
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-display text-[0.6875rem] font-bold tracking-eyebrow text-navy uppercase">
+                    <span className="block font-display text-[0.6875rem] font-bold text-navy uppercase">
                       {title}
                     </span>
                     <span className="mt-1 block font-body text-[0.8125rem] leading-snug text-slate">
@@ -412,6 +419,7 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
                 className="flex aspect-square w-[78%] items-center justify-center rounded-[30%] border border-navy/45"
               >
                 <img
+                  draggable={false}
                   data-mark
                   {...imageOf(content.mark.image)}
                   alt={content.mark.alt}
@@ -433,6 +441,7 @@ export function OurApproach({ content }: { content: AboutPage["approach"] }) {
                 />
                 <div data-wipe-inner>
                   <img
+                    draggable={false}
                     {...imageOf(content.drawing.image)}
                     alt={content.drawing.alt}
                     loading="lazy"

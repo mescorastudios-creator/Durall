@@ -1,5 +1,30 @@
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getRequestUrl } from "@tanstack/react-start/server";
 import { imageOf } from "./render";
 import type { Seo } from "./types";
+
+/**
+ * The site's public address. On the server that is Netlify's primary URL
+ * for the site when there is one, so a preview deploy still names the real
+ * address, and otherwise the address the request came in on.
+ */
+export const siteOrigin = createIsomorphicFn()
+  .server(() => {
+    const fixed = process.env["URL"];
+    if (fixed) return fixed.replace(/\/+$/, "");
+    try {
+      return new URL(getRequestUrl()).origin;
+    } catch {
+      return "";
+    }
+  })
+  .client(() => window.location.origin);
+
+/** A site path as a full address: share images and canonical links are read
+ * by crawlers, and several refuse to resolve a relative one. */
+export function absoluteUrl(path: string) {
+  return path.startsWith("/") ? siteOrigin() + path : path;
+}
 
 type Meta = { title?: string; name?: string; property?: string; content?: string };
 
@@ -23,7 +48,7 @@ export function seoHead(
     ...extra,
   ];
   if (seo.image) {
-    const src = imageOf(seo.image.image).src;
+    const src = absoluteUrl(imageOf(seo.image.image).src);
     meta.push(
       { property: "og:image", content: src },
       { property: "og:image:alt", content: seo.image.alt },

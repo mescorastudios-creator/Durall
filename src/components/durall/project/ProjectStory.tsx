@@ -1,5 +1,6 @@
 import { useLineReveal } from "./motion";
 import { CurtainImage, Eyebrow, FactRows } from "./parts";
+import { Lines } from "@/content/render";
 import type { ProjectsPage } from "@/content/types";
 import type { ProjectDetail } from "./data";
 
@@ -107,12 +108,7 @@ export function ProjectSystem({ project, labels }: Props) {
           data-line
           className="mt-8 font-display text-[clamp(2.5rem,4.4vw,4rem)] leading-[1.02] font-light tracking-[-0.03em] text-navy"
         >
-          {system.title.map((line, index) => (
-            <span key={line}>
-              {line}
-              {index < system.title.length - 1 ? <br /> : null}
-            </span>
-          ))}
+          <Lines text={system.title.join("\n")} />
         </h2>
         <p
           data-line

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowDown,
   ArrowUp,
+  Clapperboard,
   ExternalLink,
   Heading2,
   ImageIcon,
@@ -18,6 +19,7 @@ import { blankArticle, slugify } from "@/content/defaults";
 import { imageOf } from "@/content/render";
 import { formatDate, readingTimeOf } from "@/content/select";
 import type { ArticleBlock, ArticleDoc } from "@/content/types";
+import { embedOf } from "@/content/video";
 import { deleteArticle, saveArticle } from "@/admin/api/content";
 import { useAdmin } from "@/admin/context";
 import { FieldControl, PhotoField } from "@/admin/form/fields";
@@ -140,6 +142,11 @@ export function ArticlesList({ articles }: { articles: ArticleDoc[] }) {
                       <span className="truncate text-sm font-medium text-navy">
                         {article.title || "Untitled article"}
                       </span>
+                      {article.format === "video" ? (
+                        <Badge tone="neutral">
+                          <Clapperboard className="h-3 w-3" aria-hidden="true" /> Film
+                        </Badge>
+                      ) : null}
                       {article.pinned ? (
                         <Badge tone="info">
                           <Pin className="h-3 w-3" aria-hidden="true" /> Pinned
@@ -296,8 +303,47 @@ export function ArticleEditor({
                   />
                 )}
               </Field>
+              {doc.format === "video" ? (
+                <>
+                  <Field
+                    label="Film link"
+                    hint="The film's YouTube or Vimeo address, as copied from the browser."
+                    error={videoError(doc.video.url)}
+                  >
+                    {({ id, describedBy }) => (
+                      <TextInput
+                        id={id}
+                        aria-describedby={describedBy}
+                        type="url"
+                        inputMode="url"
+                        spellCheck={false}
+                        autoComplete="off"
+                        placeholder="https://www.youtube.com/watch?v=…"
+                        value={doc.video.url}
+                        onChange={(event) =>
+                          set({ video: { ...doc.video, url: event.target.value.trim() } })
+                        }
+                      />
+                    )}
+                  </Field>
+                  <Field label="Length" hint="Shown beside the film, for example: 6 min.">
+                    {({ id, describedBy }) => (
+                      <TextInput
+                        id={id}
+                        aria-describedby={describedBy}
+                        autoComplete="off"
+                        placeholder="6 min…"
+                        value={doc.video.duration}
+                        onChange={(event) =>
+                          set({ video: { ...doc.video, duration: event.target.value } })
+                        }
+                      />
+                    )}
+                  </Field>
+                </>
+              ) : null}
               <PhotoField
-                label="Cover photograph"
+                label={doc.format === "video" ? "Poster photograph" : "Cover photograph"}
                 value={doc.cover}
                 onChange={(cover) => set({ cover })}
               />
@@ -313,6 +359,24 @@ export function ArticleEditor({
         <div className="grid gap-5 xl:sticky xl:top-20">
           <Card title="Publishing">
             <div className="grid gap-5">
+              <Field
+                label="Format"
+                hint="A film plays on the Insights page and leads its own page with the player."
+              >
+                {({ id, describedBy }) => (
+                  <Select
+                    id={id}
+                    aria-describedby={describedBy}
+                    value={doc.format}
+                    onChange={(event) =>
+                      set({ format: event.target.value as ArticleDoc["format"] })
+                    }
+                  >
+                    <option value="article">Article</option>
+                    <option value="video">Film</option>
+                  </Select>
+                )}
+              </Field>
               <Field label="Status" hint="Drafts are saved but not shown on the site.">
                 {({ id, describedBy }) => (
                   <Select
@@ -427,6 +491,7 @@ const BLOCKS = [
   { type: "list", label: "List", icon: List },
   { type: "quote", label: "Quote", icon: Quote },
   { type: "image", label: "Image", icon: ImageIcon },
+  { type: "video", label: "Film", icon: Clapperboard },
 ] as const;
 
 function createBlock(type: ArticleBlock["type"]): ArticleBlock {
@@ -445,6 +510,8 @@ function createBlock(type: ArticleBlock["type"]): ArticleBlock {
         photo: { image: { kind: "asset", key: "heroParikrama" }, alt: "" },
         caption: "",
       };
+    case "video":
+      return { type, url: "", caption: "" };
   }
 }
 
@@ -610,7 +677,43 @@ function BlockBody({
           </Field>
         </div>
       );
+    case "video":
+      return (
+        <div className="grid gap-4">
+          <Field label="Film link" hint="A YouTube or Vimeo address." error={videoError(block.url)}>
+            {({ id, describedBy }) => (
+              <TextInput
+                id={id}
+                aria-describedby={describedBy}
+                type="url"
+                inputMode="url"
+                spellCheck={false}
+                autoComplete="off"
+                placeholder="https://vimeo.com/…"
+                value={block.url}
+                onChange={(event) => onChange({ ...block, url: event.target.value.trim() })}
+              />
+            )}
+          </Field>
+          <Field label="Caption (optional)">
+            {({ id, describedBy }) => (
+              <TextInput
+                id={id}
+                aria-describedby={describedBy}
+                value={block.caption}
+                onChange={(event) => onChange({ ...block, caption: event.target.value })}
+              />
+            )}
+          </Field>
+        </div>
+      );
     default:
       return null;
   }
+}
+
+/** The message for a film link the site cannot play, or none. */
+function videoError(url: string): string | null {
+  if (!url) return null;
+  return embedOf(url) ? null : "Paste a YouTube or Vimeo address. Other links cannot be played.";
 }

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSectionIntro } from "@/lib/anim";
 import { destination, imageOf, TwoToneText } from "@/content/render";
 import { useSite } from "@/content/site";
@@ -7,7 +6,7 @@ import { useReducedMotion } from "@/lib/motion-prefs";
 import { ramp, sceneScrollY, smooth, useSceneProgress } from "@/lib/scene";
 import { scrollToY } from "@/lib/scroll-lock";
 
-import { ArrowLeft, ArrowRight, UnderlineLink } from "./ui";
+import { ArrowLeft, ArrowRight, CtaButton } from "./ui";
 
 /* Scene pacing, as fractions of the section's scroll.
  *
@@ -23,21 +22,62 @@ const stageAt = (progress: number, last: number) => ramp(progress, LEAD_IN, 1 - 
 const progressAt = (stage: number, last: number) =>
   LEAD_IN + (stage / Math.max(1, last)) * (1 - LEAD_IN - LEAD_OUT);
 
+/** How open a stage's row is (0–1) at a stage position. Adjacent rows
+ * always add up to one open row, so the list never changes height. */
+const openness = (position: number, index: number) =>
+  1 - smooth(ramp(Math.abs(position - index), 0.05, 0.95));
+
+/** An inactive title is the active one at 26/32 of its size, half as dark. */
+const TITLE_REST = 0.8125;
+
+/* How the scene moves.
+ *
+ * The scroll does not drive the pictures directly. It chooses a stage, and
+ * the scene travels to that stage on a spring of its own. Tied straight to
+ * the scroll, a change is exactly as smooth as the hand on the wheel: one
+ * notch threw a photograph a third of the way up the frame in a frame or
+ * two, and stopping part-way left two half photographs on screen. On the
+ * spring every change takes the same unhurried second whatever the wheel
+ * did, always finishes, and can be turned round mid-flight without a jolt.
+ *
+ * SPRING is the stiffness of a critically damped spring (no overshoot):
+ * half-way in a third of a second, settled in a little over one.
+ * HYSTERESIS is how far past the half-way point between two stages the
+ * scroll must go before the scene changes its mind, so resting near the
+ * boundary cannot make it flicker between the two.
+ * FOLLOW is a faster, looser follow of the raw scroll, used only for a slow
+ * drift of the photograph on show, so the picture is never quite still
+ * while the page is moving. */
+const SPRING = 4.8;
+const HYSTERESIS = 0.56;
+const FOLLOW = 9;
+
+/** One step of a critically damped spring (implicit, so it is stable at any
+ * frame rate). Returns the new position and velocity. */
+function spring(x: number, v: number, target: number, omega: number, dt: number) {
+  const f = 1 + 2 * dt * omega;
+  const oo = omega * omega;
+  const hoo = dt * oo;
+  const hhoo = dt * hoo;
+  const inv = 1 / (f + hhoo);
+  return [(f * x + dt * v + hhoo * target) * inv, (v + hoo * (target - x)) * inv] as const;
+}
+
 /**
  * 04 — How we work.
  *
- * A sticky scene: the section is several viewports tall, its frame sticks for
- * the duration, and scroll position drives the stage continuously — the
- * marker glides down the rail, each photograph eases in over the last while
- * it settles from a slight overscan, and the description hands over to the
- * next with a short gap so two paragraphs never share the slot at once.
+ * A sticky scene: the section is several viewports tall and its frame sticks
+ * for the duration. Scrolling moves from stage to stage. On the left the
+ * stages are a list in which one row is open at a time: its title grows, its
+ * sentence rises out from under it, the rows beneath move down to make room,
+ * and a heavy bar on the rail glides to it. On the right, filling that half
+ * of the screen, each photograph pushes the last one up and out of the frame.
  *
- * This replaces a GSAP pin that switched stages at thresholds, animated the
- * accordion's `height` inside the frozen frame on every change, snapped the
- * scroll position after release, and had to measure at runtime whether the
- * column fit — falling back to an unpinned layout when it did not. The rail
- * and the description slot are a fixed height now, so the column fits one
- * viewport at every size, and sticky holds wherever the browser can scroll.
+ * The open row is done without changing any heights. Every row is the same
+ * height and the list keeps room for one open sentence at its foot; rows
+ * below the open one are moved down by transform. One row's worth is always
+ * open in total (see `openness`), so the list never changes size and the
+ * column fits one viewport at every stage.
  *
  * Under reduced motion the scene still freezes and still follows the scroll,
  * but every change is an instant switch: nothing moves.
@@ -50,6 +90,7 @@ export function Process() {
     num: String(index + 1).padStart(2, "0"),
     title: stage.title,
     body: stage.body,
+    caption: stage.caption,
     image: imageOf(stage.photo.image),
     alt: stage.photo.alt,
   }));
@@ -59,60 +100,219 @@ export function Process() {
   const activeRef = useRef(0);
 
   const sectionRef = useRef<HTMLElement>(null);
-  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
-  const bodyRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const barRef = useRef<HTMLSpanElement>(null);
+  const viewerRef = useRef<HTMLDivElement>(null);
   const headRef = useSectionIntro<HTMLDivElement>();
+  const listRef = useRef<HTMLOListElement>(null);
+  const markerRef = useRef<HTMLSpanElement>(null);
+  const thumbRef = useRef<HTMLSpanElement>(null);
 
-  /* ---- Travelling rail marker ------------------------------------------ */
-  const railRef = useRef<HTMLOListElement>(null);
-  const dotOffsets = useRef<number[]>([]);
-  const fractionRef = useRef(0);
-  const rawY = useMotionValue(0);
-  const springY = useSpring(rawY, { stiffness: 170, damping: 28, mass: 0.5 });
-  const markerY = reduced ? rawY : springY;
-  const fillHeight = useTransform(markerY, (v) => Math.max(0, v));
+  /* Where the scene is. `stage` is the position on show (it passes through
+   * every value between two stages on its way), `target` the stage it is
+   * heading for, `raw` the scroll's own position and `drift` a soft follow
+   * of that. */
+  const flow = useRef({
+    stage: 0,
+    velocity: 0,
+    target: 0,
+    raw: 0,
+    drift: 0,
+    frame: 0,
+    last: 0,
+    started: false,
+    /** A stage chosen by a click, held until the scroll arrives at it. */
+    forced: null as { stage: number; until: number } | null,
+  });
 
-  const applyFraction = useCallback(
-    (fraction: number) => {
-      const offsets = dotOffsets.current;
-      if (!offsets.length) return;
-      fractionRef.current = fraction;
-      const clamped = Math.max(0, Math.min(offsets.length - 1, fraction));
-      const lower = Math.floor(clamped);
-      const upper = Math.min(offsets.length - 1, lower + 1);
-      const a = offsets[lower] ?? 0;
-      const b = offsets[upper] ?? a;
-      rawY.set(a + (b - a) * (clamped - lower));
-    },
-    [rawY],
-  );
+  /** Everything the scene writes to, found once rather than every frame. */
+  const parts = useRef<{
+    rows: {
+      row: HTMLElement;
+      title: HTMLElement | null;
+      body: HTMLElement | null;
+      text: HTMLElement | null;
+    }[];
+    frames: {
+      frame: HTMLElement;
+      img: HTMLElement | null;
+      shade: HTMLElement | null;
+      edge: HTMLElement | null;
+    }[];
+  } | null>(null);
+  const collect = () => {
+    const pick = (root: Element, selector: string) => root.querySelector<HTMLElement>(selector);
+    parts.current = {
+      rows: Array.from(
+        listRef.current?.querySelectorAll<HTMLElement>("[data-stage-row]") ?? [],
+        (row) => ({
+          row,
+          title: pick(row, "[data-stage-title]"),
+          body: pick(row, "[data-stage-body]"),
+          text: pick(row, "[data-stage-text]"),
+        }),
+      ),
+      frames: Array.from(
+        viewerRef.current?.querySelectorAll<HTMLElement>("[data-stage-frame]") ?? [],
+        (frame) => ({
+          frame,
+          img: pick(frame, "img"),
+          shade: pick(frame, "[data-stage-shade]"),
+          edge: pick(frame, "[data-stage-edge]"),
+        }),
+      ),
+    };
+    return parts.current;
+  };
 
-  // The rail's rows are fixed-height, but they scale with the viewport, so
-  // the dot positions are measured rather than assumed.
+  /** Draws the scene at a stage position. Transform and opacity only, and
+   * as `translate` / `scale` rather than `transform`: they replace the
+   * resting values the classes set with those same properties. */
+  const draw = (position: number, drift: number) => {
+    const { rows, frames } = parts.current ?? collect();
+    const list = listRef.current;
+    const current = Math.round(position);
+
+    /* The list. */
+    const rowHeight = rows[0]?.row.offsetHeight ?? 0;
+    const open = parseFloat(list?.style.getPropertyValue("--open") ?? "") || 0;
+    let above = 0;
+    rows.forEach(({ row, title, body, text }, index) => {
+      const amount = reduced ? (index === current ? 1 : 0) : openness(position, index);
+      row.style.translate = `0 ${(above * open).toFixed(2)}px`;
+      if (title) {
+        title.style.scale = (TITLE_REST + (1 - TITLE_REST) * amount).toFixed(4);
+        title.style.opacity = (0.5 + 0.5 * amount).toFixed(3);
+      }
+      // The sentence rises out from under the title's line in the second
+      // half of the row's opening and sinks back as it closes; it is gone
+      // before the row beneath has moved up far enough to reach it.
+      const shown = smooth(ramp(amount, 0.5, 1));
+      if (body) body.style.opacity = shown.toFixed(3);
+      if (text) text.style.translate = reduced ? "" : `0 ${((1 - shown) * 105).toFixed(2)}%`;
+      above += amount;
+    });
+    if (markerRef.current) {
+      // The bar spans the open row; between two stages it has travelled as
+      // far down as the lower of them has opened.
+      const floor = Math.min(rows.length - 1, Math.floor(position));
+      const lower = Math.min(rows.length - 1, floor + 1);
+      const travelled = floor + (reduced ? current - floor : openness(position, lower));
+      markerRef.current.style.translate = `0 ${(Math.min(rows.length - 1, travelled) * rowHeight).toFixed(2)}px`;
+    }
+    // The count's marker slides from one notch to the next.
+    if (thumbRef.current) {
+      thumbRef.current.style.translate = `calc(${(reduced ? current : position).toFixed(4)} * (100% + 0.5rem)) 0`;
+    }
+
+    /* The photographs. Each one pushes the last out through the top of the
+     * frame: the two travel together, the new one rising from the foot as
+     * the old one leaves, like frames on a strip of film. Inside its frame
+     * each picture hangs back a little against that travel (the new one
+     * also settles out of a slight overscan), so the pair has some depth
+     * rather than sliding as a flat strip. A hairline of light rides the
+     * seam between them while they move, and the one leaving dims a
+     * little as it goes. */
+    const last = frames.length - 1;
+    frames.forEach(({ frame, img, shade, edge }, i) => {
+      if (reduced) {
+        frame.style.translate = i === current ? "0 0" : i < current ? "0 -100%" : "0 100%";
+        if (img) {
+          img.style.translate = "";
+          img.style.scale = "";
+        }
+        if (shade) shade.style.opacity = "0";
+        if (edge) edge.style.opacity = "0";
+        return;
+      }
+      const arrive = i === 0 ? 1 : ramp(position, i - 0.97, i - 0.02);
+      const pushed = i === last ? 0 : ramp(position, i + 0.03, i + 0.98);
+      frame.style.translate = `0 ${((1 - arrive - pushed) * 100).toFixed(3)}%`;
+      if (img) {
+        // The photograph on show leans a very little with the scroll.
+        const lean = Math.max(-1, Math.min(1, drift - i)) * 1.4;
+        img.style.translate = `0 ${(-(1 - arrive) * 30 + pushed * 30 - lean).toFixed(3)}%`;
+        img.style.scale = (1.06 + 0.1 * (1 - arrive)).toFixed(4);
+      }
+      if (shade) shade.style.opacity = (pushed * 0.35).toFixed(3);
+      if (edge) edge.style.opacity = (Math.sin(Math.PI * arrive) * 0.85).toFixed(3);
+    });
+  };
+
+  /** One frame of the spring; keeps itself going until the scene is at rest. */
+  const tick = (now: number) => {
+    const state = flow.current;
+    const dt = Math.min(0.05, Math.max(0.001, (now - state.last) / 1000));
+    state.last = now;
+    [state.stage, state.velocity] = spring(state.stage, state.velocity, state.target, SPRING, dt);
+    state.drift += (state.raw - state.drift) * (1 - Math.exp(-dt * FOLLOW));
+    const resting =
+      Math.abs(state.target - state.stage) < 0.0004 &&
+      Math.abs(state.velocity) < 0.0004 &&
+      Math.abs(state.raw - state.drift) < 0.0004;
+    if (resting) {
+      state.stage = state.target;
+      state.velocity = 0;
+      state.drift = state.raw;
+      state.frame = 0;
+    } else {
+      state.frame = requestAnimationFrame(tick);
+    }
+    draw(state.stage, state.drift);
+  };
+  const wake = () => {
+    const state = flow.current;
+    if (state.frame) return;
+    state.last = performance.now();
+    state.frame = requestAnimationFrame(tick);
+  };
+  useEffect(() => () => cancelAnimationFrame(flow.current.frame), []);
+
+  // The room an open row needs is the tallest sentence plus the gap under
+  // it: measured, because the sentences wrap differently at every width.
   useLayoutEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
+    const list = listRef.current;
+    if (!list) return;
+    collect();
     const measure = () => {
-      // Row centres relative to the first row's, from rects: the rows are a
-      // fraction of the viewport tall, and offsetTop rounds each one to a
-      // whole pixel, which left the marker up to 2px off its dot. Nothing
-      // on the rail itself is transformed, so rects are safe to read here.
-      const rows = Array.from(rail.querySelectorAll<HTMLElement>("li"));
-      const centre = (el: HTMLElement) => {
-        const r = el.getBoundingClientRect();
-        return r.top + r.height / 2;
-      };
-      const first = rows[0] ? centre(rows[0]) : 0;
-      dotOffsets.current = rows.map((row) => centre(row) - first);
-      applyFraction(fractionRef.current);
+      const tallest = Math.max(
+        0,
+        ...Array.from(
+          list.querySelectorAll<HTMLElement>("[data-stage-body]"),
+          (el) => el.offsetHeight,
+        ),
+      );
+      if (!tallest) return;
+      list.style.setProperty("--open", `${tallest}px`);
+      draw(flow.current.stage, flow.current.drift);
     };
     measure();
     const ro = new ResizeObserver(measure);
-    ro.observe(rail);
+    ro.observe(list);
     void document.fonts?.ready.then(measure);
     return () => ro.disconnect();
-  }, [applyFraction]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- measured once per size; `draw` reads refs
+  }, [reduced]);
+
+  /* The photographs wait off-screen below the frame, where the browser's
+   * lazy loading does not see them coming, so each used to be fetched and
+   * decoded in the middle of its own entrance. They are fetched and decoded
+   * as the section approaches instead, and given their own layers for as
+   * long as it is near. */
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const io = new IntersectionObserver(([entry]) => setNear(Boolean(entry?.isIntersecting)), {
+      rootMargin: "120% 0px",
+    });
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!near) return;
+    viewerRef.current
+      ?.querySelectorAll("img")
+      .forEach((img) => void img.decode?.().catch(() => {}));
+  }, [near]);
 
   /* ---- The scene -------------------------------------------------------- */
   const select = (index: number) => {
@@ -124,50 +324,52 @@ export function Process() {
   useSceneProgress(
     sectionRef,
     (progress) => {
-      const f = stageAt(progress, LAST);
-      const current = Math.round(f);
-      select(current);
-      applyFraction(f);
+      const state = flow.current;
+      const raw = stageAt(progress, LAST);
+      state.raw = raw;
 
-      imageRefs.current.forEach((img, i) => {
-        if (!img) return;
-        if (reduced) {
-          img.style.opacity = i <= current ? "1" : "0";
-          img.style.transform = "";
-          return;
-        }
-        // Stacked in stage order: each photograph fades in over the one
-        // beneath it across the half-step either side of the midpoint, and
-        // keeps settling out of its overscan while its stage is on screen.
-        const reveal = i === 0 ? 1 : smooth(ramp(f, i - 0.75, i - 0.25));
-        const settle = smooth(ramp(f, i - 0.75, i + 0.6));
-        img.style.opacity = reveal.toFixed(3);
-        img.style.transform = `scale(${(1.12 - 0.12 * settle).toFixed(4)})`;
-      });
-
-      // Text shares a slot, so it must never overlap: fully shown within
-      // 0.22 of its stage, gone by 0.44, and a short empty beat between.
-      const text = (el: HTMLElement | null, i: number) => {
-        if (!el) return;
-        const d = f - i;
-        const shown = reduced ? (i === current ? 1 : 0) : 1 - smooth(ramp(Math.abs(d), 0.22, 0.44));
-        el.style.opacity = shown.toFixed(3);
-        el.style.transform = reduced ? "" : `translate3d(0, ${(-d * 22).toFixed(2)}px, 0)`;
-      };
-      bodyRefs.current.forEach(text);
-
-      if (barRef.current) {
-        barRef.current.style.transform = `scaleX(${((f + 1) / STAGES.length).toFixed(4)})`;
+      if (state.forced) {
+        // A clicked stage stands until the scroll it started has arrived
+        // (or has plainly gone somewhere else).
+        const arrived = Math.abs(raw - state.forced.stage) < 0.3;
+        if (arrived || performance.now() > state.forced.until) state.forced = null;
       }
+      if (state.forced) state.target = state.forced.stage;
+      else if (!state.started || Math.abs(raw - state.target) > HYSTERESIS)
+        state.target = Math.round(raw);
+      select(state.target);
+
+      if (!state.started || reduced) {
+        // On arrival, and for anyone who has asked for less motion, the
+        // scene is simply where the scroll says: nothing travels.
+        state.started = true;
+        state.stage = state.target;
+        state.velocity = 0;
+        state.drift = raw;
+        draw(state.stage, state.drift);
+        return;
+      }
+      wake();
     },
     {
       // Back below the desktop breakpoint the scene's inline styles belong
       // to a layout that is no longer on screen.
       onLeaveQuery: () => {
-        [...imageRefs.current, ...bodyRefs.current].forEach((el) => {
+        const state = flow.current;
+        cancelAnimationFrame(state.frame);
+        state.frame = 0;
+        state.started = false;
+        const all = parts.current ?? collect();
+        [
+          ...all.rows.flatMap((r) => [r.row, r.title, r.body, r.text]),
+          ...all.frames.flatMap((f) => [f.frame, f.img, f.shade, f.edge]),
+          markerRef.current,
+          thumbRef.current,
+        ].forEach((el) => {
           if (!el) return;
+          el.style.translate = "";
+          el.style.scale = "";
           el.style.opacity = "";
-          el.style.transform = "";
         });
       },
     },
@@ -190,13 +392,18 @@ export function Process() {
     return () => io.disconnect();
   }, []);
 
-  /* Choosing a stage scrolls to it rather than setting it: the scroll
-   * position is the scene's single source of truth, so a click can never
-   * be undone by the next wheel tick. */
+  /* Choosing a stage starts the change at once and scrolls the page to
+   * where that stage lives, so the scroll position still agrees with what
+   * is on screen and the next wheel tick cannot undo the click. */
   const goTo = (index: number) => {
     const section = sectionRef.current;
     if (!section) return;
     const target = Math.max(0, Math.min(LAST, index));
+    const state = flow.current;
+    state.forced = { stage: target, until: performance.now() + 1800 };
+    state.target = target;
+    select(target);
+    if (!reduced) wake();
     scrollToY(sceneScrollY(section, progressAt(target, LAST)));
   };
 
@@ -209,126 +416,108 @@ export function Process() {
       aria-labelledby="process-heading"
       // Five stages: one viewport of frame plus roughly seventy percent of a
       // viewport of scroll per stage change and the two holds.
-      className="relative bg-silver py-[clamp(3.5rem,8vw,5rem)] lg:h-[460svh] lg:py-0"
+      className="relative bg-[#fdfdfb] py-[clamp(3.5rem,8vw,5rem)] lg:h-[460svh] lg:py-0"
     >
       <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-clip">
-        <div className="grid w-full grid-cols-1 gap-[clamp(2rem,5vw,3rem)] lg:h-full lg:grid-cols-2 lg:gap-0">
-          {/* ---- Copy column ---- */}
-          <div className="flex min-w-0 flex-col justify-center px-[clamp(1.25rem,3.75vw,4.5rem)] lg:pt-[calc(var(--header-h)+2vh)] lg:pr-[clamp(2rem,4vw,5rem)] lg:pb-[4vh] lg:pl-[clamp(3rem,6vw,7.5rem)]">
+        <div className="grid w-full grid-cols-1 gap-[clamp(2rem,5vw,3rem)] lg:h-full lg:grid-cols-2 lg:items-start lg:gap-0">
+          {/* ---- Copy column: 282px in at 1920, clear of the fixed bar ---- */}
+          <div className="flex min-w-0 flex-col px-[clamp(1.25rem,3.75vw,4.5rem)] lg:h-full lg:pt-[max(calc(var(--header-h)+1vh),5.2vh)] lg:pr-[clamp(2rem,4vw,5rem)] lg:pl-[clamp(3rem,calc(22vw-8.75rem),17.625rem)]">
             <div ref={headRef}>
               <h2
                 id="process-heading"
                 data-anim="lines"
-                className="font-display text-[clamp(1.75rem,min(3.4vw,5.6vh),3.75rem)] leading-[1.14] font-medium tracking-tight text-balance text-navy"
+                className="max-w-[7.6em] font-display text-[clamp(2rem,min(3.39vw,6.02vh),4.0625rem)] leading-[1.046] font-light tracking-[-0.023em] text-navy"
               >
-                <TwoToneText value={content.heading} />
+                {/* The design's pale grey, darkened to 3:1 on the paper. */}
+                <TwoToneText value={content.heading} mutedClassName="text-[#868f97]" />
               </h2>
+              {/* Dropped where the window is too short to hold it and the
+                  open row together. */}
               <p
                 data-anim
-                className="mt-[clamp(0.75rem,1.8vh,1.5rem)] max-w-[32rem] font-body text-[clamp(1rem,1.25vw,1.125rem)] leading-[1.7] text-slate-deep lg:[@media(max-height:45rem)]:hidden"
+                className="mt-[clamp(1rem,3.7vh,2.5rem)] max-w-[32.5rem] font-display text-[clamp(1rem,min(0.94vw,1.67vh),1.125rem)] leading-[1.56] text-pretty text-slate lg:pl-1.5 lg:[@media(max-height:45rem)]:hidden lg:[@media(max-height:50rem)_and_(max-width:80rem)]:hidden"
               >
                 {content.lede}
               </p>
             </div>
 
-            {/* Desktop rail: titles only, fixed row height, so the column is
-                the same height at every stage. Each row carries its body for
-                screen readers; the visible body lives in the slot below. */}
+            {/* Desktop: one row open at a time. Rows are a fixed height and
+                the list keeps room for one open sentence at its foot. */}
             <ol
-              ref={railRef}
-              className="relative mt-[clamp(1.25rem,3.5vh,3rem)] hidden [--row:clamp(2.25rem,5.4vh,3rem)] lg:block"
+              ref={listRef}
               aria-label="Stages"
+              className="relative mt-[clamp(1.25rem,5vh,3.375rem)] ml-[0.3125rem] hidden pb-[var(--open,6rem)] [--row:clamp(2.5rem,5.93vh,4rem)] lg:block [@media(max-height:45rem)]:mt-3"
             >
-              {/* Progress trail from the first dot to the marker. */}
-              <motion.span
+              <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-navy/14" />
+              <span
+                ref={markerRef}
                 aria-hidden="true"
-                style={{ height: fillHeight }}
-                className="pointer-events-none absolute top-[calc(var(--row)/2)] left-[0.3125rem] z-[1] w-px bg-navy/70"
-              />
-              <motion.span
-                aria-hidden="true"
-                style={{ y: markerY }}
-                data-marker
-                className="pointer-events-none absolute top-[calc(var(--row)/2-0.3125rem)] left-0 z-10 h-2.5 w-2.5 rounded-full bg-navy"
+                className="pointer-events-none absolute top-0 left-0 h-[calc(var(--row)+var(--open,6rem))] w-[3px] bg-navy"
               />
               {STAGES.map((item, index) => {
                 const isActive = index === active;
                 return (
                   <li
                     key={item.num}
-                    className="relative h-[var(--row)] pl-[clamp(2rem,3.4vw,3.5rem)]"
+                    data-stage-row
+                    // Until the scene takes over: the first row open, the
+                    // rest moved down below its sentence.
+                    className={`relative h-[var(--row)] pl-[2.3125rem] ${index > 0 ? "translate-y-[var(--open,6rem)]" : ""}`}
                   >
-                    {index < LAST ? (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-1/2 left-[0.3125rem] h-full w-px bg-navy/20"
-                      />
-                    ) : null}
-                    <span
-                      data-dot
-                      aria-hidden="true"
-                      className="absolute top-1/2 left-0 h-2.5 w-2.5 -translate-y-1/2 rounded-full border border-navy/35 bg-silver"
-                    />
                     <button
                       type="button"
                       onClick={() => goTo(index)}
                       aria-current={isActive ? "step" : undefined}
-                      className={`group flex h-full w-full items-center gap-[clamp(1rem,2vw,2rem)] text-left transition-opacity duration-[var(--dur-short)] ease-[var(--ease-micro)] ${
-                        isActive ? "opacity-100" : "opacity-45 hover:opacity-80"
-                      }`}
+                      className="group flex h-full w-full cursor-pointer items-center text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-blue"
                     >
-                      <span className="w-10 shrink-0 font-serif text-[clamp(1.375rem,min(2.1vw,3.5vh),1.875rem)] leading-none text-navy/60 italic">
+                      <span
+                        className={`w-14 shrink-0 font-display text-[0.8125rem] leading-none font-medium tracking-[0.154em] tabular-nums transition-colors duration-[var(--dur-short)] ${
+                          // Slate, not the design's paler grey, which is
+                          // 2.5:1 on the paper at this size.
+                          isActive ? "text-navy" : "text-slate"
+                        }`}
+                      >
                         {item.num}
                       </span>
-                      <span className="font-display text-[clamp(0.875rem,min(1.1vw,2.1vh),1rem)] font-bold tracking-button text-navy uppercase">
+                      <span
+                        data-stage-title
+                        className={`origin-left font-display text-[clamp(1.5rem,min(1.67vw,2.96vh),2rem)] leading-[1.19] tracking-[-0.016em] whitespace-nowrap text-navy group-hover:opacity-100! ${
+                          isActive ? "font-normal" : "font-light"
+                        } ${index > 0 ? "scale-[0.8125] opacity-50" : ""}`}
+                      >
                         {item.title}
                       </span>
                     </button>
-                    <span className="sr-only">{item.body}</span>
+                    <p
+                      data-stage-body
+                      className={`pointer-events-none absolute top-full right-0 left-[5.8125rem] max-w-[27.5rem] pb-[clamp(1rem,3.15vh,2.125rem)] font-display text-[clamp(0.9375rem,min(0.89vw,1.57vh),1.0625rem)] leading-[1.53] text-pretty text-slate ${
+                        index > 0 ? "opacity-0" : ""
+                      }`}
+                    >
+                      {/* The mask the sentence rises out of. */}
+                      <span className="block overflow-hidden">
+                        <span data-stage-text className="block">
+                          {item.body}
+                        </span>
+                      </span>
+                    </p>
                   </li>
                 );
               })}
             </ol>
 
-            {/* The description slot. All five sit in one grid cell, so the
-                slot is always as tall as the longest and never reflows. */}
-            <div
-              aria-hidden="true"
-              className="mt-[clamp(1rem,2.6vh,2rem)] hidden max-w-[34rem] border-t border-navy/10 pt-[clamp(0.875rem,2vh,1.5rem)] lg:grid"
-            >
-              {STAGES.map((item, index) => (
-                <div
-                  key={item.num}
-                  ref={(el) => {
-                    bodyRefs.current[index] = el;
-                  }}
-                  style={{ opacity: index === 0 ? 1 : 0 }}
-                  className="col-start-1 row-start-1 font-body text-[clamp(0.9375rem,min(1.2vw,2.3vh),1.0625rem)] leading-[1.7] text-slate-deep"
-                >
-                  <p className="font-display text-[0.9375rem] font-bold tracking-eyebrow text-navy uppercase">
-                    {item.num} — {item.title}
-                  </p>
-                  <p className="mt-2">{item.body}</p>
-                </div>
-              ))}
-            </div>
-
             {/* Below the desktop breakpoint: every stage, in full. */}
-            <ol ref={mobileListRef} className="mt-8 lg:hidden">
+            <ol ref={mobileListRef} className="mt-8 border-l border-navy/14 lg:hidden">
               {STAGES.map((item, index) => (
-                <li
-                  key={item.num}
-                  data-index={index}
-                  className="flex gap-5 border-b border-navy/10 py-5 last:border-b-0"
-                >
-                  <span className="shrink-0 font-serif text-[1.875rem] leading-none text-navy/55 italic">
+                <li key={item.num} data-index={index} className="flex gap-5 py-4 pl-5">
+                  <span className="shrink-0 pt-[0.5625rem] font-display text-[0.8125rem] leading-none font-medium tracking-[0.154em] text-slate tabular-nums">
                     {item.num}
                   </span>
                   <div className="min-w-0">
-                    <h3 className="font-display text-base font-bold tracking-button text-navy uppercase">
+                    <h3 className="font-display text-[1.625rem] leading-[1.2] tracking-[-0.016em] text-navy">
                       {item.title}
                     </h3>
-                    <p className="mt-2 font-body text-[1.0625rem] leading-[1.7] text-slate-deep">
+                    <p className="mt-2 font-display text-[1.0625rem] leading-[1.53] text-pretty text-slate">
                       {item.body}
                     </p>
                   </div>
@@ -336,56 +525,98 @@ export function Process() {
               ))}
             </ol>
 
-            <div className="mt-[clamp(1rem,2.6vh,2.5rem)]">
-              <UnderlineLink {...destination(content.link.href)}>
-                {content.link.label}
-              </UnderlineLink>
+            <div className="mt-[clamp(1.5rem,5.3vh,3.5625rem)] lg:[@media(max-height:45rem)]:mt-4">
+              <CtaButton {...destination(content.link.href)}>{content.link.label}</CtaButton>
             </div>
           </div>
 
-          {/* ---- Stage viewer ---- */}
-          <div className="relative order-first aspect-[4/3] w-full min-w-0 overflow-hidden bg-navy sm:aspect-[16/10] lg:order-none lg:aspect-auto lg:h-full">
+          {/* ---- Stage viewer: the right-hand half of the screen ---- */}
+          <div
+            ref={viewerRef}
+            className="relative order-first aspect-[4/3] w-full min-w-0 overflow-hidden bg-navy sm:aspect-[16/10] lg:order-none lg:aspect-auto lg:h-full"
+          >
             {STAGES.map((s, i) => (
-              <img
+              <div
                 key={i}
-                ref={(el) => {
-                  imageRefs.current[i] = el;
-                }}
-                {...s.image}
-                alt={i === active ? s.alt : ""}
-                aria-hidden={i === active ? undefined : true}
-                sizes="(min-width: 64rem) 50vw, 100vw"
-                loading="lazy"
-                decoding="async"
-                style={{ opacity: i === 0 ? 1 : 0 }}
-                // Below the desktop breakpoint there is no scene writing
-                // opacity, so the active image is chosen by class instead.
-                className={`absolute inset-0 h-full w-full origin-center object-cover transition-opacity duration-[var(--dur-medium)] ease-[var(--ease-entrance)] lg:transition-none ${
-                  i === active ? "max-lg:opacity-100!" : "max-lg:opacity-0!"
-                }`}
-              />
-            ))}
-
-            {/* Progress + controls */}
-            <div className="absolute inset-x-[6%] bottom-[5%] hidden flex-wrap items-center justify-between gap-4 lg:flex">
-              <div className="flex min-w-0 items-center gap-[clamp(0.5rem,1vw,1rem)] font-body text-[clamp(0.75rem,0.9vw,0.875rem)] tabular-nums text-white">
-                <span>{stage.num}</span>
-                <span className="relative block h-px w-[clamp(3rem,18vw,15rem)] bg-white/40">
-                  <span
-                    ref={barRef}
-                    style={{ transform: `scaleX(${1 / STAGES.length})` }}
-                    className="absolute inset-0 origin-left bg-white"
+                data-stage-frame
+                // From `lg` the scene moves each frame up into place; below
+                // it there is no scene, and the active one is simply shown.
+                className={`absolute inset-0 overflow-hidden max-lg:transition-opacity max-lg:duration-[var(--dur-medium)] max-lg:ease-[var(--ease-entrance)] ${
+                  i === active ? "max-lg:opacity-100" : "max-lg:opacity-0"
+                } ${i > 0 ? "lg:translate-y-full" : ""} ${near ? "lg:will-change-transform" : ""}`}
+              >
+                <img
+                  draggable={false}
+                  {...s.image}
+                  alt={i === active ? s.alt : ""}
+                  aria-hidden={i === active ? undefined : true}
+                  sizes="(min-width: 64rem) 50vw, 100vw"
+                  loading={near ? "eager" : "lazy"}
+                  decoding="async"
+                  // A little overscan from `lg`, which the drift moves within.
+                  className={`h-full w-full origin-center object-cover lg:scale-[1.06] ${near ? "lg:will-change-transform" : ""}`}
+                />
+                <div
+                  data-stage-shade
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-navy opacity-0"
+                />
+                {i > 0 ? (
+                  <div
+                    data-stage-edge
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white opacity-0"
                   />
-                </span>
-                <span>0{STAGES.length}</span>
+                ) : null}
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+            ))}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[32%] bg-linear-to-b from-navy/0 to-navy/72"
+            />
+
+            {/* The labels on the photograph roll over when the stage changes
+                (`label-roll` in styles.css; the key restarts it). */}
+            <p className="absolute top-[max(clamp(1rem,6%,3.5rem),calc(var(--header-h)+1rem))] left-[clamp(1rem,5.83%,3.5rem)] flex h-[2.125rem] items-center overflow-hidden bg-navy/55 px-3.5 font-display text-xs leading-none font-medium tracking-[0.167em] whitespace-nowrap text-white uppercase max-lg:top-4">
+              <span key={active} className="label-roll block">
+                Stage {stage.num} — {stage.title}
+              </span>
+            </p>
+
+            {/* Caption, count and controls along the foot. */}
+            <div className="absolute inset-x-[clamp(1rem,5.83%,3.5rem)] bottom-[clamp(1rem,3.76%,2.1875rem)] flex items-center gap-x-[clamp(1rem,2.9vw,1.75rem)]">
+              <p className="mr-auto min-w-0 overflow-hidden font-display text-[0.8125rem] text-white/85 lg:shrink-0">
+                <span key={active} className="label-roll block truncate">
+                  {stage.caption}
+                </span>
+              </p>
+              <p className="hidden shrink-0 overflow-hidden font-display text-[0.8125rem] font-medium tracking-[0.123em] text-white/50 tabular-nums lg:flex">
+                <span key={active} className="label-roll block text-white">
+                  {stage.num}
+                </span>
+                &nbsp;/ 0{STAGES.length}
+              </p>
+              <div
+                aria-hidden="true"
+                className="relative hidden min-w-12 shrink basis-[13.25rem] gap-2 xl:flex"
+              >
+                {STAGES.map((item) => (
+                  <span key={item.num} className="h-0.5 flex-1 bg-white/35" />
+                ))}
+                {/* One notch wide; the scene slides it along. */}
+                <span
+                  ref={thumbRef}
+                  style={{ width: `calc((100% - ${LAST} * 0.5rem) / ${STAGES.length})` }}
+                  className="absolute top-0 left-0 h-0.5 bg-white"
+                />
+              </div>
+              <div className="hidden shrink-0 items-center gap-2 lg:ml-3 lg:flex">
                 <button
                   type="button"
                   onClick={() => goTo(active - 1)}
                   disabled={active === 0}
                   aria-label="Previous stage"
-                  className="hover-lift flex h-12 w-12 items-center justify-center rounded-full bg-white text-navy disabled:cursor-default disabled:opacity-40"
+                  className="hover-lift flex size-11 cursor-pointer items-center justify-center border border-white/55 text-white hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-default disabled:opacity-40"
                 >
                   <ArrowLeft />
                 </button>
@@ -394,7 +625,7 @@ export function Process() {
                   onClick={() => goTo(active + 1)}
                   disabled={active === LAST}
                   aria-label="Next stage"
-                  className="hover-lift flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white disabled:cursor-default disabled:opacity-40"
+                  className="hover-lift flex size-11 cursor-pointer items-center justify-center bg-white text-navy hover:bg-[#f4f4f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-default disabled:opacity-40"
                 >
                   <ArrowRight className="h-4 w-4" />
                 </button>

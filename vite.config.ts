@@ -11,6 +11,17 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // The admin panel's loaders and loading states import its API, form
+    // kit and editors. Left in the route files they ship in the entry bundle
+    // of every public page, so for /admin they are split out with the screen.
+    router: {
+      codeSplittingOptions: {
+        splitBehavior: ({ routeId }: { routeId: string }) =>
+          routeId.startsWith("/admin")
+            ? [["loader"], ["component"], ["pendingComponent"], ["errorComponent"]]
+            : undefined,
+      },
+    },
   },
   // Target Netlify Functions instead of the default Cloudflare Workers preset.
   nitro: {

@@ -11,6 +11,27 @@ export const INSIGHTS_SEED: InsightsPage = {
     title: "Notes from the workshop floor.",
     lede: "What we learn detailing, fabricating and installing envelopes — written for the architects and engineers who have to live with the result.",
   },
+  labels: {
+    article: "Article",
+    film: "Film",
+    read: "Read article",
+    watch: "Watch film",
+    play: "Play film",
+  },
+  films: {
+    heading: "Films",
+    lede: "Short films from the workshop and from site: how the systems are made, tested and installed.",
+    notes: "Film notes",
+  },
+  index: {
+    heading: "Everything we have published",
+    allTopics: "All topics",
+    allFormats: "All",
+    articles: "Articles",
+    films: "Films",
+    empty: "Nothing has been published under this topic yet.",
+    showAll: "Show everything",
+  },
   cta: {
     eyebrow: "Ask us directly",
     heading: "A question these didn’t answer?",
@@ -20,6 +41,10 @@ export const INSIGHTS_SEED: InsightsPage = {
   article: {
     backLabel: "All insights",
     moreHeading: "More insights",
+    contents: "In this article",
+    share: "Share",
+    copyLink: "Copy link",
+    copied: "Link copied",
     cta: {
       eyebrow: "Start a project",
       heading: "Put this to work on your building.",

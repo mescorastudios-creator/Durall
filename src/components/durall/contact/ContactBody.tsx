@@ -18,7 +18,7 @@ export function ContactBody({ content }: { content: ContactPage }) {
   const DETAILS = useSite().settings.contact.details;
   const mapRef = useReveal<HTMLDivElement>({ y: 40, duration: 0.9 });
   const formRef = useReveal<HTMLDivElement>({ y: 32, duration: 0.9 });
-  const detailsRef = useReveal<HTMLDListElement>({ selector: "[data-reveal]", y: 16 });
+  const detailsRef = useReveal<HTMLDivElement>({ selector: "[data-reveal]", y: 16 });
 
   return (
     <section className="bg-white pt-[clamp(2rem,4vw,3.5rem)] pb-[clamp(4rem,8vw,9rem)]">
@@ -41,7 +41,9 @@ export function ContactBody({ content }: { content: ContactPage }) {
             <h2 className="font-display text-xs font-bold tracking-eyebrow text-navy uppercase">
               {content.detailsHeading}
             </h2>
-            <dl
+            {/* One small list per line: a <dt>/<dd> pair has to sit directly
+                in its <dl>, and here each pair is set beside its icon. */}
+            <div
               ref={detailsRef}
               className="mt-[clamp(1.25rem,2vw,1.75rem)] grid gap-[clamp(1.5rem,2.4vw,2rem)] sm:grid-cols-2"
             >
@@ -52,7 +54,7 @@ export function ContactBody({ content }: { content: ContactPage }) {
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-navy-14 bg-paper">
                       <Icon aria-hidden="true" className="h-5 w-5 text-navy" strokeWidth={1.4} />
                     </span>
-                    <div className="min-w-0">
+                    <dl className="min-w-0">
                       <dt className="font-display text-xs font-bold tracking-eyebrow text-navy uppercase">
                         {label}
                       </dt>
@@ -69,11 +71,11 @@ export function ContactBody({ content }: { content: ContactPage }) {
                           {note}
                         </span>
                       </dd>
-                    </div>
+                    </dl>
                   </div>
                 );
               })}
-            </dl>
+            </div>
           </div>
         </div>
       </div>

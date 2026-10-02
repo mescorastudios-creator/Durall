@@ -4,6 +4,8 @@ import { ArrowUpRight, LocateFixed, Minus, Plus } from "lucide-react";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
 import { useSite } from "@/content/site";
 import type { ContactPage } from "@/content/types";
+import { BUTTON } from "../ui";
+import { durallMapStyle, STYLE_URL } from "./mapTheme";
 
 /** Mumbai at a glance: where the camera starts before it flies in. */
 const WIDE = { zoom: 11.2, pitch: 0, bearing: 0 };
@@ -93,23 +95,26 @@ export function OfficeMap({ labels }: { labels: ContactPage["map"] }) {
         if (!entry?.isIntersecting) return;
         loadObserver.disconnect();
         void (async () => {
-          const [{ default: maplibregl }, { durallMapStyle, STYLE_URL }] = await Promise.all([
+          // The style comes down alongside the library, not after it; the
+          // page head asked for it already (routes/contact.tsx), so it is
+          // usually waiting by the time the library arrives.
+          const [{ default: maplibregl }, base] = await Promise.all([
             import("maplibre-gl"),
-            import("./mapTheme"),
+            fetch(STYLE_URL)
+              .then((response) => (response.ok ? response.json() : null))
+              .catch(() => null),
             import("maplibre-gl/dist/maplibre-gl.css"),
           ]);
-          if (cancelled) return;
+          // Offline or blocked: the grid and the address card stay.
+          if (cancelled || !base) return;
 
           let style;
           try {
-            const response = await fetch(STYLE_URL);
-            if (!response.ok) return;
-            style = durallMapStyle(await response.json(), OFFICE.lngLat);
+            style = durallMapStyle(base, OFFICE.lngLat);
           } catch {
-            // Offline or blocked: the grid and the address card stay.
+            // A style this code no longer understands: the same.
             return;
           }
-          if (cancelled) return;
 
           map = new maplibregl.Map({
             container: host,
@@ -140,6 +145,9 @@ export function OfficeMap({ labels }: { labels: ContactPage["map"] }) {
           const pin = document.createElement("div");
           pin.className = "office-pin";
           pin.innerHTML = PIN;
+          // MapLibre would name it "Map marker", which leaves out the words
+          // drawn on it.
+          pin.setAttribute("aria-label", "Durall Systems, head office");
           new maplibregl.Marker({ element: pin, anchor: "bottom" })
             .setLngLat(OFFICE.lngLat)
             .addTo(map);
@@ -167,7 +175,7 @@ export function OfficeMap({ labels }: { labels: ContactPage["map"] }) {
                 loaded.flyTo({
                   ...CLOSE,
                   center: OFFICE.lngLat,
-                  duration: 4200,
+                  duration: 2800,
                   curve: 1.3,
                   easing: cinematic,
                   essential: true,
@@ -252,28 +260,28 @@ export function OfficeMap({ labels }: { labels: ContactPage["map"] }) {
             href={OFFICE.directions}
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex min-h-11 items-center gap-2 rounded-full bg-navy px-4 font-display text-[0.6875rem] font-bold tracking-[0.12em] text-white uppercase transition-colors duration-[var(--dur-short)] hover:bg-accent-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue"
+            className={BUTTON.primary}
           >
             {labels.directions}
             <span className="sr-only"> (opens Google Maps in a new tab)</span>
             <ArrowUpRight
               aria-hidden="true"
-              className="hover-arrow h-3.5 w-3.5"
-              strokeWidth={1.8}
+              className="hover-arrow h-4 w-4 shrink-0"
+              strokeWidth={1.2}
             />
           </a>
           <a
             href={OFFICE.googleMaps}
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-14 px-4 font-display text-[0.6875rem] font-bold tracking-[0.12em] text-navy uppercase transition-colors duration-[var(--dur-short)] hover:border-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue"
+            className={BUTTON.secondary}
           >
             {labels.openInMaps}
             <span className="sr-only"> (Google Maps, new tab)</span>
             <ArrowUpRight
               aria-hidden="true"
-              className="hover-arrow h-3.5 w-3.5"
-              strokeWidth={1.8}
+              className="hover-arrow h-4 w-4 shrink-0"
+              strokeWidth={1.2}
             />
           </a>
         </div>

@@ -76,6 +76,9 @@ export function SiteIntro() {
       if (exiting || cancelled) return;
       exiting = true;
       removeListeners();
+      // From here the page can be seen: anything whose entrance is not built
+      // yet goes back to being held by the pre-paint class (styles.css).
+      document.documentElement.classList.remove("intro-covered");
 
       const q = <T extends Element>(sel: string) => root.querySelector<T>(sel);
       const content = q<HTMLElement>("[data-intro-content]");

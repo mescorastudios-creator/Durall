@@ -191,7 +191,7 @@ export const PROJECTS_SEED: ProjectDoc[] = [
       subtitle: "Murud — Spasm Architects",
       image: {
         kind: "asset",
-        key: "cardParikrama",
+        key: "homeParikrama",
       },
     },
     isFeatured: true,
@@ -458,7 +458,7 @@ export const PROJECTS_SEED: ProjectDoc[] = [
       subtitle: "Maldives — Studio MK27",
       image: {
         kind: "asset",
-        key: "cardPatina",
+        key: "homePatina",
       },
     },
     isFeatured: false,
@@ -880,7 +880,7 @@ export const PROJECTS_SEED: ProjectDoc[] = [
       subtitle: "Singapore — WOW Architects",
       image: {
         kind: "asset",
-        key: "cardChiltron",
+        key: "homeChiltern",
       },
     },
     isFeatured: false,
@@ -1088,7 +1088,7 @@ export const PROJECTS_SEED: ProjectDoc[] = [
       subtitle: "Mumbai — Ernesto Bedmar",
       image: {
         kind: "asset",
-        key: "cardJuhu",
+        key: "homeJuhu",
       },
     },
     isFeatured: false,
@@ -1711,7 +1711,7 @@ export const PROJECTS_SEED: ProjectDoc[] = [
       subtitle: "Maldives — Kerry Hill Architects",
       image: {
         kind: "asset",
-        key: "cardRitz",
+        key: "homeRitz",
       },
     },
     isFeatured: false,

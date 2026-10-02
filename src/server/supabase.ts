@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { getCookies, setCookie } from "@tanstack/react-start/server";
+import { ADMIN_ENABLED } from "@/admin/enabled";
 
 /**
  * The three ways the site talks to Supabase. Server-only: nothing here may
@@ -48,10 +49,11 @@ const realtime = {
   transport: (globalThis.WebSocket ?? NoRealtime) as never,
 };
 
-/** Whether the database is set up at all; without it the site runs on the bundled content. */
+/** Whether the database is set up at all; without it the site runs on the bundled content.
+ * Also "no" while the admin panel is switched off (src/admin/enabled.ts). */
 export function isSupabaseConfigured(): boolean {
   const { url, anonKey } = supabaseConfig();
-  return Boolean(url && anonKey);
+  return ADMIN_ENABLED && Boolean(url && anonKey);
 }
 
 let anonClient: SupabaseClient | undefined;

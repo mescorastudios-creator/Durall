@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { IMAGES } from "@/assets/images";
 import { linkTo } from "@/content/render";
 import type { Cta } from "@/content/types";
+import { ScrollFx } from "@/components/ScrollFx";
 import { useSite } from "@/content/site";
 import { scrollToY } from "@/lib/scroll-lock";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
@@ -49,8 +50,17 @@ export function DurallFooter() {
   const phone = contact.details.find((detail) => detail.icon === "phone");
 
   return (
-    <footer className="bg-navy pb-[max(0.5rem,env(safe-area-inset-bottom))] text-white">
-      <div className="mx-auto w-full max-w-[120rem] px-[clamp(1.25rem,12.1vw,14.5rem)]">
+    // Clipped: its contents climb out from behind the section above as it
+    // arrives (ScrollFx "rise").
+    <footer className="overflow-hidden bg-navy pb-[max(0.5rem,env(safe-area-inset-bottom))] text-white">
+      <div
+        data-fx="rise"
+        className="mx-auto w-full max-w-[120rem] px-[clamp(1.25rem,12.1vw,14.5rem)]"
+      >
+        {/* Here, not in the root route: every page ends in this footer, so
+            by the time it has mounted the page above it is hydrated and its
+            markup is safe to split and transform. */}
+        <ScrollFx />
         {/* The design's columns sit at 617 / 247 / 247 / 343px of 1454; a
             second column of links added in the admin gets another 247. */}
         <div
@@ -64,6 +74,7 @@ export function DurallFooter() {
               aria-label={company.name}
             >
               <img
+                draggable={false}
                 {...IMAGES.logoDurallWhite}
                 alt=""
                 className="h-auto w-[clamp(11rem,13.55vw,16.25rem)]"
@@ -80,7 +91,20 @@ export function DurallFooter() {
           {footer.columns.map((column) => (
             <nav key={column.title} aria-label={column.title} className="min-w-0">
               <p className={HEADING}>{column.title}</p>
-              <ul className="mt-[clamp(0.75rem,0.9vw,1rem)]">
+              {/* More than three links stand in two stacks, the first half
+                  on the left and the rest on the right, in the same order. */}
+              <ul
+                className={`mt-[clamp(0.75rem,0.9vw,1rem)] ${
+                  column.links.length > 3
+                    ? "grid w-fit grid-flow-col gap-x-[clamp(1.5rem,2.4vw,2.875rem)]"
+                    : ""
+                }`}
+                style={
+                  column.links.length > 3
+                    ? { gridTemplateRows: `repeat(${Math.ceil(column.links.length / 2)}, auto)` }
+                    : undefined
+                }
+              >
                 {column.links.map((link) => (
                   <li key={link.label + link.href}>
                     {/* The design's 35px rhythm on wide screens; a full 44px

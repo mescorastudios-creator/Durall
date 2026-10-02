@@ -62,8 +62,8 @@ export function ConnectorLine() {
     const section = svg?.parentElement;
     const scope = section?.closest("main") ?? document;
     const start = scope.querySelector<HTMLElement>("[data-connector-start]");
-    const end = section?.querySelector<HTMLElement>("[data-connector-end]")
-      ?.firstElementChild as HTMLElement | null | undefined;
+    const end = section?.querySelector<HTMLElement>("[data-connector-end]")?.firstElementChild as
+      HTMLElement | null | undefined;
     if (!svg || !path || !section || !start || !end) return;
 
     const draw = () => {

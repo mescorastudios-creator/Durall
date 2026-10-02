@@ -71,6 +71,7 @@ export function CurtainImage({
         <div data-curtain-counter className="absolute inset-0">
           <div data-drift className="absolute inset-x-0 -top-[4%] h-[108%]">
             <img
+              draggable={false}
               {...photo.image}
               alt={photo.alt}
               sizes={sizes}

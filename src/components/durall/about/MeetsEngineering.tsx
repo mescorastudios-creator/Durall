@@ -24,7 +24,7 @@ export function MeetsEngineering({ content }: { content: AboutPage["meets"] }) {
             data-reveal
             className="mt-[clamp(1.5rem,2.4vw,2rem)] flex items-center"
           >
-            <span className="block h-px w-[7.5rem] bg-accent-blue" />
+            <span data-fx="rule" className="block h-px w-[7.5rem] bg-accent-blue" />
             <span className="block h-1.5 w-1.5 bg-accent-blue" />
           </span>
           {content.paragraphs.map((paragraph, index) =>
@@ -32,6 +32,7 @@ export function MeetsEngineering({ content }: { content: AboutPage["meets"] }) {
               <p
                 key={index}
                 data-reveal
+                data-fx="words"
                 className="mt-[clamp(1.5rem,2.4vw,2rem)] max-w-[28rem] font-body text-[clamp(0.8125rem,1vw,0.875rem)] leading-relaxed text-slate"
               >
                 {paragraph}
@@ -52,6 +53,7 @@ export function MeetsEngineering({ content }: { content: AboutPage["meets"] }) {
           <div ref={clipRef} className="relative aspect-[820/480] w-full overflow-hidden">
             <div data-clip-inner className="h-full w-full">
               <img
+                draggable={false}
                 ref={imageRef}
                 {...imageOf(content.photo.image)}
                 alt={content.photo.alt}

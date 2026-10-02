@@ -34,9 +34,14 @@ const SOURCES = {
 
 const stamp = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
+/* Enquiries are typed by the public. A cell starting with = + - @ (or a
+ * tab/CR before one) is run as a formula by Excel and Sheets, so those get
+ * a leading apostrophe and open as plain text. */
+const formulaSafe = (v: string) => (/^[=+\-@\t\r]/.test(v) ? `'${v}` : v);
+
 function csvOf(rows: Enquiry[]) {
   const cells = (values: string[]) =>
-    values.map((v) => `"${v.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`).join(",");
+    values.map((v) => `"${formulaSafe(v).replace(/"/g, '""').replace(/\r?\n/g, " ")}"`).join(",");
   return [
     cells([
       "Received",

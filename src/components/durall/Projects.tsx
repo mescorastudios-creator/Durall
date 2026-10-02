@@ -4,36 +4,7 @@ import { imageOf, Lines } from "@/content/render";
 import type { HomeCard } from "@/content/select";
 import type { HomePage } from "@/content/types";
 import { ConnectorLine } from "./ConnectorLine";
-import { ViewMore } from "./ui";
-
-/**
- * The line behind a card's photograph on hover: the photograph's outline,
- * offset up and to the left, its top-right corner cut at 45°. It rests
- * hidden behind the photograph and slides out from under it on hover or
- * keyboard focus; under reduced motion it only fades in, already in place.
- *
- * Drawn in a 100 × 100 box stretched over the square photograph, so the cut
- * stays at 45°; `non-scaling-stroke` keeps the line 1px at every size.
- */
-function CardFrame() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 100 100"
-      fill="none"
-      preserveAspectRatio="none"
-      overflow="visible"
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-[translate,opacity] duration-[var(--dur-short)] ease-[var(--ease-micro)] group-focus-within:-translate-x-2.5 group-focus-within:-translate-y-3 group-focus-within:opacity-100 group-hover:-translate-x-2.5 group-hover:-translate-y-3 group-hover:opacity-100 motion-reduce:-translate-x-2.5 motion-reduce:-translate-y-3 motion-reduce:transition-opacity"
-    >
-      <path
-        d="M0 0H89.5L100 10.5V100H0Z"
-        stroke="var(--color-navy)"
-        strokeOpacity="0.4"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
+import { CardFrame, ViewMore } from "./ui";
 
 /** Each card opens its project's page, /projects/<slug>. */
 export function Projects({
@@ -81,6 +52,7 @@ export function Projects({
           </h2>
           <p
             data-anim
+            data-fx="words"
             className="min-w-0 max-w-[35rem] font-body text-[clamp(1rem,1.2vw,1.125rem)] leading-relaxed text-slate lg:pb-4"
           >
             {content.lede}
@@ -91,18 +63,44 @@ export function Projects({
           ref={gridRef}
           className="mt-[clamp(2.75rem,5.5vw,6.5625rem)] grid grid-cols-1 gap-x-[clamp(1rem,1.4vw,1.625rem)] gap-y-[clamp(1.75rem,2.2vw,2.1875rem)] sm:grid-cols-2 lg:grid-cols-3"
         >
-          {cards.map((project) => (
+          {cards.map((project, index) => (
             <li key={project.slug} data-card className="min-w-0">
-              <article className="group relative flex flex-col items-start text-left">
+              {/* The three columns travel at slightly different rates, so
+                  the grid opens out as it passes rather than moving as one
+                  sheet (ScrollFx, from `lg`). */}
+              <article
+                {...(index % 3
+                  ? { "data-fx": "drift", "data-fx-by": index % 3 === 1 ? 30 : 16 }
+                  : {})}
+                className="group relative flex flex-col items-start text-left"
+              >
                 <div className="relative aspect-square w-full">
                   <CardFrame />
-                  <img
-                    {...imageOf(project.image)}
-                    alt={`${project.title} — ${project.subtitle}`}
-                    sizes="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
-                    loading="lazy"
-                    className="relative h-full w-full object-cover"
-                  />
+                  <div className="relative h-full w-full overflow-hidden">
+                    <div data-fx="parallax" className="h-full w-full">
+                      <img
+                        draggable={false}
+                        {...imageOf(project.image)}
+                        alt={`${project.title} — ${project.subtitle}`}
+                        sizes="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
+                        loading="lazy"
+                        // The same slow zoom as the cards on the Projects page.
+                        className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                      />
+                    </div>
+                    {/* On hover a navy shadow falls across the top-left of
+                        the photograph and the project's name is set in it:
+                        the shadow opens out from the corner, the name
+                        follows it in. Only that side darkens. The name is
+                        already the card's heading below, so this copy is
+                        for the eye. */}
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                      <div className="absolute inset-0 origin-top-left scale-[0.72] bg-[radial-gradient(110%_85%_at_0%_0%,rgb(5_8_52/0.86)_0%,rgb(5_8_52/0.55)_26%,rgb(5_8_52/0.18)_48%,transparent_66%)] opacity-0 transition-[opacity,scale] duration-[var(--dur-medium)] ease-[var(--ease-entrance)] group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:scale-100 group-hover:opacity-100 motion-reduce:scale-100" />
+                      <span className="absolute top-[7%] left-[7%] max-w-[72%] -translate-x-3 -translate-y-2 font-display text-[clamp(1.25rem,1.67vw,2rem)] leading-[1.15] font-medium tracking-tight text-balance text-white opacity-0 transition-[opacity,translate] duration-[var(--dur-medium)] ease-[var(--ease-entrance)] group-focus-within:translate-x-0 group-focus-within:translate-y-0 group-focus-within:opacity-100 group-focus-within:delay-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-hover:delay-100 motion-reduce:translate-x-0 motion-reduce:translate-y-0">
+                        {project.title}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex w-full flex-col items-start px-0 text-left">
                   <h3 className="mt-[clamp(1rem,1.2vw,1.375rem)] font-display text-[clamp(1.125rem,1.4vw,1.5rem)] font-medium tracking-tight text-navy">

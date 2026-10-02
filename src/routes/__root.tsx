@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
-  Link,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -10,10 +9,15 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { DurallFooter } from "@/components/durall/DurallFooter";
+import { SiteHeader } from "@/components/durall/SiteHeader";
+import { CtaButton } from "@/components/durall/ui";
 import { SiteIntro } from "@/components/SiteIntro";
 import { PageTransition } from "@/components/PageTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { fetchSite } from "@/content/api";
+import { absoluteUrl } from "@/content/head";
+import { destination } from "@/content/render";
 import type { SiteSettings } from "@/content/types";
 import { setRevealEnabled } from "@/lib/page-transition";
 
@@ -27,10 +31,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
  * 1.91:1, and JPEG rather than WebP because crawler support for WebP cards is
  * still uneven. It is served from the site's own origin — the Lovable asset
  * CDN the images used to come from sends `x-robots-tag: noindex, nofollow`,
- * which is not what you want on a card image.
- *
- * Still relative to the deployed origin: make it absolute once the production
- * domain is fixed, since a few crawlers refuse to resolve a relative one. */
+ * which is not what you want on a card image. */
 const OG_IMAGE = "/og-durall.jpg";
 const OG_IMAGE_ALT = "Parikrama House, Murud — a Durall aluminium envelope framed by palms";
 
@@ -58,7 +59,14 @@ const CRITICAL_FONTS = [
  * Marks the document as
  * "entrance animations are about to run" so the CSS in styles.css can hide
  * the elements GSAP is going to animate in — but only when JavaScript is
- * actually running and the reader has not asked for reduced motion. The
+ * actually running and the reader has not asked for reduced motion. While
+ * the curtain is closed (`intro-covered`) nothing needs hiding, so the hero
+ * is painted underneath it straight away rather than after the doors part:
+ * that first paint is what the browser reports as the page's LCP. It waits
+ * (`fonts-pending`, 1.2s at most) for the two faces used above the fold,
+ * which this script can ask for because it sits after the stylesheet that
+ * declares them: text first drawn in a fallback wraps differently, and the
+ * swap moved the hero and everything under it. The
  * timeout is the safety net: if the GSAP import is blocked, slow or fails,
  * the page reveals itself rather than staying blank. `lib/anim.ts` clears
  * the class as soon as the real tweens have taken over. */
@@ -66,7 +74,7 @@ const animBootstrap = (loadingScreen: boolean) => `(function(){try{
 if(location.pathname.indexOf("/admin")===0)return;
 if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
 var d=document.documentElement;d.classList.add("anim-pending");
-${loadingScreen ? `d.classList.add("intro-pending");window.__introAt=performance.now();window.__introSafety=setTimeout(function(){d.classList.add("intro-bailout");setTimeout(function(){d.classList.remove("intro-pending","intro-bailout")},400)},4500);` : ""}
+${loadingScreen ? `d.classList.add("intro-pending","intro-covered","fonts-pending");var f=function(){d.classList.remove("fonts-pending")};setTimeout(f,1200);try{Promise.all([document.fonts.load('500 1em "Space Grotesk"'),document.fonts.load("1em Inter")]).then(f,f)}catch(e){f()}window.__introAt=performance.now();window.__introSafety=setTimeout(function(){d.classList.remove("intro-covered");d.classList.add("intro-bailout");setTimeout(function(){d.classList.remove("intro-pending","intro-bailout")},400)},4500);` : ""}
 setTimeout(function(){d.classList.remove("anim-pending")},5000);
 }catch(e){}})();`;
 
@@ -83,26 +91,40 @@ function useSettings() {
 }
 
 function NotFoundComponent() {
-  const copy = useSettings()?.notFound;
+  const settings = useSettings();
+  const copy = settings?.notFound;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">
-          {copy?.heading ?? "Page not found"}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {copy?.body ?? "The page you're looking for doesn't exist or has been moved."}
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {copy?.action ?? "Go home"}
-          </Link>
+    <div className="relative bg-navy font-body text-white">
+      {/* React lifts these into <head>: the root route has no title of its
+          own, and a missing page should not be indexed. */}
+      <title>Page not found — Durall Systems</title>
+      <meta name="robots" content="noindex" />
+      {/* The same header and footer as every other page, so a wrong address
+          is not a dead end. They need the root loader's settings. */}
+      {settings ? <SiteHeader /> : null}
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex min-h-[100svh] items-center pt-[var(--header-h)]"
+      >
+        <div className="shell py-[clamp(4rem,10vw,8rem)]">
+          <p className="font-display text-xs font-bold tracking-eyebrow text-white/60 uppercase">
+            Error 404
+          </p>
+          <h1 className="mt-5 font-display text-[clamp(2.5rem,6.25vw,6rem)] leading-[0.98] font-medium tracking-[-0.02em] text-balance">
+            {copy?.heading ?? "Page not found"}
+          </h1>
+          <p className="mt-6 max-w-[32rem] font-display text-[clamp(1rem,1.04vw,1.25rem)] leading-[1.6] text-pretty text-white/75">
+            {copy?.body ?? "The page you're looking for doesn't exist or has been moved."}
+          </p>
+          <div className="mt-10">
+            <CtaButton {...destination("/")} variant="inverted">
+              {copy?.action ?? "Go home"}
+            </CtaButton>
+          </div>
         </div>
-      </div>
+      </main>
+      {settings ? <DurallFooter /> : null}
     </div>
   );
 }
@@ -150,55 +172,94 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   // They change rarely; a page change does not need to ask for them again.
   loader: () => fetchSite(),
   staleTime: 5 * 60_000,
-  head: ({ loaderData }) => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "author", content: "Durall" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: loaderData?.settings.seo.shareImage || OG_IMAGE },
-      {
-        property: "og:image:alt",
-        content: loaderData?.settings.seo.shareImageAlt || OG_IMAGE_ALT,
-      },
-      { name: "twitter:image", content: loaderData?.settings.seo.shareImage || OG_IMAGE },
-      // Matches the navy hero so mobile browser chrome doesn't flash white.
-      { name: "theme-color", content: "#050834" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      // The Durall mark: the .ico for browsers without SVG icons, the SVG
-      // for crisp tabs everywhere else, and a full-bleed tile for iOS.
-      { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      // The two faces used above the fold, fetched in parallel with the
-      // Google Fonts stylesheet instead of waiting for it to parse.
-      ...CRITICAL_FONTS.map((href) => ({
-        rel: "preload",
-        as: "font",
-        type: "font/woff2",
-        href,
-        crossOrigin: "anonymous" as const,
-      })),
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Newsreader:opsz,wght@6..72,350&display=swap",
-      },
-    ],
-    scripts: [{ children: animBootstrap(loaderData?.settings.behaviour.loadingScreen !== false) }],
-  }),
+  head: ({ loaderData, matches }) => {
+    const shareImage = absoluteUrl(loaderData?.settings.seo.shareImage || OG_IMAGE);
+    // The page's own address without its query string: a filtered list
+    // (?topic=…, ?team=…) is the same page to a search engine.
+    const canonical = absoluteUrl(matches[matches.length - 1]?.pathname ?? "/");
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "author", content: "Durall" },
+        { property: "og:site_name", content: loaderData?.settings.company.name || "Durall" },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: canonical },
+        { name: "twitter:card", content: "summary_large_image" },
+        { property: "og:image", content: shareImage },
+        {
+          property: "og:image:alt",
+          content: loaderData?.settings.seo.shareImageAlt || OG_IMAGE_ALT,
+        },
+        { name: "twitter:image", content: shareImage },
+        // Matches the navy hero so mobile browser chrome doesn't flash white.
+        { name: "theme-color", content: "#050834" },
+      ],
+      links: [
+        { rel: "canonical", href: canonical },
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+        // The Durall mark: the .ico for browsers without SVG icons, the SVG
+        // for crisp tabs everywhere else, and a full-bleed tile for iOS.
+        { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+        { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+        // The two faces used above the fold, fetched before the stylesheet
+        // that declares them (theme.css) has been parsed.
+        ...CRITICAL_FONTS.map((href) => ({
+          rel: "preload",
+          as: "font",
+          type: "font/woff2",
+          href,
+          crossOrigin: "anonymous" as const,
+        })),
+      ],
+      scripts: [
+        { children: animBootstrap(loaderData?.settings.behaviour.loadingScreen !== false) },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
+
+/**
+ * Photographs on the public site are not for taking: no dragging one out of
+ * the page, and no context menu (so no "save image as" or "open image in new
+ * tab") on a photograph, a film or an element painted with one. Links,
+ * buttons, text selection and form fields are untouched. With the CSS beside
+ * `img` in styles.css this covers every image at once, including ones that
+ * arrive later from stored content. A deterrent, not a lock: a screenshot
+ * still works.
+ */
+function guardImages() {
+  const media = (target: EventTarget | null) =>
+    target instanceof Element ? target.closest("img, picture, video") : null;
+  const painted = (target: EventTarget | null) =>
+    target instanceof Element && getComputedStyle(target).backgroundImage.includes("url(");
+  // A link wrapped round a photograph drags the photograph with it.
+  const linkedMedia = (target: EventTarget | null) =>
+    target instanceof Element && Boolean(target.closest("a")?.querySelector("img, video"));
+
+  const onDragStart = (event: DragEvent) => {
+    if (media(event.target) || painted(event.target) || linkedMedia(event.target))
+      event.preventDefault();
+  };
+  const onContextMenu = (event: MouseEvent) => {
+    if (media(event.target) || painted(event.target)) event.preventDefault();
+  };
+  document.addEventListener("dragstart", onDragStart);
+  document.addEventListener("contextmenu", onContextMenu);
+  return () => {
+    document.removeEventListener("dragstart", onDragStart);
+    document.removeEventListener("contextmenu", onContextMenu);
+  };
+}
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -224,6 +285,7 @@ function RootComponent() {
   const inAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
   const { behaviour } = Route.useLoaderData().settings;
   useEffect(() => setRevealEnabled(behaviour.pageTransition), [behaviour.pageTransition]);
+  useEffect(() => (inAdmin ? undefined : guardImages()), [inAdmin]);
 
   if (inAdmin) {
     return (

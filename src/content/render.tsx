@@ -31,6 +31,12 @@ export function imageOf(ref: ImageRef | null | undefined): ImageAsset {
   };
 }
 
+/** Whether a reference points at a real image, so a card can show its own placeholder instead. */
+export function hasImage(ref: ImageRef | null | undefined): boolean {
+  const image = imageOf(ref);
+  return image !== MISSING && Boolean(image.src);
+}
+
 export const asset = (key: ImageKey): ImageRef => ({ kind: "asset", key });
 
 export const photo = (key: ImageKey, alt: string): Photo => ({ image: asset(key), alt });

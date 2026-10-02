@@ -60,6 +60,29 @@ let loader: Promise<{
   ScrollTrigger: (typeof import("gsap/ScrollTrigger"))["ScrollTrigger"];
 }> | null = null;
 
+/**
+ * Resolves once the page has been drawn, complete, under the opening curtain
+ * (and straight away when there is no curtain).
+ *
+ * Every entrance starts by hiding what it is about to bring in. On a fast
+ * connection the script can get there before the page's first paint, and
+ * then the hero's text is first painted when the curtain has parted, which
+ * is what the browser reports as LCP. Waiting for one painted frame costs
+ * nothing the reader can see: the curtain is still closed over it.
+ */
+function paintedUnderCurtain(): Promise<void> {
+  const { classList } = document.documentElement;
+  if (!classList.contains("intro-covered")) return Promise.resolve();
+  return new Promise((resolve) => {
+    const check = () => {
+      // Held back for the fonts (see the pre-paint script in __root.tsx).
+      if (classList.contains("fonts-pending")) return void requestAnimationFrame(check);
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    };
+    check();
+  });
+}
+
 /** Loads GSAP + ScrollTrigger once, on the client only. */
 export function loadGsap() {
   if (!loader) {
@@ -67,6 +90,7 @@ export function loadGsap() {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
         import("gsap"),
         import("gsap/ScrollTrigger"),
+        paintedUnderCurtain(),
       ]);
       gsap.registerPlugin(ScrollTrigger);
       return { gsap, ScrollTrigger };
@@ -98,9 +122,16 @@ export type SplitHandle = {
 };
 
 /**
- * Splits an element into lines and wraps each in an overflow-hidden mask,
- * returning the inner spans to animate. Shared by the heading reveal and the
- * section timeline so both produce byte-identical markup.
+ * Splits an element into lines and wraps each in a mask, returning the inner
+ * spans to animate. Shared by the heading reveal and the section timeline so
+ * both produce byte-identical markup.
+ *
+ * The mask is a `clip-path` a little larger than the line's own box, so
+ * descenders and accents clear it at a tight leading ("journey" used to read
+ * "iourneu" while it rose). It used to be `overflow: hidden` with padding
+ * taken back by negative margins, which did not cancel out between lines:
+ * a split block stood taller than the same text unsplit, and the page below
+ * it jumped when the split was made and again when it was undone.
  */
 export async function splitToLines(el: HTMLElement, lineClass: string): Promise<SplitHandle> {
   const { default: SplitType } = await import("split-type");
@@ -108,7 +139,7 @@ export async function splitToLines(el: HTMLElement, lineClass: string): Promise<
   const lines = split.lines ?? [];
   const inners = lines.map((line) => {
     line.style.display = "block";
-    line.style.overflow = "hidden";
+    line.style.clipPath = "inset(-0.1em -0.1em -0.16em)";
     const inner = document.createElement("span");
     inner.style.display = "block";
     inner.style.willChange = "transform, opacity";
@@ -132,6 +163,17 @@ export function playAfterIntro(animation: { play: () => unknown }, isCancelled: 
   void entranceGate().then(() => {
     if (!isCancelled()) animation.play();
   });
+}
+
+/**
+ * Whether this is a mouse-and-trackpad device. The scroll-linked drifts
+ * (parallax, the push-in) are kept to those: a phone scrolls natively, on its
+ * own thread, and a transform rewritten from the main thread on every scroll
+ * event trails the finger by a frame, which reads as a wobble rather than as
+ * depth. Reveals still play on touch; they are not tied to each frame.
+ */
+export function finePointer() {
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 }
 
 /** Holding a compositor layer past the landing costs memory for no benefit. */
@@ -176,7 +218,7 @@ export function visibleOnLoad(el: HTMLElement) {
  * can see it from — the scrub sits at its start state for good. The hero's
  * heading, copy and image card on /partners stayed invisible that way.
  */
-function inFirstScreen(el: HTMLElement) {
+export function inFirstScreen(el: HTMLElement) {
   const { top, bottom } = el.getBoundingClientRect();
   return bottom + window.scrollY > 0 && top + window.scrollY < window.innerHeight * 0.9;
 }
@@ -453,6 +495,40 @@ export function useSectionIntro<T extends HTMLElement = HTMLDivElement>(
 }
 
 /**
+ * What an opening photograph does while the page slides up over it.
+ *
+ * The openings are `position: sticky` (styles.css, "Opening photographs"):
+ * they hold still and the next section travels over them. Under it the
+ * photograph pushes in slightly and sinks into navy, so the page reads as
+ * coming forward over something receding rather than as one flat sheet.
+ * `[data-hero-media]` wraps the photograph (the entrance scales the image
+ * itself, so the two never write to one element) and `[data-hero-dim]` is
+ * the navy over it.
+ *
+ * Scroll positions are given as numbers: a trigger measured from a sticky
+ * element reads wherever it happens to be stuck at the time.
+ */
+export function heroCover(gsap: GsapModule, section: HTMLElement) {
+  const media = section.querySelector<HTMLElement>("[data-hero-media]");
+  const dim = section.querySelector<HTMLElement>("[data-hero-dim]");
+  const tl = gsap.timeline({
+    defaults: { ease: "none", immediateRender: false },
+    scrollTrigger: {
+      start: 0,
+      end: () => section.offsetHeight,
+      scrub: true,
+      invalidateOnRefresh: true,
+    },
+  });
+  if (media && finePointer()) tl.fromTo(media, { scale: 1 }, { scale: 1.12 }, 0);
+  if (dim) tl.fromTo(dim, { opacity: 0 }, { opacity: 0.6 }, 0);
+  return () => {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+  };
+}
+
+/**
  * The shared hero entrance: a line-by-line masked reveal of the heading, the
  * supporting `[data-hero-fade]` block behind it, and a slow settle on the
  * backdrop image.
@@ -505,31 +581,16 @@ export function useHeroIntro<
         "-=0.55",
       );
 
-      let parallax: gsap.core.Tween | undefined;
       const image = imageRef.current;
       if (image) {
         // The backdrop settles out of its overscan across the whole intro,
         // so the photograph is still arriving as the last line lands.
         tl.from(image, { scale: 1.08, duration: 2.2, ease: "power2.out" }, 0);
-        parallax = gsap.fromTo(
-          image,
-          { yPercent: 0 },
-          {
-            yPercent: 12,
-            ease: "none",
-            immediateRender: false,
-            scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              end: "bottom top",
-              scrub: 1.1,
-            },
-          },
-        );
       }
+      const stopCover = heroCover(gsap, section);
       /* The hero dissolves as it leaves rather than simply scrolling off:
        * its copy lifts and fades across the first two-thirds of the way out,
-       * while the photograph behind keeps its slower parallax. The copy
+       * while the photograph behind is being covered (see heroCover). The copy
        * block is animated as a whole — the intro timeline owns the lines
        * and the supporting blocks inside it, so the two never touch the
        * same element. */
@@ -544,9 +605,8 @@ export function useHeroIntro<
               ease: "none",
               immediateRender: false,
               scrollTrigger: {
-                trigger: section,
-                start: "top top",
-                end: "bottom 35%",
+                start: 0,
+                end: () => section.offsetHeight * 0.65,
                 scrub: 0.6,
                 invalidateOnRefresh: true,
               },
@@ -558,8 +618,7 @@ export function useHeroIntro<
       playAfterIntro(tl, () => cancelled);
 
       dispose = () => {
-        parallax?.scrollTrigger?.kill();
-        parallax?.kill();
+        stopCover();
         exit?.scrollTrigger?.kill();
         exit?.kill();
         tl.kill();
@@ -584,7 +643,7 @@ export function useParallax<T extends HTMLElement = HTMLImageElement>(
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || prefersReducedMotion()) return;
+    if (!el || prefersReducedMotion() || !finePointer()) return;
     let dispose = () => {};
     let cancelled = false;
 
@@ -767,10 +826,12 @@ export function useClipReveal<T extends HTMLElement = HTMLDivElement>(
     scale?: number;
     /** Share of the frame the media is offset by at the start. */
     shift?: number;
+    /** Seconds between one frame and the next, for a row of them. */
+    stagger?: number;
   } = {},
 ): RefObject<T | null> {
   const ref = useRef<T>(null);
-  const { inner = "[data-clip-inner]", scale = 1.14, shift = 14 } = options;
+  const { inner = "[data-clip-inner]", scale = 1.14, shift = 14, stagger = 0 } = options;
 
   useEffect(() => {
     const el = ref.current;
@@ -806,6 +867,7 @@ export function useClipReveal<T extends HTMLElement = HTMLDivElement>(
           opacity: 1,
           ease: scrubbing ? "none" : EASE.entrance,
           duration: DUR.long * 1.4,
+          stagger,
         },
         0,
       );
@@ -832,6 +894,58 @@ export function useClipReveal<T extends HTMLElement = HTMLDivElement>(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  return ref;
+}
+
+/**
+ * A slight push-in as a closing band arrives: its content settles from just
+ * under full size across the reveal window, so the band reads as coming
+ * forward rather than only sliding up. Transform only, scrubbed, and kept to
+ * pointer devices (see `finePointer`).
+ *
+ * Attach to a wrapper inside the band, not the band itself: scaling the
+ * coloured background would open a gap at its edges.
+ */
+export function usePushIn<T extends HTMLElement = HTMLDivElement>(
+  from = 0.94,
+): RefObject<T | null> {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion() || !finePointer()) return;
+    let dispose = () => {};
+    let cancelled = false;
+
+    void loadGsap().then(({ gsap }) => {
+      if (cancelled || !ref.current) return;
+      const tween = gsap.fromTo(
+        el,
+        { scale: from },
+        {
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: el,
+            start: "clamp(top bottom)",
+            end: "clamp(top 45%)",
+            scrub: REVEAL_WINDOW.scrub,
+          },
+        },
+      );
+      dispose = () => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+        gsap.set(el, { clearProps: "transform" });
+      };
+    });
+
+    return () => {
+      cancelled = true;
+      dispose();
+    };
+  }, [from]);
 
   return ref;
 }

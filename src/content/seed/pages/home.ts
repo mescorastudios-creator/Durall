@@ -9,9 +9,10 @@ export const HOME_SEED: HomePage = {
     image: null,
   },
   hero: {
+    // The opening film's first frame: what shows until the film is running.
     photo: photo(
-      "heroParikrama",
-      "Parikrama House, Murud — a Durall aluminium envelope framed by palms",
+      "heroFilm",
+      "A living room at dusk, its full-height sliding glass open on both sides to a palm garden",
     ),
     heading: "Engineering spaces without boundaries.",
     body: "Premium aluminium systems for windows, doors, façades and architectural applications — engineered with the architects who design tomorrow’s landmarks.",

@@ -8,6 +8,7 @@ import { imageOf } from "@/content/render";
 import type { PortfolioItem } from "@/content/select";
 import type { ProjectsPage } from "@/content/types";
 import { CURVE, transition } from "@/lib/motion-tokens";
+import { CardFrame } from "../ui";
 
 function ArrowUpRight() {
   return (
@@ -171,14 +172,21 @@ export function ProjectGrid({
                   transition={transition("short", reduced, CURVE.micro)}
                   className="relative"
                 >
-                  <div className="aspect-[848/565] w-full overflow-hidden rounded-sm bg-mist">
-                    <img
-                      {...imageOf(project.hero.image)}
-                      alt={`${project.name} — ${project.location}, ${project.architect}`}
-                      sizes="(min-width: 40rem) 50vw, 100vw"
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                    />
+                  <div className="relative aspect-[848/565] w-full">
+                    {/* The same line as the home page's cards, drawn on hover. */}
+                    <CardFrame />
+                    <div className="relative h-full w-full overflow-hidden rounded-sm bg-mist">
+                      <div data-fx="parallax" className="h-full w-full">
+                        <img
+                          draggable={false}
+                          {...imageOf(project.hero.image)}
+                          alt={`${project.name} — ${project.location}, ${project.architect}`}
+                          sizes="(min-width: 40rem) 50vw, 100vw"
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mt-[clamp(1.25rem,1.6vw,1.5rem)] flex items-center gap-3">

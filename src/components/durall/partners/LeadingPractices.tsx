@@ -72,6 +72,7 @@ export function LeadingPractices({
           className="relative mt-[clamp(2rem,4vw,3rem)] min-w-0 lg:absolute lg:top-[1.3rem] lg:right-0 lg:mt-0 lg:w-[69vw]"
         >
           <img
+            draggable={false}
             {...imageOf(content.photo.image)}
             alt={content.photo.alt}
             sizes="(min-width: 64rem) 69vw, 100vw"

@@ -4,12 +4,23 @@ The site's content is edited at **/admin**. Pages, projects, articles,
 careers, partners, images, navigation, contact details and settings are
 all editable there, and enquiries from the site's forms arrive there.
 
+> **Switched off for now.** While the site is being reworked,
+> `ADMIN_ENABLED` in `src/admin/enabled.ts` is `false`: every page is served
+> from the bundled content in `src/content/seed`, and /admin answers "page
+> not found". The enquiry forms still save to the database. Set it to `true`
+> to connect the panel and the database again. What is saved in the database
+> will be older than the bundled content by then, and it wins over it, so
+> the old copy shows on the site until the content is imported again over
+> the top. `importSiteContent` accepts `overwrite: true` for that; the
+> Dashboard's import button does not send it yet.
+
 ## Setting it up (once)
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In its **SQL Editor**, run each file in `supabase/migrations/` in order
-   (`0001_cms.sql`, then `0002_enquiry_phone_location.sql`). A project set
-   up before 0002 existed only needs 0002 run.
+   (`0001_cms.sql`, then `0002_enquiry_phone_location.sql`, then
+   `0003_section_access.sql`). Each is safe to run more than once, so a
+   project set up earlier only needs the files it has not run yet.
 3. **Authentication → Sign In / Providers:** switch off *Allow new users to sign up*.
 4. **Authentication → URL Configuration:** set the Site URL to the live
    domain, and add `https://<your-domain>/admin/set-password` (plus
@@ -32,7 +43,10 @@ Until step 7 the site shows the content bundled in `src/content/seed/`, and
   *Users & Access*, where they invite people, choose their access, disable or
   remove them, and can hand ownership to someone else.
 - **Admin:** every content and settings section, no account management.
-- **Editor:** only the sections the owner ticks.
+- **Editor:** only the sections the owner ticks. Both the site's server and
+  the database's row-level security (0003) enforce this, including drafts,
+  enquiries and each part of the site settings. Editors see only their own
+  entries in the activity log.
 
 There is no sign-up. People join by invitation email only.
 
@@ -55,8 +69,6 @@ never cached.
 
 ## Still to do: the security step
 
-- Enforce editors' section access in the database policies too, not only on
-  the server.
 - Two-step sign-in (TOTP) for the owner and admins; stricter login limits;
   session time-outs.
 - Version history and restore; draft previews on the site; scheduled

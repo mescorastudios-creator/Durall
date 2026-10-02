@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { boxOf, flip, type Box, type Flight, type FlipItem } from "@/lib/flip";
 import { lockScroll, scrollToY, unlockScroll } from "@/lib/scroll-lock";
 import { prefersReducedMotion } from "@/lib/motion-prefs";
+import { BUTTON } from "../ui";
 import type { Plate } from "./data";
 
 const OPEN_S = 0.9;
@@ -492,10 +493,10 @@ export function GalleryViewer({
             type="button"
             onClick={close}
             aria-label="Close photographs"
-            className="ml-2 flex h-11 items-center gap-2 rounded-full bg-navy px-5 font-display text-[0.6875rem] font-bold tracking-[0.16em] text-white uppercase transition-colors duration-[var(--dur-short)] hover:bg-accent-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue"
+            className={`${BUTTON.primary} ml-2`}
           >
             Close
-            <X aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
+            <X aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.2} />
           </button>
         </div>
       </div>

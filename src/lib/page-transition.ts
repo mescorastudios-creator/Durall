@@ -19,7 +19,7 @@ import { prefersReducedMotion } from "./motion-prefs";
  */
 
 /** Keep in step with `--dur-reveal` in styles.css. */
-export const REVEAL_MS = 900;
+export const REVEAL_MS = 600;
 
 const TYPE = "circle-reveal";
 

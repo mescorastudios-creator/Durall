@@ -19,7 +19,11 @@ export function readingTimeOf(article: Pick<ArticleDoc, "body" | "excerpt">): st
   const text = [
     article.excerpt,
     ...article.body.flatMap((block) =>
-      block.type === "list" ? block.items : block.type === "image" ? [block.caption] : [block.text],
+      block.type === "list"
+        ? block.items
+        : block.type === "image" || block.type === "video"
+          ? [block.caption]
+          : [block.text],
     ),
   ].join(" ");
   const words = text.split(/\s+/).filter(Boolean).length;
@@ -113,6 +117,8 @@ export type ArticleCard = Omit<ArticleDoc, "body" | "status" | "pinned" | "id">;
 export function cardOf(article: ArticleDoc): ArticleCard {
   return {
     slug: article.slug,
+    format: article.format,
+    video: article.video,
     category: article.category,
     publishedAt: article.publishedAt,
     readingTime: article.readingTime,
@@ -120,4 +126,33 @@ export function cardOf(article: ArticleDoc): ArticleCard {
     excerpt: article.excerpt,
     cover: article.cover,
   };
+}
+
+/** A category as it appears in a filter's web address: "Architecture / Performance" → "architecture-performance". */
+export function topicKey(category: string): string {
+  return category
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** The topics in use, most-published first, for the filter row. */
+export function topicsOf(
+  cards: readonly ArticleCard[],
+): { key: string; label: string; count: number }[] {
+  const topics = new Map<string, { key: string; label: string; count: number }>();
+  for (const card of cards) {
+    const key = topicKey(card.category);
+    if (!key) continue;
+    const topic = topics.get(key) ?? { key, label: card.category.trim(), count: 0 };
+    topic.count += 1;
+    topics.set(key, topic);
+  }
+  return [...topics.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+/** What sits under a card's title: the reading time, or a film's length. */
+export function lengthOf(card: Pick<ArticleCard, "format" | "video" | "readingTime">): string {
+  return card.format === "video" ? card.video.duration : card.readingTime;
 }

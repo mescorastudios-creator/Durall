@@ -132,8 +132,15 @@ export const finishUpload = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireMember("media");
     const { url } = supabaseConfig();
-    // Only files in this project's own bucket can be filed.
-    if (!url || !data.src.startsWith(`${url}/storage/v1/object/public/${BUCKET}/${data.folder}/`)) {
+    // Only files in this upload's own folder of this project's bucket can
+    // be filed — the main file and every size in the srcset.
+    const prefix = `${url}/storage/v1/object/public/${BUCKET}/${data.folder}/`;
+    const ownFile = (href: string) =>
+      href.startsWith(prefix) && !/\.\.|[?#\s]/.test(href.slice(prefix.length));
+    const sizes = data.srcSet
+      ?.split(",")
+      .map((candidate) => candidate.trim().split(/\s+/)[0] ?? "");
+    if (!url || !ownFile(data.src) || (sizes && !sizes.every(ownFile))) {
       fail("That file is not in the media bucket.", 400);
     }
     const { data: row, error } = await session.db
@@ -198,6 +205,9 @@ export const deleteMedia = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error || !row) fail("That image no longer exists.", 404);
     const media = row as MediaRow;
+    // The service key empties whatever folder the record names, so it must
+    // be one upload's own folder, never the bucket or all of uploads/.
+    if (!/^uploads\/[0-9a-f-]{36}$/.test(media.path)) fail("That image's files look wrong.", 400);
     const storage = serviceClient().storage.from(BUCKET);
     const { data: files } = await storage.list(media.path);
     if (files?.length) {

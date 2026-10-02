@@ -6,12 +6,16 @@ export const SHARED_SEED: SharedContent = {
   // Home and Expertise.
   process: {
     heading: { text: "Concept to commissioning,", muted: "under one roof." },
-    lede: "An integrated process that brings precision, accountability, and performance to every project.",
+    lede: "One team carries every opening from the first site visit to handover — so nothing is lost between drawing and building.",
     stages: [
       {
         title: "Discover",
-        body: "Site visit, brief, and intent — we read the architect's drawings before we read the BoQ.",
-        photo: photo("stageDiscover", "Glass-walled terrace overlooking a lake at sunset"),
+        body: "Site visit, brief and intent. We read the architect’s drawings before we read the BoQ.",
+        photo: photo(
+          "stageParikrama",
+          "Parikrama House: a low pavilion under a deep roof, open to a lawn among palms",
+        ),
+        caption: "Parikrama House · SPASM Design",
       },
       {
         title: "Design",
@@ -60,7 +64,10 @@ export const SHARED_SEED: SharedContent = {
     sending: "Sending…",
     sentHeading: "Thank you — your enquiry is with us.",
     sentAgain: "Send Another Enquiry",
-    writeTo: "Or write to",
+    subscribe: {
+      label: "Subscribe for updates",
+      note: "Facade insights, new systems and project stories, straight to your inbox. No noise, unsubscribe anytime.",
+    },
     viewProject: "View Project",
   },
 };

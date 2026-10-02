@@ -46,6 +46,8 @@ export const SETTINGS_SEED: SiteSettings = {
   },
   header: {
     items: [
+      { label: "Home", fullLabel: "", href: "/", visible: true },
+      { label: "About Us", fullLabel: "", href: "/about", visible: true },
       { label: "Projects", fullLabel: "", href: "/projects", visible: true },
       { label: "Expertise", fullLabel: "", href: "/expertise", visible: true },
       {
@@ -54,10 +56,10 @@ export const SETTINGS_SEED: SiteSettings = {
         href: "/partners",
         visible: true,
       },
-      { label: "About", fullLabel: "", href: "/about", visible: true },
       { label: "Insights", fullLabel: "", href: "/insights", visible: true },
+      { label: "Career", fullLabel: "", href: "/careers", visible: true },
     ],
-    cta: { label: "Start a Project", href: "/contact" },
+    cta: { label: "Contact Us", href: "/contact" },
     menuTagline: "Architecture\nstarts with\na conversation.",
   },
   footer: {

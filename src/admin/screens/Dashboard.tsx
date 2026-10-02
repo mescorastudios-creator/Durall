@@ -43,10 +43,12 @@ function todosOf(content: AllContent): Todo[] {
       to: "/admin/company",
     });
   }
-  const placeholderRoles = content.roles.filter((r) => r.open && /placeholder/i.test(r.title));
-  if (placeholderRoles.length) {
+  // The roles the site ships with are samples, and the Careers page says so
+  // in a note under the list until that note is cleared.
+  if (/sample/i.test(content.pages.careers.roles.note)) {
     todos.push({
-      text: `Replace or close ${placeholderRoles.length} placeholder ${placeholderRoles.length === 1 ? "role" : "roles"}`,
+      text: "Replace the sample roles on the Careers page, then clear the note under the list",
+      detail: content.pages.careers.roles.note,
       to: "/admin/careers",
     });
   }
@@ -135,8 +137,10 @@ function SetupSteps() {
           .
         </li>
         <li>
-          In its SQL Editor, run the file{" "}
-          <code className={variable}>supabase/migrations/0001_cms.sql</code> from this project.
+          In its SQL Editor, run the files in <code className={variable}>supabase/migrations/</code>{" "}
+          from this project, in order: <code className={variable}>0001_cms.sql</code>,{" "}
+          <code className={variable}>0002_enquiry_phone_location.sql</code>, then{" "}
+          <code className={variable}>0003_section_access.sql</code>.
         </li>
         <li>
           Under Authentication → Sign In / Providers, switch off{" "}

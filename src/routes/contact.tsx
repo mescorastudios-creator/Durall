@@ -5,10 +5,16 @@ import { ContactBody } from "@/components/durall/contact/ContactBody";
 import { DurallFooter } from "@/components/durall/DurallFooter";
 import { seoHead } from "@/content/head";
 import { fetchPage } from "@/content/api";
+import { STYLE_URL } from "@/components/durall/contact/mapTheme";
 
 export const Route = createFileRoute("/contact")({
   loader: () => fetchPage("contact"),
-  head: ({ loaderData }) => seoHead(loaderData?.page.seo),
+  head: ({ loaderData }) => ({
+    ...seoHead(loaderData?.page.seo),
+    // The map's style starts downloading while the page is still loading,
+    // instead of waiting for the map library to arrive first (OfficeMap).
+    links: [{ rel: "preload", as: "fetch", href: STYLE_URL, crossOrigin: "anonymous" as const }],
+  }),
   component: ContactPage,
 });
 

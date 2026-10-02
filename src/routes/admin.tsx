@@ -1,6 +1,7 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
 import adminCss from "@/admin/admin.css?url";
 import { getContentStatus } from "@/admin/api/content";
+import { ADMIN_ENABLED } from "@/admin/enabled";
 import { getAdminState } from "@/admin/api/session";
 import { AdminContext } from "@/admin/context";
 import { AdminShell } from "@/admin/Shell";
@@ -15,6 +16,11 @@ import { errorMessage, OverlayProviders } from "@/admin/ui/overlay";
  */
 export const Route = createFileRoute("/admin")({
   ssr: false,
+  // Switched off for now (src/admin/enabled.ts): every page under /admin
+  // answers "not found" until it is turned back on.
+  beforeLoad: () => {
+    if (!ADMIN_ENABLED) throw notFound();
+  },
   head: () => ({
     meta: [{ title: "Admin — Durall Systems" }, { name: "robots", content: "noindex, nofollow" }],
     links: [{ rel: "stylesheet", href: adminCss }],

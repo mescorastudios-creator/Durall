@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useReducedMotion } from "@/lib/motion-prefs";
-import { ArrowRight } from "../ui";
+import { ArrowRight, BUTTON } from "../ui";
 import { useSite } from "@/content/site";
 import type { ContactPage } from "@/content/types";
 import { Honeypot } from "./Honeypot";
@@ -240,7 +240,7 @@ export function EnquiryForm({ copy }: { copy: ContactPage["form"] }) {
               // reader is never presented with a dead button.
               disabled={status === "submitting"}
               aria-busy={status === "submitting"}
-              className="mt-2 flex min-h-12 w-full items-center justify-center gap-4 bg-navy py-4 font-display text-xs font-bold tracking-button text-white uppercase transition-colors hover:bg-[#0b1152] disabled:cursor-progress disabled:bg-navy/70 motion-safe:transition-[background-color,transform] motion-safe:not-disabled:hover:-translate-y-0.5 sm:w-auto sm:px-[clamp(1.5rem,3vw,2.5rem)]"
+              className={`${BUTTON.primary} mt-2 w-full sm:w-auto`}
             >
               {status === "submitting" ? copy.sending : copy.submit}
               {status === "submitting" ? (
@@ -258,14 +258,7 @@ export function EnquiryForm({ copy }: { copy: ContactPage["form"] }) {
                   />
                 </svg>
               ) : (
-                <svg
-                  viewBox="0 0 24 16"
-                  fill="none"
-                  aria-hidden="true"
-                  className="h-4 w-6 shrink-0"
-                >
-                  <path d="M0 8h22M17 3l5 5-5 5" stroke="currentColor" strokeWidth="1.1" />
-                </svg>
+                <ArrowRight className="hover-arrow h-4 w-4 shrink-0" />
               )}
             </button>
 

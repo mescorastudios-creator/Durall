@@ -4,9 +4,9 @@ import { imageOf, Lines } from "@/content/render";
 import type { PhotoHero as Content } from "@/content/types";
 
 /**
- * The full-width photographic opening of About, Partners, Projects and
- * Expertise: the photograph, the heading and a short introduction set low on
- * the left, under the clear header.
+ * The full-width photographic opening of About, Partners, Projects,
+ * Expertise and Careers: the photograph, the heading and a short
+ * introduction set low on the left, under the clear header.
  *
  * Measured from the designs at 1920 × 964, where the heading is Space
  * Grotesk Medium at 120px and the text starts 152px in, level with the
@@ -26,11 +26,17 @@ export type Wash = {
 export function PhotoHero({
   content,
   wash = {},
+  compact = false,
+  focus,
   children,
 }: {
   content: Content;
   wash?: Wash;
-  /** Anything set along the foot of the photograph (Expertise's systems). */
+  /** The shorter opening (Careers): 680px tall at 1920 rather than 964px. */
+  compact?: boolean;
+  /** Which part of the photograph to keep in view, as a CSS object-position. */
+  focus?: string;
+  /** Anything set along the foot of the photograph (see HeroRibbon). */
   children?: ReactNode;
 }) {
   const { sectionRef, headingRef, imageRef } = useHeroIntro<
@@ -44,17 +50,24 @@ export function PhotoHero({
     <section
       ref={sectionRef}
       id="top"
-      className="relative flex min-h-[max(36rem,min(100svh,50.2vw))] items-end overflow-hidden bg-navy pt-[calc(var(--header-h)+2rem)]"
+      data-hero-pin
+      className={`relative flex items-end overflow-hidden bg-navy pt-[calc(var(--header-h)+2rem)] ${
+        compact ? "min-h-[max(32rem,35.42vw)]" : "min-h-[max(36rem,min(100svh,50.2vw))]"
+      }`}
     >
-      <img
-        ref={imageRef}
-        {...imageOf(content.photo.image)}
-        alt={content.photo.alt}
-        sizes="100vw"
-        fetchPriority="high"
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <div data-hero-media className="absolute inset-0">
+        <img
+          draggable={false}
+          ref={imageRef}
+          {...imageOf(content.photo.image)}
+          alt={content.photo.alt}
+          sizes="100vw"
+          fetchPriority="high"
+          decoding="async"
+          className="h-full w-full object-cover"
+          style={focus ? { objectPosition: focus } : undefined}
+        />
+      </div>
       <div aria-hidden="true" className="absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(5_8_52/0.11),rgb(15_24_154/0.31)_87%)]" />
         {corners ? (
@@ -76,14 +89,12 @@ export function PhotoHero({
         {/* On a phone the text covers most of the photograph; this keeps it
             legible whatever part of the picture lands behind it. */}
         <div className="absolute inset-0 bg-navy/25 sm:hidden" />
+        {/* Deepens as the page slides over the opening (lib/anim heroCover). */}
+        <div data-hero-dim className="absolute inset-0 bg-navy opacity-0" />
       </div>
 
       <div className="relative mx-auto w-full max-w-[120rem] pr-[clamp(1.25rem,4.53vw,5.45rem)] pl-[clamp(1.25rem,7.92vw,9.5rem)]">
-        <div
-          className={
-            children ? "pb-[clamp(1.25rem,1.15vw,1.4rem)]" : "pb-[clamp(3rem,8.75vw,10.5rem)]"
-          }
-        >
+        <div className={children ? "" : "pb-[clamp(3rem,8.75vw,10.5rem)]"}>
           <h1
             ref={headingRef}
             data-anim-hide

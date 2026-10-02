@@ -18,6 +18,10 @@
  * case instead of expecting the two to stay in sync on their own.
  */
 
+// The first frame of the home page's opening film (public/video/hero-*).
+import heroFilm960 from "./hero-film-960w.webp";
+import heroFilm1440 from "./hero-film-1440w.webp";
+import heroFilm1920 from "./hero-film.webp";
 import heroParikrama960 from "./hero-parikrama-960w.webp";
 import heroParikrama1440 from "./hero-parikrama-1440w.webp";
 import heroParikrama1920 from "./hero-parikrama.webp";
@@ -30,6 +34,9 @@ import heroPartners1920 from "./hero-partners.webp";
 import heroProjects960 from "./hero-projects-960w.webp";
 import heroProjects1440 from "./hero-projects-1440w.webp";
 import heroProjects1920 from "./hero-projects.webp";
+import heroCareers960 from "./hero-careers-960w.webp";
+import heroCareers1440 from "./hero-careers-1440w.webp";
+import heroCareers1920 from "./hero-careers.webp";
 import logoDurallWhite from "./logo-durall-white.webp";
 import philosophyPavilion880 from "./philosophy-pavilion-880w.webp";
 import philosophyPavilion1440 from "./philosophy-pavilion.webp";
@@ -60,7 +67,22 @@ import cardJuhu from "./card-juhu.webp";
 import cardRitz480 from "./card-ritz-480w.webp";
 import cardRitz from "./card-ritz.webp";
 
+import homeParikrama480 from "./home-parikrama-480w.webp";
+import homeParikrama from "./home-parikrama.webp";
+import homeParikrama1040 from "./home-parikrama-1040w.webp";
+import homePatina480 from "./home-patina-480w.webp";
+import homePatina from "./home-patina.webp";
+import homePatina1040 from "./home-patina-1040w.webp";
+import homeChiltern480 from "./home-chiltern-480w.webp";
+import homeChiltern from "./home-chiltern.webp";
+import homeChiltern1040 from "./home-chiltern-1040w.webp";
+import homeJuhu480 from "./home-juhu-480w.webp";
+import homeJuhu from "./home-juhu.webp";
+import homeRitz480 from "./home-ritz-480w.webp";
+import homeRitz from "./home-ritz.webp";
+
 import stageDiscover from "./stage-discover.webp";
+import stageParikrama from "./stage-parikrama.webp";
 import stageEngineer from "./stage-engineer.webp";
 import stageFabricate from "./stage-fabricate.webp";
 import stageInstall from "./stage-install.webp";
@@ -75,7 +97,9 @@ import aboutLineHouse from "./about-line-house.webp";
 import aboutDurallMark from "./about-durall-mark.webp";
 
 import partnersVilla from "./partners-villa.webp";
-import partnersWorldMap from "./partners-world-map.webp";
+// A dotted map drawn from Natural Earth's public-domain land outline: vector,
+// so it stays sharp at any size.
+import partnersWorldMap from "./partners-world-map.svg";
 
 import parikramaPalms960 from "./parikrama/palms-960w.webp";
 import parikramaPalms1440 from "./parikrama/palms-1440w.webp";
@@ -103,6 +127,23 @@ import parikramaBedroomEvening from "./parikrama/bedroom-evening-1208w.webp";
 import sentosaLibrary480 from "./parikrama/sentosa-library-480w.webp";
 import sentosaLibrary from "./parikrama/sentosa-library-768w.webp";
 import projectRitz from "./project-ritz.webp";
+
+import expStageDiscover from "./expertise/stage-discover.webp";
+import expStageDesign from "./expertise/stage-design.svg";
+import expStageEngineer from "./expertise/stage-engineer.webp";
+import expStageFabricate from "./expertise/stage-fabricate.webp";
+import expStageInstall from "./expertise/stage-install.webp";
+import expDetailDoor from "./expertise/detail-door.webp";
+import secretGardens240 from "./expertise/secret-gardens-240w.webp";
+import secretGardens from "./expertise/secret-gardens.webp";
+import patinaPool240 from "./expertise/patina-pool-240w.webp";
+import patinaPool from "./expertise/patina-pool.webp";
+import patinaAerial from "./expertise/patina-aerial.webp";
+import ritzVillas from "./expertise/ritz-villas.webp";
+import juhuFacade240 from "./expertise/juhu-facade-240w.webp";
+import juhuFacade from "./expertise/juhu-facade.webp";
+import mandalaHouse from "./expertise/mandala-house.webp";
+import mandalaCourt from "./expertise/mandala-court.webp";
 
 import logoAdl from "./partners/adl.webp";
 import logoAfw from "./partners/afw.webp";
@@ -143,6 +184,14 @@ const set = (variants: ReadonlyArray<readonly [string, number]>, height: number)
 };
 
 export const IMAGES = {
+  heroFilm: set(
+    [
+      [heroFilm960, 960],
+      [heroFilm1440, 1440],
+      [heroFilm1920, 1920],
+    ],
+    1080,
+  ),
   heroParikrama: set(
     [
       [heroParikrama960, 960],
@@ -174,6 +223,17 @@ export const IMAGES = {
       [heroProjects1920, 1920],
     ],
     955,
+  ),
+  /* House of Secret Gardens at night. Cut taller than the Careers hero
+   * shows at desktop (it is focused low, see routes/careers.tsx) so a phone,
+   * where the hero is taller than wide, still has picture to fill it. */
+  heroCareers: set(
+    [
+      [heroCareers960, 960],
+      [heroCareers1440, 1440],
+      [heroCareers1920, 1920],
+    ],
+    1140,
   ),
   /** The white wordmark from the design, for the header and footer. */
   logoDurallWhite: one(logoDurallWhite, 1200, 180),
@@ -274,7 +334,49 @@ export const IMAGES = {
     780,
   ),
 
+  /* The home page's five project cards, from the design's "Selected work"
+   * frame, cut square to the framing drawn there. */
+  homeParikrama: set(
+    [
+      [homeParikrama480, 480],
+      [homeParikrama, 780],
+      [homeParikrama1040, 1040],
+    ],
+    1040,
+  ),
+  homePatina: set(
+    [
+      [homePatina480, 480],
+      [homePatina, 780],
+      [homePatina1040, 1040],
+    ],
+    1040,
+  ),
+  homeChiltern: set(
+    [
+      [homeChiltern480, 480],
+      [homeChiltern, 780],
+      [homeChiltern1040, 1040],
+    ],
+    1040,
+  ),
+  homeJuhu: set(
+    [
+      [homeJuhu480, 480],
+      [homeJuhu, 780],
+    ],
+    780,
+  ),
+  homeRitz: set(
+    [
+      [homeRitz480, 480],
+      [homeRitz, 780],
+    ],
+    780,
+  ),
+
   stageDiscover: one(stageDiscover, 760, 967),
+  stageParikrama: one(stageParikrama, 1100, 882),
   stageEngineer: one(stageEngineer, 1382, 996),
   stageFabricate: one(stageFabricate, 782, 782),
   stageInstall: one(stageInstall, 1382, 736),
@@ -383,6 +485,45 @@ export const IMAGES = {
     ],
     473,
   ),
+
+  /* The Expertise page. The five stages are the design's own crops of
+   * larger photographs (the second is a drawing), so each fills its tall
+   * frame the way it was composed. */
+  expStageDiscover: one(expStageDiscover, 331, 505),
+  expStageDesign: one(expStageDesign, 249, 380),
+  expStageEngineer: one(expStageEngineer, 589, 898),
+  expStageFabricate: one(expStageFabricate, 400, 610),
+  expStageInstall: one(expStageInstall, 404, 617),
+  /** The glass door at Chiltern House, behind the sill drawing. */
+  expDetailDoor: one(expDetailDoor, 465, 516),
+  /* "What we're trusted with": the projects' photographs, the small files
+   * for the thumbnails in the list. */
+  secretGardens: set(
+    [
+      [secretGardens240, 240],
+      [secretGardens, 900],
+    ],
+    898,
+  ),
+  patinaPool: set(
+    [
+      [patinaPool240, 240],
+      [patinaPool, 900],
+    ],
+    675,
+  ),
+  patinaAerial: one(patinaAerial, 900, 652),
+  ritzVillas: one(ritzVillas, 480, 138),
+  juhuFacade: set(
+    [
+      [juhuFacade240, 240],
+      [juhuFacade, 900],
+    ],
+    1045,
+  ),
+  mandalaHouse: one(mandalaHouse, 480, 329),
+  /** The left of the same photograph, as the design crops it for the slideshow. */
+  mandalaCourt: one(mandalaCourt, 544, 617),
 
   /* Partner and practice logos (partners page), each at its own file's
    * dimensions. How tall each is drawn is set per partner in the content. */

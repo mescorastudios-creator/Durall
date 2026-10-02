@@ -127,7 +127,9 @@ export type SiteSettings = {
 
 /* ── Sections shared by several pages ──────────────────────────────────── */
 
-export type ProcessStage = { title: string; body: string; photo: Photo };
+/** `caption` is the line on the photograph in the home page's scene: the
+ * project it shows. */
+export type ProcessStage = { title: string; body: string; photo: Photo; caption?: string };
 
 export type SharedContent = {
   process: {
@@ -152,8 +154,8 @@ export type SharedContent = {
     sending: string;
     sentHeading: string;
     sentAgain: string;
-    /** The words before the email address beside the button. */
-    writeTo: string;
+    /** The optional tick box above the button. */
+    subscribe: { label: string; note: string };
     /** The button on each slide. */
     viewProject: string;
   };
@@ -217,7 +219,12 @@ export type ArticleBlock =
   | { type: "paragraph"; text: string }
   | { type: "list"; items: string[] }
   | { type: "quote"; text: string }
-  | { type: "image"; photo: Photo; caption: string };
+  | { type: "image"; photo: Photo; caption: string }
+  /** A YouTube or Vimeo film inside the text. */
+  | { type: "video"; url: string; caption: string };
+
+/** A film hosted on YouTube or Vimeo: the address as pasted, and its length. */
+export type VideoRef = { url: string; duration: string };
 
 export type ArticleDoc = {
   id: string;
@@ -225,6 +232,9 @@ export type ArticleDoc = {
   status: Status;
   /** Pinned to the top of the list, ahead of the newest. */
   pinned: boolean;
+  /** A film leads with its player instead of the cover photograph. */
+  format: "article" | "video";
+  video: VideoRef;
   category: string;
   /** yyyy-mm-dd */
   publishedAt: string;
@@ -347,89 +357,115 @@ export type PartnersPage = {
 /** The plain white opening band (PageIntro). */
 export type Intro = { title: string; lede: string };
 
-/** One of the six numbered parts of the Expertise page's sill section. */
-export type AnatomyPart = { title: string; body: string; appliesTo: string };
-
-/** A tested figure on the Expertise page, with its rating out of `of`. */
-export type Metric = {
-  label: string;
-  value: string;
-  /** Set smaller after the value, e.g. W/m²K. */
-  unit: string;
-  rating: number;
-  of: number;
-  standard: string;
+/** A project named under one kind of work on the Expertise page. */
+export type TrustedProject = {
+  name: string;
+  /** Under the name in the list: "Ahmedabad". */
+  place: string;
+  /** Over the photograph: "SPASM Design Architects · Ahmedabad". */
+  credit: string;
+  /** The large photograph; an empty frame is drawn until there is one. */
+  photo: Photo | null;
+  /** A different picture for the small one in the list; the large one when null. */
+  thumb: Photo | null;
+  /** The project's own page; "View project" is hidden while this is empty. */
+  href: string;
 };
 
 export type ExpertisePage = {
   seo: Seo;
-  opening: PhotoHero & {
-    /** Credit for the photograph, bottom right. */
+  opening: PhotoHero;
+  /** "The world's finest systems…": the statement under the hero. */
+  intro: { eyebrow: string; heading: string; body: string; link: Cta };
+  /** "Concept to commissioning": the stages side by side, each with a picture. */
+  process: {
+    heading: string;
+    lede: string;
+    stages: { title: string; summary: string; body: string; photo: Photo }[];
+    footLeft: string;
+    footRight: string;
+  };
+  /** The navy section: kinds of work, and the projects each was delivered on. */
+  trusted: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    /** Before the number of projects: "Seen at". */
+    seenAt: string;
+    viewProject: string;
+    kinds: { title: string; body: string; projects: TrustedProject[] }[];
+  };
+  /** "Decided on paper": the steps beside the sill drawing. */
+  detail: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    steps: { title: string; body: string }[];
+    /** The photograph the drawing is laid over. */
+    photo: Photo;
+    drawingLabel: string;
     credit: string;
-    /** The strip along the foot: a count, its label and the systems. */
-    ribbon: { count: string; label: string; items: string[] };
+    scale: string;
   };
-  statement: { eyebrow: string; text: TwoTone };
-  anatomy: {
-    eyebrow: string;
-    heading: string;
-    body: string;
-    /** Exactly six, matching the numbers on the drawing. */
-    parts: AnatomyPart[];
-    appliesToLabel: string;
-    outside: string;
-    inside: string;
-    elevation: string;
-    detail: Fact;
-    drawing: { label: string; title: string; hint: string };
-    scale: Fact;
-    /** Hidden until it links to a file. */
-    download: Cta & { heading: string };
-  };
-  process: { eyebrow: string };
-  performance: {
-    eyebrow: string;
-    heading: string;
-    body: string;
-    metrics: Metric[];
-    low: string;
-    high: string;
-    note: string;
-    /** Hidden until it links to a file. */
-    download: Cta;
-  };
-  architects: {
-    eyebrow: string;
-    heading: string;
-    body: string;
-    /** The second card is drawn in navy, as in the design. */
-    cards: { title: string; body: string; link: Cta }[];
-  };
+  cta: CtaBand;
 };
 
 export type CareersPage = {
   seo: Seo;
-  hero: { heading: string; body: string; cta: Cta; photo: Photo };
-  /** One sentence over a full-bleed photograph (decorative, so no alt). */
-  band: { heading: string; image: ImageRef };
-  why: { heading: string; reasons: { title: string; body: string }[] };
-  openings: {
+  opening: PhotoHero & {
+    /** Credit for the photograph, bottom right. */
+    credit: string;
+    /** Beside the number of open roles, along the foot. */
+    rolesLabel: string;
+    /** The link down to the list. */
+    viewRoles: string;
+  };
+  /** The list of open roles; the roles themselves are a collection. */
+  roles: {
+    eyebrow: string;
     heading: string;
+    /** The filter that shows every team. */
+    allRoles: string;
+    columns: { role: string; team: string; location: string; type: string };
+    applyLabel: string;
+    /** Small print under the list; hidden when empty. */
+    note: string;
     /** Shown when no role is open; "{email}" becomes the careers address. */
     empty: string;
-    applyLabel: string;
-    howHeading: string;
-    howBody: string;
   };
-  cta: CtaBand;
+  /** "Don't see your role?": the open application under the list. */
+  open: { heading: string; body: string; action: string; orWrite: string };
 };
 
 export type InsightsPage = {
   seo: Seo;
   intro: Intro;
+  /** Words on every card: the two formats and their links. */
+  labels: { article: string; film: string; read: string; watch: string; play: string };
+  /** The films band, shown once there is a published film. */
+  films: { heading: string; lede: string; notes: string };
+  /** The full list and its filters. */
+  index: {
+    heading: string;
+    allTopics: string;
+    allFormats: string;
+    articles: string;
+    films: string;
+    empty: string;
+    showAll: string;
+  };
   cta: CtaBand;
   /** The chrome around every article. */
-  article: { backLabel: string; moreHeading: string; cta: CtaBand };
+  article: {
+    backLabel: string;
+    moreHeading: string;
+    /** The list of the article's sections beside the text. */
+    contents: string;
+    share: string;
+    copyLink: string;
+    copied: string;
+    cta: CtaBand;
+  };
 };
 
 type FormField = { label: string; placeholder: string };

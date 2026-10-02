@@ -164,6 +164,7 @@ export function FeaturedProject({
           >
             <AnimatePresence initial={false} mode="sync">
               <motion.img
+                draggable={false}
                 key={current.image.src}
                 {...current.image}
                 alt={current.alt}

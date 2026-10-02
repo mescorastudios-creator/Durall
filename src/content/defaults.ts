@@ -60,6 +60,8 @@ export function blankArticle(id = ""): ArticleDoc {
     slug: "",
     status: "draft",
     pinned: false,
+    format: "article",
+    video: { url: "", duration: "" },
     category: "",
     publishedAt: new Date().toISOString().slice(0, 10),
     readingTime: "1 min read",

@@ -1,13 +1,17 @@
 import { useState, type FormEvent } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import adminCss from "@/admin/admin.css?url";
 import { AuthFrame } from "@/admin/AuthFrame";
+import { ADMIN_ENABLED } from "@/admin/enabled";
 import { getAdminState, requestPasswordReset, signIn } from "@/admin/api/session";
 import { Button, ButtonLink, Field, Notice, TextInput } from "@/admin/ui/controls";
 import { errorMessage } from "@/admin/ui/overlay";
 
 export const Route = createFileRoute("/admin_/login")({
   ssr: false,
+  beforeLoad: () => {
+    if (!ADMIN_ENABLED) throw notFound();
+  },
   head: () => ({
     meta: [{ title: "Sign In — Durall Admin" }, { name: "robots", content: "noindex, nofollow" }],
     links: [{ rel: "stylesheet", href: adminCss }],

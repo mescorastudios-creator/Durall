@@ -36,14 +36,17 @@ export function NextProject({
           className="group mt-[clamp(2rem,4vw,3rem)] grid items-center gap-[clamp(1.5rem,3vw,2.5rem)] md:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]"
         >
           <div className="aspect-[1.6] w-full overflow-hidden bg-mist">
-            <img
-              {...photo.image}
-              alt=""
-              sizes="(min-width: 48rem) 24rem, 92vw"
-              loading="lazy"
-              decoding="async"
-              className="media-zoom h-full w-full object-cover"
-            />
+            <div data-fx="parallax" className="h-full w-full">
+              <img
+                draggable={false}
+                {...photo.image}
+                alt=""
+                sizes="(min-width: 48rem) 24rem, 92vw"
+                loading="lazy"
+                decoding="async"
+                className="media-zoom h-full w-full object-cover"
+              />
+            </div>
           </div>
           <div className="min-w-0">
             <h2 className="font-display text-[clamp(3.25rem,8vw,7.5rem)] leading-[0.9] font-light tracking-[-0.04em] text-navy">

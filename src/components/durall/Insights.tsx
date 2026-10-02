@@ -5,7 +5,13 @@ import { formatDate, type ArticleCard } from "@/content/select";
 import type { HomePage } from "@/content/types";
 import { ViewMore } from "./ui";
 
-export function ReadArticle({ className = "" }: { className?: string }) {
+export function ReadArticle({
+  className = "",
+  label,
+}: {
+  className?: string;
+  label?: string | undefined;
+}) {
   return (
     <span
       className={
@@ -13,7 +19,7 @@ export function ReadArticle({ className = "" }: { className?: string }) {
         className
       }
     >
-      Read article
+      {label ?? "Read article"}
       <span aria-hidden="true" className="hover-arrow">
         →
       </span>
@@ -21,10 +27,22 @@ export function ReadArticle({ className = "" }: { className?: string }) {
   );
 }
 
-export function Meta({ category, date, iso }: { category: string; date: string; iso: string }) {
+/** The line over every title: format (for films), category, date. */
+export function Meta({
+  format,
+  category,
+  date,
+  iso,
+}: {
+  format?: string | undefined;
+  category: string;
+  date: string;
+  iso: string;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-display text-[clamp(0.6875rem,0.72vw,0.75rem)] font-medium tracking-eyebrow uppercase">
-      <span className="text-navy">{category}</span>
+      {format ? <span className="text-accent-blue">{format}</span> : null}
+      {category ? <span className="text-navy">{category}</span> : null}
       <time dateTime={iso} className="text-slate">
         {date}
       </time>
@@ -35,7 +53,7 @@ export function Meta({ category, date, iso }: { category: string; date: string; 
 /* The photographs' cut corner, as in the design: 45°, bottom right. The
  * featured photograph's is a fixed length so it stays 45° on a landscape
  * frame; the thumbnails are square, so a share of the side does the same. */
-const FEATURED_CUT =
+export const FEATURED_CUT =
   "[clip-path:polygon(0_0,100%_0,100%_calc(100%-clamp(2.5rem,5.5vw,5.5rem)),calc(100%-clamp(2.5rem,5.5vw,5.5rem))_100%,0_100%)]";
 const THUMB_CUT = "[clip-path:polygon(0_0,100%_0,100%_74%,74%_100%,0_100%)]";
 
@@ -79,13 +97,16 @@ export function Insights({
           {featured ? (
             <article data-card className="flex min-w-0 flex-col">
               <div className={`aspect-[29/20] w-full overflow-hidden ${FEATURED_CUT}`}>
-                <img
-                  {...imageOf(featured.cover.image)}
-                  alt={featured.cover.alt}
-                  sizes="(min-width: 64rem) 50vw, 100vw"
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
+                <div data-fx="parallax" className="h-full w-full">
+                  <img
+                    draggable={false}
+                    {...imageOf(featured.cover.image)}
+                    alt={featured.cover.alt}
+                    sizes="(min-width: 64rem) 50vw, 100vw"
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               </div>
               <div className="mt-[clamp(1.25rem,1.8vw,1.75rem)] flex min-w-0 flex-col">
                 <Meta
@@ -104,7 +125,7 @@ export function Insights({
                   params={{ slug: featured.slug }}
                   className="group mt-[clamp(1.25rem,2vw,1.875rem)] inline-flex min-h-11 w-fit items-center"
                 >
-                  <ReadArticle />
+                  <ReadArticle label={featured.format === "video" ? "Watch film" : undefined} />
                   <span className="sr-only">: {featured.title}</span>
                 </Link>
               </div>
@@ -136,7 +157,7 @@ export function Insights({
                     params={{ slug: row.slug }}
                     className="group mt-[clamp(0.875rem,1.4vw,1.25rem)] inline-flex min-h-11 w-fit items-center"
                   >
-                    <ReadArticle />
+                    <ReadArticle label={row.format === "video" ? "Watch film" : undefined} />
                     <span className="sr-only">: {row.title}</span>
                   </Link>
                 </div>
@@ -144,6 +165,7 @@ export function Insights({
                   className={`aspect-square w-[clamp(5.5rem,9vw,8.75rem)] shrink-0 overflow-hidden ${THUMB_CUT}`}
                 >
                   <img
+                    draggable={false}
                     {...imageOf(row.cover.image)}
                     alt={row.cover.alt}
                     sizes="clamp(5.5rem, 9vw, 8.75rem)"

@@ -2,15 +2,144 @@
  * and the admin panel's (admin/admin.css), so the panel is drawn in the
  * same navy, type and curves as the site it edits. */
 
+/* ── Typefaces ────────────────────────────────────────────────────────────
+ * The Latin faces of Space Grotesk, Inter and EB Garamond, declared here
+ * instead of through Google's stylesheet: that was a second, cross-origin
+ * render-blocking request in front of every first paint. All three are
+ * variable fonts, so one file covers each weight range. The files still come
+ * from fonts.gstatic.com (__root.tsx preconnects and preloads the two used
+ * above the fold); to change a family or a weight range, take the new rules
+ * from fonts.googleapis.com/css2 and replace these. */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ebgaramond/v33/SlGWmQSNjdsmc35JDF1K5GRweDU1ZyHKpWiGIg.woff2)
+    format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ebgaramond/v33/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2)
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ebgaramond/v33/SlGUmQSNjdsmc35JDF1K5GR7SDk_YAPIlWk.woff2)
+    format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ebgaramond/v33/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2)
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2)
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2)
+    format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2)
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Stand-ins for the moment before the faces above arrive: Arial (Roboto
+ * on Android) resized to their width and vertical metrics. Space Grotesk
+ * sets about 10% wider than Arial (between 7% and 16%, phrase by phrase),
+ * Inter 7%, and EB Garamond 6% narrower than Times, so text drawn in the plain
+ * fallback wrapped onto a different number of lines and moved everything
+ * under it when the real face swapped in. */
+@font-face {
+  font-family: "Space Grotesk Fallback";
+  src: local("Arial"), local("Roboto");
+  size-adjust: 110%;
+  ascent-override: 89%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "EB Garamond Fallback";
+  src: local("Times New Roman");
+  size-adjust: 94%;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Roboto");
+  size-adjust: 107%;
+  ascent-override: 90.5%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+}
+
 /* ── Figma design tokens (Durall / Frame 9) ───────────────────────────── */
 @theme {
-  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
-  --font-body: "Inter", ui-sans-serif, sans-serif;
-  --font-serif: "EB Garamond", ui-serif, Georgia, serif;
-  /* The contact invitation's serif, matched to its design. */
-  --font-editorial: "Newsreader", ui-serif, Georgia, serif;
+  --font-display: "Space Grotesk", "Space Grotesk Fallback", ui-sans-serif, sans-serif;
+  --font-body: "Inter", "Inter Fallback", ui-sans-serif, sans-serif;
+  --font-serif: "EB Garamond", "EB Garamond Fallback", ui-serif, Georgia, serif;
 
   --color-navy: #050834;
+  /* Hover and pressed, from the design's style sheet. */
+  --color-navy-700: #1e2257;
   --color-navy-72: rgb(5 8 52 / 0.72);
   --color-navy-14: rgb(5 8 52 / 0.14);
   --color-slate: #5c6972;
