@@ -73,26 +73,14 @@ function HeroFilm() {
     // it can play, the tab or page comes back, or the visitor touches the
     // page (which is what a phone saving power waits for).
     const again = ["pointerup", "touchend", "click", "keydown"] as const;
-    /* A watch on the film while it should be running. If it is found
-     * paused it is started again, and the still is shown meanwhile; if it
-     * is running but has not advanced since the last two looks (a stall),
-     * it is loaded afresh. */
-    let seen = -1;
-    let stalled = 0;
+    /* A watch on the film while it should be running: if it is found
+     * paused it is started again, and the still is shown meanwhile. A film
+     * that is merely waiting for more of itself to download is left alone;
+     * loading it afresh there would only throw away what had arrived. */
     const watch = window.setInterval(() => {
-      if (covered() || document.hidden) return;
-      if (video.paused) {
-        setPlaying(false);
-        play();
-        return;
-      }
-      stalled = video.currentTime === seen ? stalled + 1 : 0;
-      seen = video.currentTime;
-      if (stalled >= 2) {
-        stalled = 0;
-        video.load();
-        play();
-      }
+      if (covered() || document.hidden || !video.paused) return;
+      setPlaying(false);
+      play();
     }, 1500);
     video.addEventListener("playing", show);
     video.addEventListener("canplay", play);
