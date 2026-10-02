@@ -77,7 +77,10 @@ export function ConnectorLine() {
       const endX = button.x + button.width - origin.x;
       const endY = crisp(button.y + button.height / 2 - origin.y);
       const topY = photo.y + photo.height - origin.y - TUCK;
-      const margin = photo.x + photo.width - origin.x - endX;
+      // The photograph runs a little past the page's edge; the margin the
+      // line runs in stops at the edge.
+      const pageEdge = Math.min(photo.x + photo.width - origin.x, section.offsetWidth);
+      const margin = pageEdge - endX;
 
       const upperX = crisp(endX + margin * UPPER);
       const lowerX = crisp(endX + margin * LOWER);

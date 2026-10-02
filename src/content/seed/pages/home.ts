@@ -20,7 +20,7 @@ export const HOME_SEED: HomePage = {
     secondary: { label: "Discover Durall", href: "#philosophy" },
   },
   philosophy: {
-    heading: { text: "Luxury is never applied.", muted: "It is engineered." },
+    heading: { text: "Luxury is never\napplied.", muted: "It is engineered." },
     paragraphs: [
       "Durall works alongside architects and developers long before a building becomes visible — coordinating design intent, engineering tolerance, and material performance into a single, precise envelope.",
       "Every threshold a building presents to the world — its windows, its skylights, its screens — is a system we design, engineer, fabricate and install as one continuous discipline.",

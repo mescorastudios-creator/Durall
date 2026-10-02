@@ -60,11 +60,11 @@ export function TwoToneText({
   value: TwoTone;
   mutedClassName?: string;
 }): ReactNode {
-  if (!value.muted) return value.text;
+  // A newline in the first clause is a forced line break, as in `Lines`.
+  if (!value.muted) return <Lines text={value.text} />;
   return (
     <>
-      {`${value.text} `}
-      <span className={mutedClassName}>{value.muted}</span>
+      <Lines text={value.text} /> <span className={mutedClassName}>{value.muted}</span>
     </>
   );
 }
